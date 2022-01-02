@@ -81,7 +81,7 @@ class DARTSModel(BaseModel):
     def training_step(self, batch: Any, batch_idx: int, optimizer_idx: int):
         if self.use_mixup:
             self.criterion.training = True
-        self.to_aug = False
+        self.to_aug = True
         # debug info
         (trn_X, trn_y) = batch['train']
         (val_X, val_y) = batch['val']
@@ -106,8 +106,8 @@ class DARTSModel(BaseModel):
         with torch.no_grad():
             self.sample_search()
         preds, loss = self._logits_and_loss(trn_X, trn_y, to_aug=self.to_aug)
+        loss_mutual = 0.
         if getattr(self.network, 'num_branches', None):
-            loss_mutual = 0.
             num_branches = self.network.num_branches
             num_features = len(self.network.branches[0].features)
             # ensemble_features = []
@@ -360,6 +360,7 @@ class DARTSModel(BaseModel):
         # log test metrics
         preds = torch.argmax(preds, dim=1)
         acc = self.test_metric(preds, targets)
+        acc_ensemble = 0.
         if self.trainer.world_size > 1:
             preds_en = torch.argmax(preds_en, dim=1)
             acc_ensemble = self.val_metric(preds_en, targets)
