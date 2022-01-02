@@ -245,7 +245,5 @@ class DARTSModel(BaseModel):
         optimizer_cfg = DictConfig(self.hparams.optimizer_cfg)
         weight_optim = hydra.utils.instantiate(optimizer_cfg, params=self.network.parameters())
         ctrl_optim = torch.optim.Adam(
-            self.mutator.parameters(), self.arc_lr, betas=(0.5, 0.999), weight_decay=1.0E-3)
-        # ctrl_optim = torch.optim.Adam(
-        #     self.mutator.parameters(), self.arc_lr, betas=(0.5, 0.999), weight_decay=1.0E-3)
+            self.mutator.parameters(), self.arc_lr, betas=(0.9, 0.999), weight_decay=1.0E-3)
         return weight_optim, ctrl_optim
