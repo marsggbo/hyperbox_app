@@ -187,6 +187,9 @@ class DARTSModel(BaseModel):
         loss_epoch = self.trainer.callback_metrics['train/loss_epoch'].item()
         logger.info(f'Train epoch{self.trainer.current_epoch} acc={acc_epoch:.4f} loss={loss_epoch:.4f}')
 
+    def on_validation_epoch_start(self):
+        self.reset_running_statistics(subset_size=64, subset_batch_size=32)
+
     def validation_step(self, batch: Any, batch_idx: int):
         (X, targets) = batch
         preds, loss = self._logits_and_loss(X, targets, to_aug=False)
@@ -216,6 +219,9 @@ class DARTSModel(BaseModel):
         if self.current_epoch % 1 == 0:
             self.export("mask_epoch_%d.json" % self.current_epoch,
             True, {'val_acc': acc_epoch, 'val_loss': loss_epoch})
+
+    def on_test_epoch_start(self):
+        self.reset_running_statistics(subset_size=64, subset_batch_size=32)
 
     def test_step(self, batch: Any, batch_idx: int):
         (X, targets) = batch
