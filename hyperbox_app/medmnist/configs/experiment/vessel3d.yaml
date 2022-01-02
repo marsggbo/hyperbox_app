@@ -8,15 +8,15 @@ defaults:
   - override /datamodule: vesselmnist3d.yaml
   - override /callbacks: default.yaml
   - override /logger: wandb.yaml
-  - override /model: medmnist_fairnas.yaml
+  - override /model: medmnist_darts.yaml
   - override /model/scheduler_cfg: CosineAnnealingLR.yaml
-  - override /model/optimizer_cfg: adam.yaml
-  - override /model/network_cfg: ensemble.yaml
-  - override /model/mutator_cfg: fairnas_mutator.yaml
-  # - override /model: medmnist_darts.yaml
-  # - override /model/network_cfg: da_mobile3dnet.yaml
-  # - override /model/mutator_cfg: fairdarts_mutator.yaml
+  - override /model/optimizer_cfg: sgd.yaml
+  - override /model/network_cfg: da_mobile3dnet.yaml
   # - override /model/mutator_cfg: onehot_mutator.yaml
+  # - override /model/network_cfg: ensemble.yaml
+  # - override /model/mutator_cfg: fairnas_mutator.yaml
+  # - override /model: medmnist_darts.yaml
+  # - override /model/mutator_cfg: fairdarts_mutator.yaml
 
 
 # all parameters below will be merged with parameters from default configurations set above
@@ -43,12 +43,12 @@ model:
   #   _target_: hyperbox_app.multiple_path_nas.mutator.DartsMultipleMutator
   #   topk: null
   optimizer_cfg:
-    lr: 3e-4
+    lr: 0.0025
   scheduler_cfg:
     T_max: 200
   is_sync: True
-  is_net_parallel: True
-  arc_lr: 0.0003
+  is_net_parallel: False
+  arc_lr: 0.001
 
 logger:
   wandb:
@@ -62,4 +62,4 @@ hydra:
   
 callbacks:
   model_checkpoint:
-    filename: "{epoch:.2d}_{val/auc:.4f}_{val/acc:.4f}"
+    filename: "{epoch:02d}_{val/auc:.4f}_{val/acc:.4f}"

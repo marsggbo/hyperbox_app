@@ -32,6 +32,7 @@ datamodule:
   is_customized: True
   # is_customized: False
   batch_size: 128
+  shape_transform: False
 
 model:
   # mutator_cfg:
@@ -54,3 +55,7 @@ logger:
 hydra:
   job:
     name: medmnist_gdas_organ
+
+callbacks:
+  model_checkpoint:
+    filename: "{epoch:02d}_{val/auc:.4f}_{val/acc:.4f}"

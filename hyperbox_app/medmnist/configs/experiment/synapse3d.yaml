@@ -54,3 +54,7 @@ logger:
 hydra:
   job:
     name: medmnist_gdas_synapse
+
+callbacks:
+  model_checkpoint:
+    filename: "{epoch:02d}_{val/auc:.4f}_{val/acc:.4f}"
