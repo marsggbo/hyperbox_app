@@ -1,6 +1,6 @@
 # hyperbox_app
 
-```python
+```bash
 python -m hyperbox.run \
 hydra.searchpath=[/path/to/hyperbox_app/hyperbox_app/medmnist/configs] \
 experiment=gdas_nii.yaml \
