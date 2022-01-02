@@ -44,15 +44,13 @@ class Mobile3DNet(BaseNASNetwork):
         for i in range(len(width_stages)):
             width_stages[i] = make_divisible(width_stages[i] * width_mult, 8)
         # first conv
-        first_conv = ConvLayer(in_channels, input_channel, kernel_size=3, stride=2, use_bn=True, act_func='relu6', ops_order='weight_bn_act')
+        self.first_conv = ConvLayer(in_channels, input_channel, kernel_size=3, stride=1, use_bn=True, act_func='relu6', ops_order='weight_bn_act')
+
         # first block
-        first_block_conv = OPS['3x3_MBConv1'](input_channel, first_cell_width, 1)
-        first_block = first_block_conv
+        first_block = OPS['3x3_MBConv1'](input_channel, first_cell_width, 1)
 
         input_channel = first_cell_width
-
         blocks = [first_block]
-
         stage_cnt = 0
         for width, n_cell, s in zip(width_stages, n_cell_stages, stride_stages):
             for i in range(n_cell):
@@ -60,21 +58,21 @@ class Mobile3DNet(BaseNASNetwork):
                     stride = s
                 else:
                     stride = 1
-                calibrate_op = CalibrationLayer(input_channel, width, stride)
-                blocks.append(calibrate_op)
-                op_candidates = [OPS['3x3_MBConv3'](width, width, 1),
-                                 OPS['3x3_MBConv4'](width, width, 1),
-                                 OPS['3x3_MBConv6'](width, width, 1),
-                                 OPS['5x5_MBConv3'](width, width, 1),
-                                #  OPS['5x5_MBConv4'](width, width, 1),
-                                 OPS['7x7_MBConv3'](width, width, 1),
-                                #  OPS['7x7_MBConv4'](width, width, 1),
-                                 OPS['Identity'](width, width, 1),
-                                #  OPS['Zero'](width, width, 1),
-                                 ]
-                # if stride == 1 and input_channel == width:
-                #     # if it is not the first one
-                #     op_candidates += [OPS['Zero'](input_channel, width, stride)]
+                op_candidates = [
+                    OPS['3x3_MBConv3'](input_channel, width, stride),
+                    OPS['3x3_MBConv4'](input_channel, width, stride),
+                    #  OPS['3x3_MBConv6'](input_channel, width, stride),
+                     OPS['5x5_MBConv3'](input_channel, width, stride),
+                    #  OPS['5x5_MBConv4'](input_channel, width, stride),
+                     OPS['7x7_MBConv3'](input_channel, width, stride),
+                    #  OPS['7x7_MBConv4'](input_channel, width, stride),
+                ]
+                if stride == 1 and input_channel == width:
+                    # if it is not the first one
+                    op_candidates += [
+                        OPS['Zero'](input_channel, width, stride),
+                        OPS['Identity'](input_channel, width, stride)
+                    ]
                 conv_op = OperationSpace(op_candidates, mask=self.mask, return_mask=True, key="s{}_c{}".format(stage_cnt, i))
                 # shortcut
                 if stride == 1 and input_channel == width:
@@ -86,17 +84,18 @@ class Mobile3DNet(BaseNASNetwork):
                 blocks.append(inverted_residual_block)
                 input_channel = width
             stage_cnt += 1
+        self.blocks = nn.ModuleList(blocks)
 
         # feature mix layer
+        # last_channel = input_channel
         last_channel = make_devisible(1280 * width_mult, 8) if width_mult > 1.0 else 1280
-        feature_mix_layer = ConvLayer(input_channel, last_channel, kernel_size=1, use_bn=True, act_func='relu6', ops_order='weight_bn_act', )
-        classifier = LinearLayer(last_channel, num_classes, dropout_rate=dropout_rate)
+        self.feature_mix_layer = ConvLayer(
+            input_channel, last_channel, kernel_size=1,
+            use_bn=True, act_func='relu6', ops_order='weight_bn_act')
 
-        self.first_conv = first_conv
-        self.blocks = nn.ModuleList(blocks)
-        self.feature_mix_layer = feature_mix_layer
         self.global_avg_pooling = nn.AdaptiveAvgPool3d(1)
-        self.classifier = classifier
+        self.classifier = LinearLayer(
+            last_channel, num_classes, dropout_rate=dropout_rate, bias=False)
 
         # set bn param
         self.set_bn_param(momentum=bn_param[0], eps=bn_param[1])
