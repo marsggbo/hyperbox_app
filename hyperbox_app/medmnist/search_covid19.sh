@@ -4,11 +4,12 @@ exp=$1
 # gdas_iran
 others=$2
 
-CUDA_VISIBLE_DEVICES=1 python -m ipdb run.py \
-hydra.searchpath=[file:///home/comp/18481086/code/hyperbox_app/medmnist/configs] \
+# CUDA_VISIBLE_DEVICES=1 python -m ipdb run.py \
+CUDA_VISIBLE_DEVICES=1 python -m hyperbox.run \
+hydra.searchpath=[file:///home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/configs] \
 experiment=$exp \
 datamodule.img_size=[160,160] \
-datamodule.center_size=[120,120] \
+datamodule.center_size=[128,128] \
 datamodule.slice_num=32 \
 datamodule.num_workers=3 \
 datamodule.batch_size=64 \

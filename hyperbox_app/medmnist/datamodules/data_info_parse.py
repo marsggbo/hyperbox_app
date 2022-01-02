@@ -2,7 +2,7 @@ import json
 import os
 from glob import glob
 
-from hyperbox_app.covid19.datasets.utils import pil_loader
+from hyperbox_app.medmnist.datamodules.utils import pil_loader
 
 
 def statistics_slice_size(jsonfile, path):

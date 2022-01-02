@@ -10,7 +10,7 @@ from omegaconf import DictConfig
 
 from hyperbox.utils.logger import get_logger
 from hyperbox.models.base_model import BaseModel
-import hyperbox_app.covid19.datasets as DATASET
+import hyperbox_app.medmnist.datamodules as DATASET
 
 logger = get_logger(__name__, rank_zero=True)
 
@@ -246,4 +246,6 @@ class DARTSModel(BaseModel):
         weight_optim = hydra.utils.instantiate(optimizer_cfg, params=self.network.parameters())
         ctrl_optim = torch.optim.Adam(
             self.mutator.parameters(), self.arc_lr, betas=(0.5, 0.999), weight_decay=1.0E-3)
+        # ctrl_optim = torch.optim.Adam(
+        #     self.mutator.parameters(), self.arc_lr, betas=(0.5, 0.999), weight_decay=1.0E-3)
         return weight_optim, ctrl_optim
