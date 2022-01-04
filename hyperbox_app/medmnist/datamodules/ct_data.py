@@ -3,6 +3,7 @@ import json
 import os
 import random
 import nibabel as nib
+import numpy as np
 
 import cv2
 import torch
@@ -78,12 +79,22 @@ class CTDataset(torch.utils.data.Dataset):
     def preprocessing(self, img):
         # resize = int(self.img_size[0]*5/4)
         resize = int(self.img_size[0])
-        transform = TF.Compose([
-            TF.Resize(self.img_size),
-            TF.CenterCrop(self.center_size),
-            TF.ToTensor()
-        ])
-        return transform(img)
+        if isinstance(img, np.ndarray):
+            img = cv2.resize(img, (resize, resize))
+            center = int(resize/2)
+            half_size = self.center_size[0] // 2
+            h_left, h_right = center - half_size,  center + half_size
+            w_left, w_right = center - half_size,  center + half_size
+            img = img[h_left:h_right, w_left:w_right]
+            img = TF.ToTensor()(img)
+        else:
+            transform = TF.Compose([
+                TF.Resize(self.img_size),
+                TF.CenterCrop(self.center_size),
+                TF.ToTensor()
+            ])
+            img = transform(img)
+        return img
 
     def __getitem__(self, idx):
         sample = self.samples[idx]
@@ -135,7 +146,10 @@ class CTDataset(torch.utils.data.Dataset):
             img = self.loader(slice_path) # height * width
             img = self.preprocessing(img) # 1 * height * width
             if not self.is_color:
-                img = torch.unsqueeze(img[0, :, :], dim=0)
+                if len(img.shape)==3:
+                    img = torch.unsqueeze(img[0, :, :], dim=0)
+                else:
+                    img = torch.unsqueeze(img, dim=0)
             slice_tensor.append(img)
         slice_tensor = torch.stack(slice_tensor)
         slice_tensor = slice_tensor.permute(1, 0, 2, 3) # c*d*h*w
@@ -250,33 +264,57 @@ if __name__ == '__main__':
     #     data = dataset[0]
     #     logging.info(data[0].shape)
 
-    # datamodule = CTDatamodule(
-    #     root_dir='/home/datasets/CCCCI_cleaned/dataset_cleaned/',
-    #     is_color=False,
-    #     num_workers=0,
-    #     data_list_train='/home/comp/18481086/code/hyperbox/hyperbox_app/covid19/datamodules/ccccii/ct_train.json',
-    #     data_list_val='/home/comp/18481086/code/hyperbox/hyperbox_app/covid19/datamodules/ccccii/ct_test.json',
-    #     data_list_test='/home/comp/18481086/code/hyperbox/hyperbox_app/covid19/datamodules/ccccii/ct_test.json',
-    # )
+    BS = 32
     print('start')
     logging.info('start')
-    datamodule = CTDatamodule(
+    # mosmed
+    # mean=0.4570799767971039, std=0.1314811408519745
+    datamodule1 = CTDatamodule(
+        root_dir='/home/datasets/MosMedData/COVID19_1110/pngs',
+        is_color=False,
+        batch_size=BS,
+        num_workers=4,
+        data_list_train='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_train.json',
+        data_list_val='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_test.json',
+        data_list_test='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_test.json',
+    )
+    # ccccii
+    # mean=0.5486013889312744, std=0.37949830293655396
+    datamodule2 = CTDatamodule(
+        root_dir='/home/datasets/CCCCI_cleaned/dataset_cleaned/',
+        is_color=False,
+        batch_size=BS,
+        num_workers=4,
+        data_list_train='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/ccccii/ct_train.json',
+        data_list_val='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/ccccii/ct_test.json',
+        data_list_test='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/ccccii/ct_test.json',
+    )
+    # iran
+    # mean=0.24609440565109253, std=0.16903874278068542
+    datamodule3 = CTDatamodule(
         root_dir='/home/datasets/COVID-CTset_visual',
         is_color=False,
-        batch_size=16,
+        batch_size=BS,
         num_workers=4,
-        data_list_train='/home/comp/18481086/code/hyperbox/hyperbox_app/medmnist/datamodules/iran/train.json',
-        data_list_val='/home/comp/18481086/code/hyperbox/hyperbox_app/medmnist/datamodules/iran/test.json',
-        data_list_test='/home/comp/18481086/code/hyperbox/hyperbox_app/medmnist/datamodules/iran/test.json',
+        data_list_train='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/train.json',
+        data_list_val='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/test.json',
+        data_list_test='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/test.json',
     )
     logging.info('dataset done')
     from time import time
     start = time()
-    for idx, data in enumerate(datamodule.train_dataloader()):
-        if idx > 20:
-            break
-        img, label = data
-        logging.info(img.shape)
+    for datamodule in [datamodule1, datamodule2, datamodule3]:
+        mean = 0.
+        std = 0.
+        for idx, data in enumerate(datamodule.train_dataloader()):
+            if idx > 2:
+                break
+            img, label = data
+            mean += img.view(img.shape[0], -1).mean()
+            std += img.view(img.shape[0], -1).std()
+        mean /= (idx+1)
+        std /= (idx+1)
+        logging.info(f"mean={mean}, std={std}")
     cost = time() - start
     logging.info(f"cost {cost/(idx+1)} sec")
     logging.info('end')
