@@ -9,6 +9,12 @@ from omegaconf.listconfig import ListConfig
 
 from hyperbox.mutables.spaces import OperationSpace
 from hyperbox.networks.base_nas_network import BaseNASNetwork
+from hyperbox_app.medmnist.networks.kornia_aug import (RandomBoxBlur3d,
+                                                       RandomErasing3d,
+                                                       RandomGaussianNoise3d,
+                                                       RandomInvert3d,
+                                                       RandomSharpness3d,
+                                                       RandomResizedCrop3d)
 
 __all__ = [
     'DataAugmentation',
@@ -22,18 +28,32 @@ def prob_list_gen(func, num_probs=4, probs: list=None, *args, **kwargs):
     else:
         return [func(p=p, *args, **kwargs) for p in [i*0.25 for i in range(num_probs)]]
 
-def DAOperation3D(affine_degree=30, affine_scale=(1.1, 1.5), affine_shears=20, rotate_degree=30, crop_size=(16,128,128)):
-    # RandomHorizontalFlip3D(same_on_batch=False, p=0.5),
-    # RandomVerticalFlip3D(same_on_batch=False, p=0.5),
-    # RandomRotation3D(rotate_degree, same_on_batch=False, p=0.5),
-    # RandomAffine3D(affine_degree, same_on_batch=False, p=0.5),
-    # RandomCrop3D(crop_size, pad_if_needed=False, same_on_batch=False, p=0.5),
-    # RandomEqualize3D(same_on_batch=False, p=0.5)
+def DAOperation3D(
+    affine_degree=30, affine_scale=(1.1, 1.5), affine_shears=20,
+    rotate_degree=30,
+    crop_size=(16,128,128)
+):
     ops = {}
-    ops['dflip'] = prob_list_gen(RandomDepthicalFlip3D, same_on_batch=False)
-    ops['hflip'] = prob_list_gen(RandomHorizontalFlip3D, same_on_batch=False)
-    ops['vflip'] = prob_list_gen(RandomVerticalFlip3D, same_on_batch=False)
-    # ops['equal'] = prob_list_gen(RandomEqualize3D, same_on_batch=False)
+    ops['dflip'] = prob_list_gen(RandomDepthicalFlip3D, probs=[0, 0.5, 1], same_on_batch=False)
+    ops['hflip'] = prob_list_gen(RandomHorizontalFlip3D, probs=[0, 0.5, 1], same_on_batch=False)
+    ops['vflip'] = prob_list_gen(RandomVerticalFlip3D, probs=[0, 0.5, 1], same_on_batch=False)
+    # ops['equal'] = prob_list_gen(RandomEqualize3D, probs=[0, 0.5, 1], same_on_batch=False)
+
+    # affine
+    ops['affine'] = [nn.Identity()]
+    if isinstance(affine_degree, (float, int)):
+        # rotation degree
+        affine_degree = [affine_degree]
+    if isinstance(affine_shears, (float, int)):
+        affine_shears = [affine_shears]
+    if isinstance(affine_scale[0], (float, int)):
+        # scale, similar to zoom in/out
+        affine_scale = [affine_scale]
+    for ad_ in affine_degree:
+        for ash_ in affine_shears:
+            for asc_ in affine_scale:
+                affine = prob_list_gen(RandomAffine3D, probs=[0.5, 1], same_on_batch=False, degrees=ad_, scale=asc_, shears=ash_) 
+                ops['affine'] += affine
 
     # random crop
     ops['rcrop'] = []
@@ -48,21 +68,33 @@ def DAOperation3D(affine_degree=30, affine_scale=(1.1, 1.5), affine_shears=20, r
         rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
         ops['rcrop'] += rcrop
 
-    # affine
-    ops['affine'] = []
-    if isinstance(affine_degree, (float, int)):
-        # rotation degree
-        affine_degree = [affine_degree]
-    if isinstance(affine_shears, (float, int)):
-        affine_shears = [affine_shears]
-    if isinstance(affine_scale[0], (float, int)):
-        # scale, similar to zoom in/out
-        affine_scale = [affine_scale]
-    for ad_ in affine_degree:
-        for ash_ in affine_shears:
-            for asc_ in affine_scale:
-                affine = prob_list_gen(RandomAffine3D, probs=[0.3, 0.6, 1], same_on_batch=False, degrees=ad_, scale=asc_, shears=ash_) 
-                ops['affine'] += affine
+    resize_crop = [nn.Identity()]
+    for size in crop_size[:1]:
+        size = size[1:]
+        for scale in [(0.8, 1), (1, 1)]:
+            for ratio in [(1, 1), (3/4, 4/3)]:
+                resize_crop += prob_list_gen(RandomResizedCrop3d, probs=[0.5, 1], size=size, scale=scale, ratio=ratio)
+    ops['resize_crop'] = resize_crop
+
+    boxblur = [nn.Identity()]
+    for ks in [(3,3), (5,5)]:
+        boxblur += prob_list_gen(RandomBoxBlur3d, probs=[0.5, 1], kernel_size=ks)
+    ops['boxnlur'] = boxblur
+
+    invert = [nn.Identity()]
+    for val in [0.25, 0.5, 0.75, 1]:
+        invert += prob_list_gen(RandomInvert3d, probs=[0.5, 1], max_val=val)
+    ops['invert'] = invert
+
+    gauNoise = [nn.Identity()]
+    gauNoise += prob_list_gen(RandomGaussianNoise3d, probs=[0, 0.5, 1])
+    ops['gauNoise'] = gauNoise
+
+    erase = [nn.Identity()]
+    for scale in [(0.02, 0.1), (0.1, 0.33)]:
+        for ratio in [(0.3, 3.3)]:
+            erase += prob_list_gen(RandomErasing3d, probs=[0.5, 1], scale=scale, ratio=ratio)
+    ops['erase'] = erase
 
     return ops
 
@@ -74,7 +106,7 @@ class DataAugmentation(BaseNASNetwork):
         self,
         rotate_degree=30, crop_size=[(32,128,128), (16,128,128)],
         affine_degree=0, affine_scale=(1.1, 1.5), affine_shears=20,
-        # norm_mean=[0.6075, 0.4564, 0.4182], norm_std=[0.2158, 0.1871, 0.1826],
+        mean=0.5, std=0.5,
         mask=None
     ):
         super().__init__(mask)
@@ -83,11 +115,18 @@ class DataAugmentation(BaseNASNetwork):
         for key, value in self.ops.items():
             transforms.append(OperationSpace(candidates=value, key=key, mask=self.mask, reduction='mean'))
         self.transforms = nn.Sequential(*transforms)
+        self.mean = mean
+        self.std = std
 
     # @torch.no_grad()  # disable gradients for effiency
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x_out = self.transforms(x)  # BxCXDxHxW
-        return x_out
+    def forward(self, x: torch.Tensor, aug=True) -> torch.Tensor:
+        if aug:
+            for idx, trans in enumerate(self.transforms):
+                x = trans(x)  # BxCXDxHxW
+        # normalize
+        # Todo: compare with no normalization
+        x = (x-self.mean)/self.std
+        return x
 
     @property
     def arch(self):
@@ -108,8 +147,8 @@ if __name__ == '__main__':
     op = DataAugmentation(
         crop_size=[(2,128,128), (3,256,256), (6,200,200)],
         affine_degree=[10, 30],
-        affine_scale=[(0.8,1.1),(1.1,1.5),(1.5,2)],
-        affine_shears=[10,20,30]
+        affine_scale=[(0.8,1.),(1.1,1.8)],
+        affine_shears=[10]
     )
     # m = RandomMutator(op)
     # m = DartsMutator(op)
