@@ -41,6 +41,8 @@ model:
   #   topk: null
   network_cfg:
     num_classes: 3
+    mean: 0.5486013889312744
+    std: 0.37949830293655396
   optimizer_cfg:
     lr: 0.001
   scheduler_cfg:
@@ -60,3 +62,7 @@ logger:
 hydra:
   job:
     name: covid_gdas_ccccii_dambv3
+
+callbacks:
+  model_checkpoint:
+    filename: "{epoch:02d}_{val/auc:.4f}_{val/acc:.4f}"
