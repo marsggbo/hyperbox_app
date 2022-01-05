@@ -1,31 +1,34 @@
 exp=$1
 name=$2
-others=$3
+gpu=$3
+gpuNum=${gpu//,/}
+gpuNum=${#gpuNum}
+
+others=$4
 
 # mpirun -np 2 python run.py \
 # mpirun -np 2 python run.py \
 # python -m ipdb run.py \
 # CUDA_VISIBLE_DEVICES=3 python run.py \
-python run.py \
-hydra.searchpath=[file:///home/comp/18481086/code/hyperbox/hyperbox_app/medmnist/configs] \
+CUDA_VISIBLE_DEVICES=$gpu python -m hyperbox.run \
+hydra.searchpath=[file:///home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/configs] \
 experiment=$exp.yaml \
 logger.wandb.name=$name \
 hydra.job.name=$name \
-trainer.accelerator=ddp \
-trainer.gpus=4 \
+trainer.accelerator=dp \
+trainer.gpus=$gpuNum \
 +datamodule.concat_train_val=True \
-+datamodule.use_weighted_sampler=True \
++datamodule.use_weighted_sampler=False \
 datamodule.as_rgb=True \
-datamodule.batch_size=32 \
-datamodule.is_customized=False \
+datamodule.batch_size=128 \
+datamodule.is_customized=True \
 model.network_cfg.in_channels=3 \
-+model.loss_cfg.weight=[1.,4.] \
-datamodule.shape_transform=True \
 trainer.max_epochs=100 \
 callbacks.model_checkpoint.monitor='val/auc' \
 callbacks.model_checkpoint.save_top_k=2 \
 $others
 
+# +model.loss_cfg.weight=[1.,4.] \
 
 # CUDA_VISIBLE_DEVICES=1 bash /home/comp/18481086/code/hyperbox/hyperbox_app/medmnist/run.sh \
 # vessel3d vessel3d_ensemble_search \
