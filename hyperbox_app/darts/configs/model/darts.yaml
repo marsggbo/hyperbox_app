@@ -1,0 +1,9 @@
+_target_: hyperbox_app.darts.models.darts_model.DARTSModel
+
+defaults:
+    - network_cfg: darts
+    - mutator_cfg: darts_mutator
+    - optimizer_cfg: sgd
+    - metric_cfg: accuracy
+    - loss_cfg: cross_entropy
+    - scheduler_cfg: null
