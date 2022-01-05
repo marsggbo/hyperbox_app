@@ -91,7 +91,8 @@ class Mobile3DNet(BaseNASNetwork):
         last_channel = make_devisible(1280 * width_mult, 8) if width_mult > 1.0 else 1280
         self.feature_mix_layer = ConvLayer(
             input_channel, last_channel, kernel_size=1,
-            use_bn=True, act_func='relu6', ops_order='weight_bn_act')
+            use_bn=True, act_func=None, ops_order='weight_bn_act'
+        ) # disable activation, otherwise the final predictions will be the same class for all inputs
 
         self.global_avg_pooling = nn.AdaptiveAvgPool3d(1)
         self.classifier = LinearLayer(
@@ -108,7 +109,12 @@ class Mobile3DNet(BaseNASNetwork):
         x = self.feature_mix_layer(x)
         x = self.global_avg_pooling(x)
         x = x.view(x.size(0), -1)
-        x = self.classifier(x)
+        if not self.training:
+            w = self.classifier.linear.weight.detach()
+            w = w / (w.norm(dim=1)**0.8).view(w.shape[0], -1)
+            x = nn.functional.linear(x, w)
+        else:
+            x = self.classifier(x)
         return x
 
     def set_bn_param(self, momentum, eps):
@@ -168,6 +174,7 @@ class DAMobile3DNet(BaseNASNetwork):
 
         rotate_degree=30, crop_size=[(32,128,128), (32,256,256)],
         affine_degree=0, affine_scale=(1.1, 1.5), affine_shears=20,
+        mean=0.5, std=0.5,
         mask=None
     ):
         super(DAMobile3DNet, self).__init__(mask)
@@ -175,11 +182,10 @@ class DAMobile3DNet(BaseNASNetwork):
             in_channels, width_stages, n_cell_stages, stride_stages, width_mult,
             num_classes, dropout_rate, bn_param, mask)
         self.augmentation = DataAugmentation(
-            rotate_degree, crop_size, affine_degree, affine_scale, affine_shears, mask)
+            rotate_degree, crop_size, affine_degree, affine_scale, affine_shears, mean, std, mask)
 
     def forward(self, x, to_aug=False):
-        if to_aug:
-            x = self.augmentation(x)
+        x = self.augmentation(x, to_aug)
         x = self.network(x)
         return x
 
