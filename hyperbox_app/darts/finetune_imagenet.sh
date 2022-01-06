@@ -7,7 +7,7 @@ name=reproduce_darts_finetune_imagenet
 
 CUDA_VISIBLE_DEVICES=$gpu python -m hyperbox.run \
 hydra.searchpath=[file:///home/xihe/xinhe/hyperbox_app/hyperbox_app/darts/configs] \
-experiment=darts.yaml \
+experiment=finetune.yaml \
 trainer.gpus=$gpuNum \
 trainer.accelerator=ddp \
 logger.wandb.name=$name \
@@ -17,6 +17,7 @@ datamodule=imagenet_datamodule \
 datamodule.data_dir=~/datasets/imagenet2012 \
 datamodule.batch_size=128 \
 model.optimizer_cfg.lr=0.1 \
+model.network_cfg.mask=$mask \
 model.network_cfg.n_layers=14 \
 model.network_cfg.channels=36 \
 model.network_cfg.auxiliary='imagenet' \
