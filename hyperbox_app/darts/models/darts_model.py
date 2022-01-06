@@ -43,27 +43,34 @@ class DARTSModel(BaseModel):
     def sample_search(self):
         super().sample_search(self.is_sync, self.is_net_parallel)
 
-    def training_step(self, batch: Any, batch_idx: int, optimizer_idx: int):
+    def training_step(self, batch: Any, batch_idx: int):
+    # def training_step(self, batch: Any, batch_idx: int, optimizer_idx: int):
         # debug info
         # self.trainer.accelerator.barrier()
         # print(f"[rank {self.rank}] seed={np.random.get_state()[1][0]}")
         # print(f"[rank {self.rank}] epoch-{self.current_epoch} batch-{batch_idx} arch={self.network.arch}")
-        (trn_X, trn_y) = batch['train']
-        (val_X, val_y) = batch['val']
-        self.weight_optim, self.ctrl_optim = self.optimizers()
-
-        # phase 1. architecture step
-        self.ctrl_optim.zero_grad()
-        if self.unrolled:
-            self._unrolled_backward(trn_X, trn_y, val_X, val_y)
+        if self.is_network_search:
+            (trn_X, trn_y) = batch['train']
+            (val_X, val_y) = batch['val']
+            self.weight_optim, self.ctrl_optim = self.optimizers()
         else:
-            self._backward(val_X, val_y)
-        self.ctrl_optim.step()
+            (trn_X, trn_y) = batch
+            self.weight_optim = self.optimizers()
+
+        if self.is_network_search:
+            # phase 1. architecture step
+            self.ctrl_optim.zero_grad()
+            if self.unrolled:
+                self._unrolled_backward(trn_X, trn_y, val_X, val_y)
+            else:
+                self._backward(val_X, val_y)
+            self.ctrl_optim.step()
 
         # phase 2: child network step
         self.weight_optim.zero_grad()
-        with torch.no_grad():
-            self.sample_search()
+        if self.is_network_search:
+            with torch.no_grad():
+                self.sample_search()
         preds, loss = self._logits_and_loss(trn_X, trn_y)
         self.manual_backward(loss)
         nn.utils.clip_grad_norm_(self.network.parameters(), 5.)  # gradient clipping
@@ -124,7 +131,7 @@ class DARTSModel(BaseModel):
         for key, value in self.mutator._cache.items():
             logger.info(f"{key}: {value.detach()}")
 
-        if self.current_epoch % 10 == 0:
+        if self.is_network_search and self.current_epoch % 1 == 0:
             self.export("mask_epoch_%d.json" % self.current_epoch,
             True, {'val_acc': acc_epoch, 'val_loss': loss_epoch})
 
@@ -157,9 +164,12 @@ class DARTSModel(BaseModel):
         """
         optimizer_cfg = DictConfig(self.hparams.optimizer_cfg)
         weight_optim = hydra.utils.instantiate(optimizer_cfg, params=self.network.parameters())
-        ctrl_optim = torch.optim.Adam(
-            self.mutator.parameters(), self.arc_lr, betas=(0.5, 0.999), weight_decay=1.0E-3)
-        return weight_optim, ctrl_optim
+        if self.is_network_search:
+            ctrl_optim = torch.optim.Adam(
+                self.mutator.parameters(), self.arc_lr, betas=(0.5, 0.999), weight_decay=1.0E-3)
+            return weight_optim, ctrl_optim
+        else:
+            return weight_optim
 
     def _backward(self, val_X, val_y):
         """
