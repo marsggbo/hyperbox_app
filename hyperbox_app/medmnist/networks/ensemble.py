@@ -13,8 +13,9 @@ from hyperbox_app.medmnist.networks.mobile_utils import *
 
 
 __all__ = [
-    'Mobile3DNet',
-    'DAMobile3DNet'
+    'SharePart3D',
+    'BranchPart3D',
+    'Mobile3DEnsemble'
 ]
 
 class SharePart3D(BaseNASNetwork):
@@ -184,7 +185,7 @@ class BranchPart3D(BaseNASNetwork):
 
         # feature mix layer
         self.last_channel = make_devisible(1280 * width_mult, 8) if width_mult > 1.0 else 1280
-        self.feature_mix_layer = ConvLayer(self.feat.last_channel, self.last_channel, kernel_size=1, use_bn=True, act_func='relu6', ops_order='weight_bn_act')
+        self.feature_mix_layer = ConvLayer(self.feat.last_channel, self.last_channel, kernel_size=1, use_bn=True, act_func=None, ops_order='weight_bn_act')
 
         self.global_avg_pooling = nn.AdaptiveAvgPool3d(1)
         self.classifier = LinearLayer(self.last_channel, num_classes, dropout_rate=dropout_rate)
@@ -247,6 +248,7 @@ class Mobile3DEnsemble(BaseNASNetwork):
 
 if __name__ == '__main__':
     from hyperbox.mutator import DartsMutator, RandomMutator, OnehotMutator
+    from hyperbox.utils.utils import save_arch_to_json
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     # net = SharePart3D().to(device)
     # net = BranchPart3D().to(device)
@@ -254,11 +256,12 @@ if __name__ == '__main__':
     net.eval()
     # net = Mobile3DNet(1, num_classes=10).to(device)
     dm = OnehotMutator(net)
-    for i in range(10):
-        dm.reset()
-        subnet = Mobile3DEnsemble(mask=dm.export()).to(device)
-        # if i > 5:
-        #     net = net.eval()
-        x = torch.rand(10,3,28,28,28).to(device)
-        y = subnet(x)
-        print(y.argmax(-1))
+    save_arch_to_json(dm.export(), 'ensemble_mbv3.json')
+    # for i in range(10):
+    #     dm.reset()
+    #     subnet = Mobile3DEnsemble(mask=dm.export()).to(device)
+    #     # if i > 5:
+    #     #     net = net.eval()
+    #     x = torch.rand(10,3,28,28,28).to(device)
+    #     y = subnet(x)
+    #     print(y.argmax(-1))

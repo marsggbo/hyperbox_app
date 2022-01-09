@@ -6,7 +6,9 @@ import torch.nn as nn
 from einops import rearrange, reduce, repeat
 from kornia import image_to_tensor, tensor_to_image
 from kornia.augmentation import *
-
+'''
+All augmentation ops are built based on kornia==0.6.2
+'''
 
 __all__ = [
     'Base2dTo3d',
@@ -59,8 +61,7 @@ class RandomInvert3d(Base2dTo3d):
         max_val: Union[float, torch.Tensor] = torch.tensor(1.0),
         return_transform: bool = False,
         same_on_batch: bool = False,
-        p: float = 0.5,
-        keepdim: bool = False
+        p: float = 0.5
     ):
         '''
         Args:
@@ -74,7 +75,7 @@ class RandomInvert3d(Base2dTo3d):
                     to the batch form (False).
         '''
         super(RandomInvert3d, self).__init__()
-        self.aug = RandomInvert(max_val, return_transform, same_on_batch, p, keepdim)
+        self.aug = RandomInvert(max_val, return_transform, same_on_batch, p)
 
 
 class RandomGaussianNoise3d(Base2dTo3d):
@@ -84,11 +85,10 @@ class RandomGaussianNoise3d(Base2dTo3d):
         std: float = 1.0,
         return_transform: bool = False,
         same_on_batch: bool = False,
-        p: float = 0.5,
-        keepdim: bool = False
+        p: float = 0.5
     ) -> None:
         super(RandomGaussianNoise3d, self).__init__()
-        self.aug = RandomGaussianNoise(mean, std, return_transform, same_on_batch, p, keepdim)
+        self.aug = RandomGaussianNoise(mean, std, return_transform, same_on_batch, p)
 
 
 class RandomBoxBlur3d(Base2dTo3d):
@@ -100,11 +100,10 @@ class RandomBoxBlur3d(Base2dTo3d):
         return_transform: bool = False,
         same_on_batch: bool = False,
         p: float = 0.5,
-        keepdim: bool = False
     ):
         super(RandomBoxBlur3d, self).__init__()
         self.aug = RandomBoxBlur(
-        kernel_size, border_type, normalized, return_transform, same_on_batch, p, keepdim)
+        kernel_size, border_type, normalized, return_transform, same_on_batch, p)
 
 
 class RandomErasing3d(Base2dTo3d):

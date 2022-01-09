@@ -118,15 +118,22 @@ class DataAugmentation(BaseNASNetwork):
         self.mean = mean
         self.std = std
 
-    # @torch.no_grad()  # disable gradients for effiency
-    def forward(self, x: torch.Tensor, aug=True) -> torch.Tensor:
+    def sub_forward(self, x: torch.Tensor, aug=True):
         if aug:
             for idx, trans in enumerate(self.transforms):
-                x = trans(x)  # BxCXDxHxW
+                x = trans(x) # BxCXDxHxW
         # normalize
         # Todo: compare with no normalization
-        x = (x-self.mean)/self.std
+        # x = (x-self.mean)/self.std
         return x
+
+    def forward(self, x, aug=True):
+        if self.mask is not None:
+            with torch.no_grad():
+                return self.sub_forward(x, aug)
+        else:
+            # search mode
+            return self.sub_forward(x, aug)
 
     @property
     def arch(self):
