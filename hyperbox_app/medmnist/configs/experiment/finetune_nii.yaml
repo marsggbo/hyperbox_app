@@ -1,0 +1,67 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py experiment=example_simple.yaml
+
+defaults:
+  - override /trainer: default.yaml # choose trainer from 'configs/trainer/'
+  - override /model: finetune.yaml
+  - override /datamodule: nii_datamodule.yaml
+  - override /callbacks: default.yaml
+  - override /logger: wandb.yaml
+  - override /model/scheduler_cfg: CosineAnnealingLR.yaml
+  - override /model/loss_cfg: cross_entropy_labelsmooth.yaml
+  - override /model/optimizer_cfg: adam.yaml
+  - override /model/network_cfg: da_mbv3_covid19.yaml
+  - override /model/mutator_cfg: random_mutator.yaml
+
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+seed: 12345
+
+trainer:
+  min_epochs: 1
+  max_epochs: 200
+  gpus: 1
+  # accelerator: horovod
+  accelerator: dp
+
+datamodule:
+  # is_customized: True
+  is_customized: False
+  batch_size: 8
+  img_size: [256,256]
+  center_size: [256,256]
+
+model:
+  network_cfg:
+    crop_size:
+      - [8,256,256]
+      - [12,256,256]
+      - [16,256,256]
+      - [24,256,256]
+      - [32,256,256]
+    mask: null
+    stride_stages: [2,2,2,2,2,2]
+    num_classes: 2
+  optimizer_cfg:
+    lr: 0.001
+  scheduler_cfg:
+    T_max: 250
+
+logger:
+  wandb:
+    project: medmnist
+    name: medmnist_gdas_adrenal
+    offline: True
+
+hydra:
+  job:
+    name: medmnist_gdas_adrenal
+
+callbacks:
+  model_checkpoint:
+    monitor: 'val/auc'
+    filename: "{epoch:02d}_{val/auc:.4f}_{val/acc:.4f}"
