@@ -1,15 +1,11 @@
 exp=$1
-name=$2
-gpu=$3
+gpu=$2
 gpuNum=${gpu//,/}
 gpuNum=${#gpuNum}
+name=gdas_${exp}_gpu${gpuNum}_batchbalance
+others=$3
+echo $name
 
-others=$4
-
-# mpirun -np 2 python run.py \
-# mpirun -np 2 python run.py \
-# python -m ipdb run.py \
-# CUDA_VISIBLE_DEVICES=3 python run.py \
 CUDA_VISIBLE_DEVICES=$gpu python -m hyperbox.run \
 hydra.searchpath=[file:///home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/configs] \
 experiment=$exp.yaml \
@@ -17,15 +13,16 @@ logger.wandb.name=$name \
 hydra.job.name=$name \
 trainer.accelerator=dp \
 trainer.gpus=$gpuNum \
-+datamodule.concat_train_val=True \
++datamodule.concat_train_val=False \
 +datamodule.use_weighted_sampler=False \
++datamodule.use_balanced_batch_sampler=True \
 datamodule.as_rgb=True \
-datamodule.batch_size=128 \
+datamodule.batch_size=32 \
 datamodule.is_customized=True \
 model.network_cfg.in_channels=3 \
-trainer.max_epochs=100 \
+trainer.max_epochs=50 \
 callbacks.model_checkpoint.monitor='val/auc' \
-callbacks.model_checkpoint.save_top_k=2 \
+callbacks.model_checkpoint.save_top_k=1 \
 $others
 
 # +model.loss_cfg.weight=[1.,4.] \
