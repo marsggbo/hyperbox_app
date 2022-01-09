@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import medmnist
+import imblearn
 from omegaconf import DictConfig
 from kornia.augmentation import RandomMixUp
 
@@ -35,7 +36,8 @@ class DARTSModel(BaseModel):
         is_net_parallel: bool = False,
         **kwargs
     ):
-        if kwargs.get('datamodule_cfg', None) is not None:
+        if kwargs.get('datamodule_cfg', None) is not None
+            'MedMNISTDataModule'.lower() in self.datamodule_cfg._target_.lower():
             self.datamodule_cfg = kwargs.get('datamodule_cfg')
             info = medmnist.INFO[self.datamodule_cfg.data_flag]
             self.c_in = info['n_channels']
@@ -77,6 +79,7 @@ class DARTSModel(BaseModel):
     def on_train_epoch_start(self):
         self.y_true_trn = torch.tensor([]).to(self.device)
         self.y_true_val = torch.tensor([]).to(self.device)
+        self.y_score_trn = torch.tensor([]).to(self.device)
 
     def training_step(self, batch: Any, batch_idx: int, optimizer_idx: int):
         if self.use_mixup:
@@ -106,6 +109,7 @@ class DARTSModel(BaseModel):
         with torch.no_grad():
             self.sample_search()
         preds, loss = self._logits_and_loss(trn_X, trn_y, to_aug=self.to_aug)
+        self.y_score_trn = torch.cat((self.y_score_trn, preds), 0)
         loss_mutual = 0.
         if getattr(self.network, 'num_branches', None):
             num_branches = self.network.num_branches
@@ -132,7 +136,6 @@ class DARTSModel(BaseModel):
         self.weight_optim.step()
 
         # log train metrics
-        preds = torch.argmax(preds, dim=1)
         acc = self.train_metric(preds, trn_y)
         self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=False)
         self.log("train/acc", acc, on_step=True, on_epoch=True, prog_bar=False)
@@ -267,11 +270,14 @@ class DARTSModel(BaseModel):
 
     def training_epoch_end(self, outputs: List[Any]):
         self.y_true_trn = self.y_true_trn.detach().cpu().numpy()
+        self.y_score_trn = self.y_score_trn.detach().cpu().numpy()
         print('Train class 0', sum(self.y_true_trn==0), 'class 1', sum(self.y_true_trn==1), 'all', len(self.y_true_trn))
         self.y_true_val = self.y_true_val.detach().cpu().numpy()
         print('Val class 0', sum(self.y_true_val==0), 'class 1', sum(self.y_true_val==1), 'all', len(self.y_true_val))
         acc_epoch = self.trainer.callback_metrics['train/acc_epoch'].item()
         loss_epoch = self.trainer.callback_metrics['train/loss_epoch'].item()
+        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true_trn, self.y_score_trn.argmax(-1))
+        logger.info(f"Train classification report:\n{cls_report}")
         if self.trainer.world_size > 1:
             acc_en_epoch = self.trainer.callback_metrics['train/acc_ensemble_epoch'].item()
             logger.info(f'Train epoch{self.trainer.current_epoch} loss={loss_epoch:.4f} acc={acc_epoch:.4f} acc_en:{acc_en_epoch:.4f}')
@@ -284,9 +290,9 @@ class DARTSModel(BaseModel):
         self.y_score_en = torch.tensor([]).to(self.device)
         if self.use_mixup:
             self.criterion.training = False
+        self.reset_running_statistics(subset_size=64, subset_batch_size=32)
 
     def validation_step(self, batch: Any, batch_idx: int):
-        self.network.train()
         (X, targets) = batch
         with torch.no_grad():
             preds, loss = self._logits_and_loss(X, targets, to_aug=False)
@@ -314,7 +320,12 @@ class DARTSModel(BaseModel):
         self.y_true = self.y_true.detach().cpu().numpy()
         print('class 0', sum(self.y_true==0), 'class 1', sum(self.y_true==1), 'all', len(self.y_true))
         self.y_score = self.y_score.detach().cpu().numpy()
-        auc = getAUC(self.y_true, self.y_score, self.task)
+        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1))
+        logger.info(f"Validation classification report:\n{cls_report}")
+        try:
+            auc = getAUC(self.y_true, self.y_score, self.task)
+        except:
+            auc = -1
         acc_epoch = self.trainer.callback_metrics['val/acc_epoch'].item()
         loss_epoch = self.trainer.callback_metrics['val/loss_epoch'].item()
         # logger.info(f'Val epoch{self.trainer.current_epoch} auc={auc:.4f} acc={acc_epoch:.4f} loss={loss_epoch:.4f}')
@@ -340,14 +351,19 @@ class DARTSModel(BaseModel):
             True, {'val_acc': acc_epoch, 'val_loss': loss_epoch})
 
     def on_test_epoch_start(self):
+        if not hasattr(self, 'task'):
+            self.dataset_info = self.trainer.datamodule.data_train.info
+            self.task = self.dataset_info['task']
+            if self.task == 'multi-label, binary-class':
+                self.criterion = nn.BCEWithLogitsLoss()
         self.y_true = torch.tensor([]).to(self.device)
         self.y_score = torch.tensor([]).to(self.device)
         self.y_score_en = torch.tensor([]).to(self.device)
         if self.use_mixup:
             self.criterion.training = False
+        self.reset_running_statistics(subset_size=64, subset_batch_size=32)
 
     def test_step(self, batch: Any, batch_idx: int):
-        self.network.train()
         (X, targets) = batch
         with torch.no_grad():
             preds, loss = self._logits_and_loss(X, targets, to_aug=False)
@@ -358,7 +374,6 @@ class DARTSModel(BaseModel):
         self.y_score = torch.cat((self.y_score, preds.softmax(dim=-1)), 0)
 
         # log test metrics
-        preds = torch.argmax(preds, dim=1)
         acc = self.test_metric(preds, targets)
         acc_ensemble = 0.
         if self.trainer.world_size > 1:
@@ -374,16 +389,21 @@ class DARTSModel(BaseModel):
     def test_epoch_end(self, outputs: List[Any]):
         self.y_true = self.y_true.detach().cpu().numpy()
         self.y_score = self.y_score.detach().cpu().numpy()
-        self.y_score_en = self.y_score_en.detach().cpu().numpy()
         auc = getAUC(self.y_true, self.y_score, self.task)
-        auc_en = getAUC(self.y_true, self.y_score_en, self.task)
         acc = self.trainer.callback_metrics['test/acc'].item()
         loss = self.trainer.callback_metrics['test/loss'].item()
-        acc_en_epoch = self.trainer.callback_metrics['test/acc_ensemble_epoch'].item()
+        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1))
+        logger.info(f"Test classification report:\n{cls_report}")
         self.log("test/auc", auc, on_step=False, on_epoch=True, prog_bar=False)
-        self.log("test/auc_ensemble", auc_en, on_step=False, on_epoch=True, prog_bar=False)
         self.log("test/acc", acc, on_step=False, on_epoch=True, prog_bar=False)
-        self.log("test/acc_ensemble", acc_en_epoch, on_step=False, on_epoch=True, prog_bar=False)
+        auc_en = 0.
+        acc_en_epoch = 0.
+        if self.trainer.world_size > 1:
+            self.y_score_en = self.y_score_en.detach().cpu().numpy()
+            auc_en = getAUC(self.y_true, self.y_score_en, self.task)
+            acc_en_epoch = self.trainer.callback_metrics['test/acc_ensemble_epoch'].item()
+            self.log("test/auc_ensemble", auc_en, on_step=False, on_epoch=True, prog_bar=False)
+            self.log("test/acc_ensemble", acc_en_epoch, on_step=False, on_epoch=True, prog_bar=False)
         logger.info(f'Test epoch{self.trainer.current_epoch} auc={auc:.4f} acc={acc:.4f} auc_en={auc_en:.4f} acc_en={acc_en_epoch:.4f} loss={loss:.4f}')
 
     def configure_optimizers(self):
