@@ -26,7 +26,7 @@ seed: 12345
 
 trainer:
   min_epochs: 1
-  max_epochs: 100
+  max_epochs: 50
   gpus: 1
   # accelerator: horovod
   # accelerator: dp
@@ -39,9 +39,6 @@ datamodule:
   batch_size: 128
 
 model:
-  # mutator_cfg:
-  #   _target_: hyperbox_app.multiple_path_nas.mutator.DartsMultipleMutator
-  #   topk: null
   optimizer_cfg:
     lr: 0.0025
   scheduler_cfg:
