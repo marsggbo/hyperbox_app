@@ -103,6 +103,7 @@ class Mobile3DNet(BaseNASNetwork):
         self.init_model()
 
     def forward(self, x, **kwargs):
+        gamma = 0.8 # 0 equals to training mode
         x = self.first_conv(x)
         for block in self.blocks:
             x = block(x)
@@ -111,10 +112,11 @@ class Mobile3DNet(BaseNASNetwork):
         x = x.view(x.size(0), -1)
         if not self.training:
             w = self.classifier.linear.weight.detach()
-            w = w / (w.norm(dim=1)**0.8).view(w.shape[0], -1)
+            w = w / (w.norm(dim=1)**gamma).view(w.shape[0], -1)
             x = nn.functional.linear(x, w)
         else:
             x = self.classifier(x)
+        # x = self.classifier(x)
         return x
 
     def set_bn_param(self, momentum, eps):
@@ -202,3 +204,17 @@ if __name__ == '__main__':
         x = torch.rand(10,1,64,300,300).to(device)
         y = net(x)
         print(y.argmax(-1))
+
+    from omegaconf import OmegaConf
+    from hyperbox.networks.utils import extract_net_from_ckpt
+    cfg = OmegaConf.load('/home/comp/18481086/code/hyperbox_app/logs/runs/gdas_fracture3d_gpu1_batchbalance/2022-01-06_15-33-58/.hydra_only_test/config.yaml')
+    netcfg = cfg.model.network_cfg
+    netcfg.pop('_target_')
+    mask = '/home/comp/18481086/code/hyperbox_app/logs/runs/gdas_fracture3d_gpu1_batchbalance/2022-01-06_15-33-58/mask_json/mask_epoch_3.json'
+    # netcfg.mask=mask
+    net = DAMobile3DNet(**netcfg)
+    ckpt = '/home/comp/18481086/code/hyperbox_app/logs/runs/gdas_fracture3d_gpu1_batchbalance/2022-01-06_15-33-58/checkpoints/last.ckpt'
+    weight_supernet = extract_net_from_ckpt(ckpt)
+    print('extract_net_from_ckpt')
+    net.load_from_supernet(weight_supernet)
+    print('load_from_supernet')
