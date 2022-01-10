@@ -36,7 +36,7 @@ class DARTSModel(BaseModel):
         is_net_parallel: bool = False,
         **kwargs
     ):
-        if kwargs.get('datamodule_cfg', None) is not None
+        if kwargs.get('datamodule_cfg', None) is not None and \
             'MedMNISTDataModule'.lower() in self.datamodule_cfg._target_.lower():
             self.datamodule_cfg = kwargs.get('datamodule_cfg')
             info = medmnist.INFO[self.datamodule_cfg.data_flag]
@@ -44,6 +44,8 @@ class DARTSModel(BaseModel):
             self.num_classes = len(info['label'])
             if network_cfg.get('c_in'):
                 network_cfg['c_in'] = self.c_in
+            if network_cfg.get('in_channels'):
+                network_cfg['in_channels'] = self.c_in
             if network_cfg.get('num_classes'):
                 network_cfg['num_classes'] = self.num_classes
         super().__init__(network_cfg, mutator_cfg, optimizer_cfg,
