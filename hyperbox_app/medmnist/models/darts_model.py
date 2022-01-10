@@ -363,7 +363,7 @@ class DARTSModel(BaseModel):
         self.y_score_en = torch.tensor([]).to(self.device)
         if self.use_mixup:
             self.criterion.training = False
-        self.reset_running_statistics(subset_size=64, subset_batch_size=32)
+        # self.reset_running_statistics(subset_size=64, subset_batch_size=32)
 
     def test_step(self, batch: Any, batch_idx: int):
         (X, targets) = batch
