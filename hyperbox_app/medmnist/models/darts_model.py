@@ -40,7 +40,7 @@ class DARTSModel(BaseModel):
             'MedMNISTDataModule'.lower() in self.datamodule_cfg._target_.lower():
             self.datamodule_cfg = kwargs.get('datamodule_cfg')
             info = medmnist.INFO[self.datamodule_cfg.data_flag]
-            self.c_in = info['n_channels']
+            self.c_in = 3 if self.datamodule_cfg.as_rgb else info['n_channels']
             self.num_classes = len(info['label'])
             if network_cfg.get('c_in'):
                 network_cfg['c_in'] = self.c_in
