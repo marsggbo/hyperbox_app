@@ -18,13 +18,21 @@ __all__ = [
 
 
 class Mobile3DNet(BaseNASNetwork):
+    DEFAULT_OPS = [
+        '3x3_MBConv3',
+        '3x3_MBConv4',
+        '5x5_MBConv3',
+        '7x7_MBConv3',
+    ]
     def __init__(
         self, in_channels=3,
         width_stages=[24,40,80,96,192,320],
         n_cell_stages=[4,4,4,4,4,1],
         stride_stages=[2,2,2,1,2,1],
         width_mult=1, num_classes=1000,
-        dropout_rate=0, bn_param=(0.1, 1e-3), mask=None
+        dropout_rate=0, bn_param=(0.1, 1e-3),
+        candidate_ops=None,
+        mask=None
     ):
         """
         Parameters
@@ -39,6 +47,10 @@ class Mobile3DNet(BaseNASNetwork):
                 the scale factor of width
         """
         super(Mobile3DNet, self).__init__(mask)
+        if candidate_ops is not None:
+            self.candidate_ops = candidate_ops
+        else:
+            self.candidate_ops = self.DEFAULT_OPS
         input_channel = make_divisible(32 * width_mult, 8)
         first_cell_width = make_divisible(16 * width_mult, 8)
         for i in range(len(width_stages)):
@@ -59,13 +71,7 @@ class Mobile3DNet(BaseNASNetwork):
                 else:
                     stride = 1
                 op_candidates = [
-                    OPS['3x3_MBConv3'](input_channel, width, stride),
-                    OPS['3x3_MBConv4'](input_channel, width, stride),
-                    #  OPS['3x3_MBConv6'](input_channel, width, stride),
-                     OPS['5x5_MBConv3'](input_channel, width, stride),
-                    #  OPS['5x5_MBConv4'](input_channel, width, stride),
-                     OPS['7x7_MBConv3'](input_channel, width, stride),
-                    #  OPS['7x7_MBConv4'](input_channel, width, stride),
+                    OPS[key](input_channel, width, stride) for key in self.candidate_ops
                 ]
                 if stride == 1 and input_channel == width:
                     # if it is not the first one
@@ -173,6 +179,7 @@ class DAMobile3DNet(BaseNASNetwork):
         stride_stages=[2,2,2,1,2,1],
         width_mult=1, num_classes=1000,
         dropout_rate=0, bn_param=(0.1, 1e-3),
+        candidate_ops=None,
 
         rotate_degree=30, crop_size=[(32,128,128), (32,256,256)],
         affine_degree=0, affine_scale=(1.1, 1.5), affine_shears=20,
@@ -182,7 +189,7 @@ class DAMobile3DNet(BaseNASNetwork):
         super(DAMobile3DNet, self).__init__(mask)
         self.network = Mobile3DNet(
             in_channels, width_stages, n_cell_stages, stride_stages, width_mult,
-            num_classes, dropout_rate, bn_param, mask)
+            num_classes, dropout_rate, bn_param, candidate_ops, mask)
         self.augmentation = DataAugmentation(
             rotate_degree, crop_size, affine_degree, affine_scale, affine_shears, mean, std, mask)
 

@@ -25,7 +25,19 @@ OPS = {
     '7x7_MBConv3': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 7, stride, 3),
     '7x7_MBConv4': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 7, stride, 4),
     '7x7_MBConv5': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 7, stride, 5),
-    '7x7_MBConv6': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 7, stride, 6)
+    '7x7_MBConv6': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 7, stride, 6),
+    '3x3_MBConv3SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 3, stride, 3, use_se=True),
+    '3x3_MBConv4SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 3, stride, 4, use_se=True),
+    '3x3_MBConv5SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 3, stride, 5, use_se=True),
+    '3x3_MBConv6SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 3, stride, 6, use_se=True),
+    '5x5_MBConv3SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 5, stride, 3, use_se=True),
+    '5x5_MBConv4SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 5, stride, 4, use_se=True),
+    '5x5_MBConv5SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 5, stride, 5, use_se=True),
+    '5x5_MBConv6SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 5, stride, 6, use_se=True),
+    '7x7_MBConv3SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 7, stride, 3, use_se=True),
+    '7x7_MBConv4SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 7, stride, 4, use_se=True),
+    '7x7_MBConv5SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 7, stride, 5, use_se=True),
+    '7x7_MBConv6SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 7, stride, 6, use_se=True)
 }
 
 
@@ -260,7 +272,7 @@ class MBInvertedConvLayer(nn.Module):
     This layer is introduced in section 4.2 in the paper https://arxiv.org/pdf/1812.00332.pdf
     """
     def __init__(self, in_channels, out_channels,
-                 kernel_size=3, stride=1, expand_ratio=6, mid_channels=None):
+                 kernel_size=3, stride=1, expand_ratio=6, mid_channels=None, use_se=False):
         super(MBInvertedConvLayer, self).__init__()
 
         self.in_channels = in_channels
@@ -270,6 +282,7 @@ class MBInvertedConvLayer(nn.Module):
         self.stride = stride
         self.expand_ratio = expand_ratio
         self.mid_channels = mid_channels
+        self.use_se = use_se
 
         if self.mid_channels is None:
             feature_dim = round(self.in_channels * self.expand_ratio)
@@ -291,6 +304,8 @@ class MBInvertedConvLayer(nn.Module):
             ('bn', nn.BatchNorm3d(feature_dim)),
             ('act', nn.ReLU6(inplace=True)),
         ]))
+        if self.use_se:
+            self.depth_conv.add_module('se', SEModule3D(feature_dim))
 
         self.point_linear = nn.Sequential(OrderedDict([
             ('conv', nn.Conv3d(feature_dim, out_channels, 1, 1, 0, bias=False)),
@@ -349,3 +364,45 @@ class ZeroLayer(nn.Module):
     def is_zero_layer():
         return True
 
+
+def make_divisible(v, divisor, min_val=None):
+    """
+    This function is taken from the original tf repo.
+    It ensures that all layers have a channel number that is divisible by 8
+    It can be seen here:
+    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
+    """
+    if min_val is None:
+        min_val = divisor
+    new_v = max(min_val, int(v + divisor / 2) // divisor * divisor)
+    # Make sure that round down does not go down by more than 10%.
+    if new_v < 0.9 * v:
+        new_v += divisor
+    return new_v
+
+
+class SEModule3D(nn.Module):
+	REDUCTION = 4
+
+	def __init__(self, channel, reduction=None):
+		super(SEModule, self).__init__()
+
+		self.channel = channel
+		self.reduction = SEModule.REDUCTION if reduction is None else reduction
+
+		num_mid = make_divisible(self.channel // self.reduction, divisor=8)
+
+		self.fc = nn.Sequential(OrderedDict([
+			('reduce', nn.Conv2d(self.channel, num_mid, 1, 1, 0, bias=True)),
+			('relu', nn.ReLU(inplace=True)),
+			('expand', nn.Conv2d(num_mid, self.channel, 1, 1, 0, bias=True)),
+			('h_sigmoid', Hsigmoid(inplace=True)),
+		]))
+
+	def forward(self, x):
+		y = x.mean(4, keepdim=True).mean(3, keepdim=True).mean(2, keepdim=True)
+		y = self.fc(y)
+		return x * y
+
+	def __repr__(self):
+		return 'SE(channel=%d, reduction=%d)' % (self.channel, self.reduction)
