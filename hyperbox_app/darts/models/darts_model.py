@@ -103,8 +103,9 @@ class DARTSModel(BaseModel):
         loss_epoch = self.trainer.callback_metrics['train/loss_epoch'].item()
         logger.info(f'Train epoch{self.trainer.current_epoch} acc={acc_epoch:.4f} loss={loss_epoch:.4f}')
 
-    # def on_validation_epoch_start(self):
-    #     self.reset_running_statistics(subset_size=128, subset_batch_size=32)
+    def on_validation_epoch_start(self):
+        if self.is_network_search:
+            self.reset_running_statistics(subset_size=128, subset_batch_size=32)
 
     def validation_step(self, batch: Any, batch_idx: int):
         (X, targets) = batch
@@ -136,7 +137,8 @@ class DARTSModel(BaseModel):
             True, {'val_acc': acc_epoch, 'val_loss': loss_epoch})
 
     def on_test_epoch_start(self):
-        self.reset_running_statistics(subset_size=128, subset_batch_size=32)
+        # self.reset_running_statistics(subset_size=128, subset_batch_size=32)
+        pass
 
     def test_step(self, batch: Any, batch_idx: int):
         (X, targets) = batch
