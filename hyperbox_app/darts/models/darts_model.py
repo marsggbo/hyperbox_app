@@ -44,7 +44,6 @@ class DARTSModel(BaseModel):
         super().sample_search(self.is_sync, self.is_net_parallel)
 
     def training_step(self, batch: Any, batch_idx: int):
-    # def training_step(self, batch: Any, batch_idx: int, optimizer_idx: int):
         # debug info
         # self.trainer.accelerator.barrier()
         # print(f"[rank {self.rank}] seed={np.random.get_state()[1][0]}")
@@ -105,6 +104,8 @@ class DARTSModel(BaseModel):
 
     def on_validation_epoch_start(self):
         if self.is_network_search:
+            if not self.mutator._cache:
+                self.mutator.reset()
             self.reset_running_statistics(subset_size=128, subset_batch_size=32)
 
     def validation_step(self, batch: Any, batch_idx: int):

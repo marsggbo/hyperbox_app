@@ -11,11 +11,12 @@ echo $name
 echo $gpuNum
 
 # CUDA_VISIBLE_DEVICES=$gpu python -c 'import torch;print(torch.cuda.device_count())'
-CUDA_VISIBLE_DEVICES=$gpu horovodrun -np 4 python -m hyperbox.run \
+CUDA_VISIBLE_DEVICES=$gpu python -m hyperbox.run \
 hydra.searchpath=[file:///home/xihe/xinhe/hyperbox_app/hyperbox_app/darts/configs] \
 experiment=darts.yaml \
 trainer.gpus=1 \
-trainer.accelerator=horovod \
+trainer.accelerator='gpu' \
+trainer.strategy='ddp' \
 logger.wandb.name=$name \
 hydra.job.name=$name \
 $others
