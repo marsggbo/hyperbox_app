@@ -26,6 +26,7 @@ class Mobile3DNet(BaseNASNetwork):
     ]
     def __init__(
         self, in_channels=3,
+        first_stride=1,
         width_stages=[24,40,80,96,192,320],
         n_cell_stages=[4,4,4,4,4,1],
         stride_stages=[2,2,2,1,2,1],
@@ -56,7 +57,7 @@ class Mobile3DNet(BaseNASNetwork):
         for i in range(len(width_stages)):
             width_stages[i] = make_divisible(width_stages[i] * width_mult, 8)
         # first conv
-        self.first_conv = ConvLayer(in_channels, input_channel, kernel_size=3, stride=1, use_bn=True, act_func='relu6', ops_order='weight_bn_act')
+        self.first_conv = ConvLayer(in_channels, input_channel, kernel_size=3, stride=first_stride, use_bn=True, act_func='relu6', ops_order='weight_bn_act')
 
         # first block
         first_block = OPS['3x3_MBConv1'](input_channel, first_cell_width, 1)
@@ -116,13 +117,13 @@ class Mobile3DNet(BaseNASNetwork):
         x = self.feature_mix_layer(x)
         x = self.global_avg_pooling(x)
         x = x.view(x.size(0), -1)
-        if not self.training:
-            w = self.classifier.linear.weight.detach()
-            w = w / (w.norm(dim=1)**gamma).view(w.shape[0], -1)
-            x = nn.functional.linear(x, w)
-        else:
-            x = self.classifier(x)
-        # x = self.classifier(x)
+        # if not self.training:
+        #     w = self.classifier.linear.weight.detach()
+        #     w = w / (w.norm(dim=1)**gamma).view(w.shape[0], -1)
+        #     x = nn.functional.linear(x, w)
+        # else:
+        #     x = self.classifier(x)
+        x = self.classifier(x)
         return x
 
     def set_bn_param(self, momentum, eps):
@@ -174,7 +175,7 @@ class Mobile3DNet(BaseNASNetwork):
 class DAMobile3DNet(BaseNASNetwork):
     def __init__(
         self,
-        in_channels=3, width_stages=[24,40,80,96,192,320],
+        in_channels=3, first_stride=1, width_stages=[24,40,80,96,192,320],
         n_cell_stages=[4,4,4,4,4,1],
         stride_stages=[2,2,2,1,2,1],
         width_mult=1, num_classes=1000,
@@ -188,7 +189,7 @@ class DAMobile3DNet(BaseNASNetwork):
     ):
         super(DAMobile3DNet, self).__init__(mask)
         self.network = Mobile3DNet(
-            in_channels, width_stages, n_cell_stages, stride_stages, width_mult,
+            in_channels, first_stride, width_stages, n_cell_stages, stride_stages, width_mult,
             num_classes, dropout_rate, bn_param, candidate_ops, mask)
         self.augmentation = DataAugmentation(
             rotate_degree, crop_size, affine_degree, affine_scale, affine_shears, mean, std, mask)
