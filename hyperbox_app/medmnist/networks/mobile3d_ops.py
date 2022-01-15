@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from hyperbox_app.medmnist.networks.mobile_utils import get_same_padding, build_activation
 
@@ -39,6 +40,73 @@ OPS = {
     '7x7_MBConv5SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 7, stride, 5, use_se=True),
     '7x7_MBConv6SE': lambda in_C, out_C, stride: MBInvertedConvLayer(in_C, out_C, 7, stride, 6, use_se=True)
 }
+
+
+def make_divisible(v, divisor, min_val=None):
+    """
+    This function is taken from the original tf repo.
+    It ensures that all layers have a channel number that is divisible by 8
+    It can be seen here:
+    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
+    """
+    if min_val is None:
+        min_val = divisor
+    new_v = max(min_val, int(v + divisor / 2) // divisor * divisor)
+    # Make sure that round down does not go down by more than 10%.
+    if new_v < 0.9 * v:
+        new_v += divisor
+    return new_v
+
+class Hswish(nn.Module):
+
+    def __init__(self, inplace=True):
+        super(Hswish, self).__init__()
+        self.inplace = inplace
+
+    def forward(self, x):
+        return x * F.relu6(x + 3., inplace=self.inplace) / 6.
+
+    def __repr__(self):
+        return 'Hswish()'
+
+
+class Hsigmoid(nn.Module):
+
+    def __init__(self, inplace=True):
+        super(Hsigmoid, self).__init__()
+        self.inplace = inplace
+
+    def forward(self, x):
+        return F.relu6(x + 3., inplace=self.inplace) / 6.
+
+    def __repr__(self):
+        return 'Hsigmoid()'
+
+class SEModule3D(nn.Module):
+    REDUCTION = 4
+
+    def __init__(self, channel, reduction=None):
+        super(SEModule3D, self).__init__()
+
+        self.channel = channel
+        self.reduction = SEModule3D.REDUCTION if reduction is None else reduction
+
+        num_mid = make_divisible(self.channel // self.reduction, divisor=8)
+
+        self.fc = nn.Sequential(OrderedDict([
+            ('reduce', nn.Conv3d(self.channel, num_mid, 1, 1, 0, bias=True)),
+            ('relu', nn.ReLU(inplace=True)),
+            ('expand', nn.Conv3d(num_mid, self.channel, 1, 1, 0, bias=True)),
+            ('h_sigmoid', Hsigmoid(inplace=True)),
+        ]))
+
+    def forward(self, x):
+        y = x.mean(4, keepdim=True).mean(3, keepdim=True).mean(2, keepdim=True)
+        y = self.fc(y)
+        return x * y
+
+    def __repr__(self):
+        return 'SE(channel=%d, reduction=%d)' % (self.channel, self.reduction)
 
 
 class MobileInvertedResidualBlock(nn.Module):
@@ -364,45 +432,3 @@ class ZeroLayer(nn.Module):
     def is_zero_layer():
         return True
 
-
-def make_divisible(v, divisor, min_val=None):
-    """
-    This function is taken from the original tf repo.
-    It ensures that all layers have a channel number that is divisible by 8
-    It can be seen here:
-    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
-    """
-    if min_val is None:
-        min_val = divisor
-    new_v = max(min_val, int(v + divisor / 2) // divisor * divisor)
-    # Make sure that round down does not go down by more than 10%.
-    if new_v < 0.9 * v:
-        new_v += divisor
-    return new_v
-
-
-class SEModule3D(nn.Module):
-	REDUCTION = 4
-
-	def __init__(self, channel, reduction=None):
-		super(SEModule, self).__init__()
-
-		self.channel = channel
-		self.reduction = SEModule.REDUCTION if reduction is None else reduction
-
-		num_mid = make_divisible(self.channel // self.reduction, divisor=8)
-
-		self.fc = nn.Sequential(OrderedDict([
-			('reduce', nn.Conv2d(self.channel, num_mid, 1, 1, 0, bias=True)),
-			('relu', nn.ReLU(inplace=True)),
-			('expand', nn.Conv2d(num_mid, self.channel, 1, 1, 0, bias=True)),
-			('h_sigmoid', Hsigmoid(inplace=True)),
-		]))
-
-	def forward(self, x):
-		y = x.mean(4, keepdim=True).mean(3, keepdim=True).mean(2, keepdim=True)
-		y = self.fc(y)
-		return x * y
-
-	def __repr__(self):
-		return 'SE(channel=%d, reduction=%d)' % (self.channel, self.reduction)
