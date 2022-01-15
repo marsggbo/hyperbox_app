@@ -278,7 +278,7 @@ class DARTSModel(BaseModel):
         print('Val class 0', sum(self.y_true_val==0), 'class 1', sum(self.y_true_val==1), 'all', len(self.y_true_val))
         acc_epoch = self.trainer.callback_metrics['train/acc_epoch'].item()
         loss_epoch = self.trainer.callback_metrics['train/loss_epoch'].item()
-        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true_trn, self.y_score_trn.argmax(-1))
+        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true_trn, self.y_score_trn.argmax(-1), digits=6)
         logger.info(f"Train classification report:\n{cls_report}")
         if self.trainer.world_size > 1:
             acc_en_epoch = self.trainer.callback_metrics['train/acc_ensemble_epoch'].item()
@@ -322,7 +322,7 @@ class DARTSModel(BaseModel):
         self.y_true = self.y_true.detach().cpu().numpy()
         print('class 0', sum(self.y_true==0), 'class 1', sum(self.y_true==1), 'all', len(self.y_true))
         self.y_score = self.y_score.detach().cpu().numpy()
-        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1))
+        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1), digits=6)
         logger.info(f"Validation classification report:\n{cls_report}")
         try:
             auc = getAUC(self.y_true, self.y_score, self.task)
@@ -394,7 +394,7 @@ class DARTSModel(BaseModel):
         auc = getAUC(self.y_true, self.y_score, self.task)
         acc = self.trainer.callback_metrics['test/acc'].item()
         loss = self.trainer.callback_metrics['test/loss'].item()
-        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1))
+        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1), digits=6)
         logger.info(f"Test classification report:\n{cls_report}")
         self.log("test/auc", auc, on_step=False, on_epoch=True, prog_bar=False)
         self.log("test/acc", acc, on_step=False, on_epoch=True, prog_bar=False)

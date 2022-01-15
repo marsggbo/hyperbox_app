@@ -43,10 +43,12 @@ class FinetuneModel(BaseModel):
             'MedMNISTDataModule'.lower() in self.datamodule_cfg._target_.lower():
             self.datamodule_cfg = kwargs.get('datamodule_cfg')
             info = medmnist.INFO[self.datamodule_cfg.data_flag]
-            self.c_in = info['n_channels']
+            self.c_in = 3 if self.datamodule_cfg.as_rgb else info['n_channels']
             self.num_classes = len(info['label'])
             if network_cfg.get('c_in'):
                 network_cfg['c_in'] = self.c_in
+            if network_cfg.get('in_channels'):
+                network_cfg['in_channels'] = self.c_in
             if network_cfg.get('num_classes'):
                 network_cfg['num_classes'] = self.num_classes
         super().__init__(network_cfg, None, optimizer_cfg,
@@ -57,6 +59,7 @@ class FinetuneModel(BaseModel):
 
     def on_fit_start(self):
         n_channel = 1
+        self.task=None
         if hasattr(self.trainer.datamodule, 'data_train'):
             # for medmnist datasets
             self.dataset_info = self.trainer.datamodule.data_train.info
@@ -151,7 +154,7 @@ class FinetuneModel(BaseModel):
         self.y_true_trn = self.y_true_trn.detach().cpu().numpy()
         self.y_score_trn = self.y_score_trn.detach().cpu().numpy()
         print('Train class 0', sum(self.y_true_trn==0), 'class 1', sum(self.y_true_trn==1), 'all', len(self.y_true_trn))
-        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true_trn, self.y_score_trn.argmax(-1))
+        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true_trn, self.y_score_trn.argmax(-1), digits=6)
         logger.info(f"Train classification report:\n{cls_report}")
         acc_epoch = self.trainer.callback_metrics['train/acc_epoch'].item()
         loss_epoch = self.trainer.callback_metrics['train/loss_epoch'].item()
@@ -196,7 +199,7 @@ class FinetuneModel(BaseModel):
         self.y_true = self.y_true.detach().cpu().numpy()
         self.y_score = self.y_score.detach().cpu().numpy()
         print('class 0', sum(self.y_true==0), 'class 1', sum(self.y_true==1), 'all', len(self.y_true))
-        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1))
+        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1), digits=6)
         logger.info(f"Validation classification report:\n{cls_report}")
         try:
             auc = getAUC(self.y_true, self.y_score, self.task)
@@ -242,7 +245,7 @@ class FinetuneModel(BaseModel):
     def test_epoch_end(self, outputs: List[Any]):
         self.y_true = self.y_true.detach().cpu().numpy()
         self.y_score = self.y_score.detach().cpu().numpy()
-        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1))
+        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1), digits=6)
         logger.info(f"Test classification report:\n{cls_report}")
         auc = getAUC(self.y_true, self.y_score, self.task)
         acc = self.trainer.callback_metrics['test/acc'].item()

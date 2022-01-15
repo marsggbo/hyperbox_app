@@ -67,7 +67,9 @@ class DARTSModel(BaseModel):
         # phase 1. architecture step
         # self.network.eval()
         # self.mutator.train()
-        if 'warmup' not in self.mutator.__class__.__name__.lower():
+        flag1 = 'warmup' not in self.mutator.__class__.__name__.lower()
+        flag2 = (not flag1) and self.trainer.current_epoch>self.mutator.warmup_epoch
+        if flag1 or flag2:
             self.ctrl_optim.zero_grad()
             if self.unrolled:
                 self._unrolled_backward(trn_X, trn_y, val_X, val_y)
@@ -203,7 +205,7 @@ class DARTSModel(BaseModel):
         logger.info(f'Train class 0 {sum(self.y_true_trn==0)} class 1 {sum(self.y_true_trn==1)} all {len(self.y_true_trn)}')
         self.y_true_val = self.y_true_val.detach().cpu().numpy()
         logger.info(f'Val class 0 {sum(self.y_true_val==0)} class 1 {sum(self.y_true_val==1)} all {len(self.y_true_val)}')
-        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true_trn, self.y_score_trn.argmax(-1))
+        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true_trn, self.y_score_trn.argmax(-1), digits=6)
         logger.info(f"Train classification report:\n{cls_report}")
         self.mutator.current_epoch = self.trainer.current_epoch
         acc_epoch = self.trainer.callback_metrics['train/acc_epoch'].item()
@@ -217,13 +219,15 @@ class DARTSModel(BaseModel):
         self.y_true = torch.tensor([]).to(self.device)
         self.y_score = torch.tensor([]).to(self.device)
         self.y_score_en = torch.tensor([]).to(self.device)
-        if torch.rand(1) > 0.5:
-            self.reset_running_statistics(subset_size=64, subset_batch_size=32)
-            self.eval_net = self.network
-            logger.info('eval subnet from supernet')
-        else:
-            self.eval_net = self.net_ema.module.build_subnet(mask=self.mutator._cache).to(self.device)
-            logger.info('eval subnet from EMA')
+        self.reset_running_statistics(subset_size=64, subset_batch_size=32)
+        # if torch.rand(1) > 0.5:
+        #     self.reset_running_statistics(subset_size=64, subset_batch_size=32)
+        #     self.eval_net = self.network
+        #     logger.info('eval subnet from supernet')
+        # else:
+        #     self.eval_net = self.net_ema.module.build_subnet(mask=self.mutator._cache).to(self.device)
+        #     logger.info('eval subnet from EMA')
+        self.eval_net = self.net_ema.module.build_subnet(mask=self.mutator._cache).to(self.device)
 
     def validation_step(self, batch: Any, batch_idx: int):
         (X, targets) = batch
@@ -248,7 +252,7 @@ class DARTSModel(BaseModel):
             auc = getAUC(self.y_true, self.y_score, None)
         except:
             auc = -1
-        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1))
+        cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1), digits=6)
         logger.info(f"Validation classification report:\n{cls_report}")
         # logger.info(f'Val epoch{self.trainer.current_epoch} auc={auc:.4f} acc={acc_epoch:.4f} loss={loss_epoch:.4f}')
         self.log("val/auc", auc, on_step=False, on_epoch=True, prog_bar=False)
