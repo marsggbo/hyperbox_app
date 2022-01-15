@@ -34,6 +34,7 @@ datamodule:
   batch_size: 16
   img_size: [128,128]
   center_size: [128,128]
+  slice_num: 32
 
 model:
   network_cfg:
@@ -43,6 +44,23 @@ model:
       - [16,128,128]
       - [24,128,128]
       - [32,128,128]
+    affine_degree:
+    - 10
+    - 30
+    affine_scale:
+    - - 0.8
+      - 1
+    - - 1.1
+      - 1.6
+    affine_shears:
+    - 10
+    - 20
+    candidate_ops:
+    - 3x3_MBConv3SE
+    - 3x3_MBConv4SE
+    - 5x5_MBConv3SE
+    - 7x7_MBConv3SE
+    stride_stages: [2,2,2,2,2,2]
     mask: null
     num_classes: 3
   optimizer_cfg:

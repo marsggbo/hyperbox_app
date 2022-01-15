@@ -2,7 +2,7 @@ exp=$1
 gpu=$2
 gpuNum=${gpu//,/}
 gpuNum=${#gpuNum}
-name=covid19_finetune_${exp}_gpu${gpuNum}
+name=covid19_${exp}_gpu${gpuNum}
 mask=$3
 others=$4
 
@@ -18,7 +18,7 @@ hydra.job.name=$name \
 trainer.gpus=$gpuNum \
 trainer.accelerator=dp \
 trainer.max_epochs=100 \
-callbacks.model_checkpoint.save_top_k=1 \
+callbacks.model_checkpoint.save_top_k=2 \
 model.network_cfg.mask=$mask \
 $others
 # ++trainer.amp_backend=apex \

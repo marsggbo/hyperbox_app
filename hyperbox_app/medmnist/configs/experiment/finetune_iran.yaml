@@ -31,21 +31,38 @@ trainer:
 datamodule:
   # is_customized: True
   is_customized: False
-  batch_size: 4
-  img_size: [360,360]
-  center_size: [360,360]
+  batch_size: 6
+  img_size: [512,512]
+  center_size: [512,512]
+  slice_num: 32
 
 model:
   network_cfg:
     crop_size:
-      - [8,360,360]
-      - [12,360,360]
-      - [16,360,360]
-      - [24,360,360]
-      - [32,360,360]
+      - [8,256,256]
+      - [12,256,256]
+      - [16,256,256]
+      - [24,256,256]
+      - [32,256,256]
+    affine_degree:
+    - 10
+    - 30
+    affine_scale:
+    - - 0.8
+      - 1
+    - - 1.1
+      - 1.6
+    affine_shears:
+    - 10
+    - 20
     mask: null
     stride_stages: [2,2,2,2,2,2]
     num_classes: 2
+    candidate_ops:
+    - 3x3_MBConv3SE
+    - 3x3_MBConv4SE
+    - 5x5_MBConv3SE
+    - 7x7_MBConv3SE
   optimizer_cfg:
     lr: 0.001
   scheduler_cfg:
@@ -63,5 +80,5 @@ hydra:
 
 callbacks:
   model_checkpoint:
-    monitor: 'val/auc'
+    monitor: 'val/acc'
     filename: "{epoch:02d}_{val/auc:.4f}_{val/acc:.4f}"

@@ -10,16 +10,16 @@ bn_param: [0.1,1e-3]
 rotate_degree: 30
 # search
 crop_size:
-  - [8,64,64]
-  - [12,64,64]
-  - [16,64,64]
-  - [24,64,64]
-  - [32,64,64]
+  - [8,96,96]
+  - [12,96,96]
+  - [16,96,96]
+  - [24,96,96]
+  - [32,96,96]
 affine_degree: [10,30]
 affine_scale:
   - [0.8,1]
   - [1.1,1.6]
-affine_shears: [10]
+affine_shears: [10,20]
 mean: 0.5
 std: 0.5
 mask: null
