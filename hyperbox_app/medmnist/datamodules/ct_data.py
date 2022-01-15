@@ -51,7 +51,7 @@ class CTDataset(torch.utils.data.Dataset):
             self.data = json.load(f)
         self.cls_to_label = {
             # png slices
-            'CP': 0, 'NCP': 1, 'Normal': 2,
+            'Normal': 0, 'NCP': 1, 'CP': 2,
             # nii
             'CT-0': 0, 'CT-1': 1, 'CT-2': 1, 'CT-3': 1, 'CT-4': 1,
             # covid_ctset
