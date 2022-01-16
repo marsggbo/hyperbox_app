@@ -28,9 +28,9 @@ class Mobile3DNet(BaseNASNetwork):
     def __init__(
         self, in_channels=3,
         first_stride=1,
-        width_stages=[24,40,80,96,192,320],
-        n_cell_stages=[4,4,4,4,4,1],
-        stride_stages=[2,2,2,1,2,1],
+        width_stages=[16,24,40,80,96,128,160,320],
+        n_cell_stages=[2,3,3,3,3,3,3,2],
+        stride_stages=[2,2,1,1,2,1,1,1],
         width_mult=1, num_classes=1000,
         dropout_rate=0, bn_param=(0.1, 1e-3),
         candidate_ops=None,
@@ -71,19 +71,19 @@ class Mobile3DNet(BaseNASNetwork):
         for width, n_cell, s in zip(width_stages, n_cell_stages, stride_stages):
             for i in range(n_cell):
                 layer_op = []
-                if i == 0 and stage_cnt > 1:
-                    # search stride in the first block of different cells
-                    stride_op = OperationSpace(
-                        candidates=[
-                            OPS['3x3_MBConv3SE'](input_channel, width, 1),
-                            OPS['3x3_MBConv3SE'](input_channel, width, 2)
-                        ],
-                        mask=self.mask, return_mask=False, key="stride_op{}".format(stage_cnt)
-                    )
-                else:
-                    stride_op = OPS['3x3_MBConv3SE'](input_channel, width, 2)
-                input_channel = width
-                layer_op.append(stride_op)
+                if i == 0:
+                    if s == 2:
+                        stride_op = OPS['3x3_MBConv3SE'](input_channel, width, 2)
+                    else:
+                        stride_op = OperationSpace(
+                            candidates=[
+                                OPS['3x3_MBConv3SE'](input_channel, width, 1),
+                                OPS['3x3_MBConv3SE'](input_channel, width, 2)
+                            ],
+                            mask=self.mask, return_mask=False, key="stride_op{}".format(stage_cnt)
+                        )
+                    input_channel = width
+                    layer_op.append(stride_op)
 
                 op_candidates = [
                     OPS[key](input_channel, width, 1) for key in self.candidate_ops
@@ -208,16 +208,22 @@ class DAMobile3DNet(BaseNASNetwork):
 if __name__ == '__main__':
     from hyperbox.mutator import DartsMutator, RandomMutator, OnehotMutator
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    net = DAMobile3DNet(1, num_classes=10, crop_size=[[8,32,32], [12,96,96]]).to(device)
+    net = DAMobile3DNet(1, num_classes=10, crop_size=[[8,360,360], [12,512,512]], stride_stages=[2,2,1,2,1,1], first_stride=2).to(device)
     # net = Mobile3DNet(1, n_cell_stages=[2,2,2,2,2,2], num_classes=10).to(device)
     dm = OnehotMutator(net)
+    opt = torch.optim.SGD(net.parameters(), lr=0.1)
     for i in range(10):
         dm.reset()
+        print('\nsampling...')
+        opt.zero_grad()
         # if i > 5:
         #     net = net.eval()
-        x = torch.rand(24,1,32,96,96).to(device)
+        x = torch.rand(8,1,32,512,512).to(device)
         y = net(x)
         print(y.argmax(-1))
+        z = y.sum()
+        z.backward()
+        opt.step()
 
     # from omegaconf import OmegaConf
     # from hyperbox.networks.utils import extract_net_from_ckpt
