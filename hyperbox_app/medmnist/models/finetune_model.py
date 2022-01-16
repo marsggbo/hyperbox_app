@@ -215,6 +215,8 @@ class FinetuneModel(BaseModel):
         self.y_score = torch.tensor([]).to(self.device)
         if self.use_mixup:
             self.criterion.training = False
+        if not hasattr(self, 'task'):
+            self.task = None
         if hasattr(self.trainer.datamodule, 'data_train'):
             self.dataset_info = self.trainer.datamodule.data_test.info
             self.task = self.dataset_info['task']
@@ -247,7 +249,7 @@ class FinetuneModel(BaseModel):
         self.y_score = self.y_score.detach().cpu().numpy()
         cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true, self.y_score.argmax(-1), digits=6)
         logger.info(f"Test classification report:\n{cls_report}")
-        auc = getAUC(self.y_true, self.y_score, self.task)
+        auc = getAUC(self.y_true, self.y_score, getattr(self, 'task', None))
         acc = self.trainer.callback_metrics['test/acc'].item()
         loss = self.trainer.callback_metrics['test/loss'].item()
         logger.info(f'Test epoch{self.trainer.current_epoch} auc={auc:.4f} acc={acc:.4f} loss={loss:.4f}')
