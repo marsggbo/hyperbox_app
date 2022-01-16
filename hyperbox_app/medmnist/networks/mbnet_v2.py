@@ -75,6 +75,7 @@ class Mobile3DNet(BaseNASNetwork):
                     # s=2: stride is 2
                     # s=1: no stride_op
                     # s=0: needs to search stride
+                    stride_op = None
                     if s == 2:
                         stride_op = OPS['3x3_MBConv3SE'](input_channel, width, 2)
                     elif s == 0:
@@ -85,8 +86,9 @@ class Mobile3DNet(BaseNASNetwork):
                             ],
                             mask=self.mask, return_mask=False, key="stride_op{}".format(stage_cnt)
                         )
-                    input_channel = width
-                    layer_op.append(stride_op)
+                    if stride_op is not None:
+                        input_channel = width
+                        layer_op.append(stride_op)
 
                 op_candidates = [
                     OPS[key](input_channel, width, 1) for key in self.candidate_ops
