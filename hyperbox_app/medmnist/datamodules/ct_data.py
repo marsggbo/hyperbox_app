@@ -51,7 +51,7 @@ class CTDataset(torch.utils.data.Dataset):
             self.data = json.load(f)
         self.cls_to_label = {
             # png slices
-            'Normal': 0, 'NCP': 1, 'CP': 2,
+            'CP': 0, 'NCP': 1, 'Normal': 2,
             # nii
             'CT-0': 0, 'CT-1': 1, 'CT-2': 1, 'CT-3': 1, 'CT-4': 1,
             # covid_ctset
@@ -217,13 +217,12 @@ class CTDatamodule(LightningDataModule):
         if self.is_customized:
             train_val_loader = {
                 'train': train_loader,
-                'val': self.val_dataloader()
+                'val': self._data_loader(self.dataset_val)
             }
             return train_val_loader
         return train_loader
 
     def val_dataloader(self):
-        return self.test_dataloader()
         if self.is_customized:
             return self.test_dataloader()
         return self._data_loader(self.dataset_val)
