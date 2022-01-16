@@ -2,7 +2,7 @@ _target_: hyperbox_app.medmnist.networks.mbnet_v2.DAMobile3DNet
 in_channels: 1
 width_stages: [16,24,40,80,96,128,160,320]
 n_cell_stages: [2,3,3,3,3,3,3,2]
-stride_stages: [2,2,1,1,2,1,1,1]
+stride_stages: [2,2,0,0,2,0,0,0]
 width_mult: 1
 first_stride: 2
 num_classes: 3

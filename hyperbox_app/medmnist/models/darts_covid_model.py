@@ -99,7 +99,7 @@ class DARTSModel(BaseModel):
             for key, value in self.mutator.choices.items():
                 logger.info(f"{key}: {value.detach().softmax(-1)}")
             logger.info(
-                f"Train epoch{self.current_epoch} batch{batch_idx}: loss={loss}, acc={acc}")
+                f"Train epoch{self.current_epoch} batch{batch_idx}: loss={loss}, acc={acc}\n\n")
         return {"loss": loss, "preds": preds, "targets": trn_y, 'acc': acc}
 
     def _logits_and_loss(self, X, y, to_aug, network=None):

@@ -24,7 +24,6 @@ model/optimizer_cfg=sgd \
 model.optimizer_cfg.lr=0.025 \
 model.metric_cfg._target_=hyperbox.utils.metrics.Accuracy \
 model/network_cfg=dambv2_covid19 \
-model.network_cfg.stride_stages=[2,2,2,2,2,2] \
 ++model.network_cfg.candidate_ops=['3x3_MBConv3SE','3x3_MBConv4SE','5x5_MBConv3SE','7x7_MBConv3SE','Identity'] \
 trainer.gpus=$gpuNum \
 trainer.accelerator='gpu' \
