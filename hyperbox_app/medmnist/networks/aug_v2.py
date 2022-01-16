@@ -68,18 +68,18 @@ def DAOperation3D(
         rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
         ops['rcrop'] += rcrop
 
-    resize_crop = [nn.Identity()]
-    for size in crop_size[:1]:
-        size = size[1:]
-        for scale in [(0.8, 1), (1, 1)]:
-            for ratio in [(1, 1), (3/4, 4/3)]:
-                resize_crop += prob_list_gen(RandomResizedCrop3d, probs=[0.5, 1], size=size, scale=scale, ratio=ratio)
-    ops['resize_crop'] = resize_crop
+    # resize_crop = [nn.Identity()]
+    # for size in crop_size[:1]:
+    #     size = size[1:]
+    #     for scale in [(0.8, 1), (1, 1)]:
+    #         for ratio in [(1, 1), (3/4, 4/3)]:
+    #             resize_crop += prob_list_gen(RandomResizedCrop3d, probs=[0.5, 1], size=size, scale=scale, ratio=ratio)
+    # ops['resize_crop'] = resize_crop
 
-    boxblur = [nn.Identity()]
-    for ks in [(3,3), (5,5)]:
-        boxblur += prob_list_gen(RandomBoxBlur3d, probs=[0.5, 0.9], kernel_size=ks)
-    ops['boxnlur'] = boxblur
+    # boxblur = [nn.Identity()]
+    # for ks in [(3,3), (5,5)]:
+    #     boxblur += prob_list_gen(RandomBoxBlur3d, probs=[0.5, 0.9], kernel_size=ks)
+    # ops['boxnlur'] = boxblur
 
     # invert = [nn.Identity()]
     # for val in [0.25, 0.5, 0.75, 1]:
@@ -90,11 +90,11 @@ def DAOperation3D(
     gauNoise += prob_list_gen(RandomGaussianNoise3d, probs=[0.5, 0.9])
     ops['gauNoise'] = gauNoise
 
-    erase = [nn.Identity()]
-    for scale in [(0.02, 0.1), (0.1, 0.33)]:
-        for ratio in [(0.3, 3.3)]:
-            erase += prob_list_gen(RandomErasing3d, probs=[0.5, 0.9], scale=scale, ratio=ratio)
-    ops['erase'] = erase
+    # erase = [nn.Identity()]
+    # for scale in [(0.02, 0.1), (0.1, 0.33)]:
+    #     for ratio in [(0.3, 3.3)]:
+    #         erase += prob_list_gen(RandomErasing3d, probs=[0.5, 0.9], scale=scale, ratio=ratio)
+    # ops['erase'] = erase
 
     return ops
 
