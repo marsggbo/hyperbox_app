@@ -72,9 +72,12 @@ class Mobile3DNet(BaseNASNetwork):
             for i in range(n_cell):
                 layer_op = []
                 if i == 0:
+                    # s=2: stride is 2
+                    # s=1: no stride_op
+                    # s=0: needs to search stride
                     if s == 2:
                         stride_op = OPS['3x3_MBConv3SE'](input_channel, width, 2)
-                    else:
+                    elif s == 0:
                         stride_op = OperationSpace(
                             candidates=[
                                 OPS['3x3_MBConv3SE'](input_channel, width, 1),
