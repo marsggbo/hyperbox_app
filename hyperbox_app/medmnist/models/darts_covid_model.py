@@ -41,7 +41,7 @@ class DARTSModel(BaseModel):
         self.automatic_optimization = False
         self.is_net_parallel = is_net_parallel
         self.is_sync = is_sync
-        self.net_ema = ModelEma(self.network, decay=0.6).eval()
+        self.net_ema = ModelEma(self.network, decay=0.9).eval()
 
     def on_fit_start(self):
         # self.logger.experiment[0].watch(self.network, log='all', log_freq=100)
@@ -55,7 +55,7 @@ class DARTSModel(BaseModel):
         self.y_score_trn = torch.tensor([]).to(self.device)
         self.y_true_val = torch.tensor([]).to(self.device)
 
-    def training_step(self, batch: Any, batch_idx: int, optimizer_idx: int):
+    def training_step(self, batch: Any, batch_idx: int):
         # debug info
         # self.trainer.accelerator.barrier()
         (trn_X, trn_y) = batch['train']
@@ -95,7 +95,9 @@ class DARTSModel(BaseModel):
         acc = self.train_metric(preds, trn_y)
         self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=False)
         self.log("train/acc", acc, on_step=True, on_epoch=True, prog_bar=False)
-        if batch_idx % 50 == 0:
+        if batch_idx % 10 == 0:
+            for key, value in self.mutator.choices.items():
+                logger.info(f"{key}: {value.detach().softmax(-1)}")
             logger.info(
                 f"Train epoch{self.current_epoch} batch{batch_idx}: loss={loss}, acc={acc}")
         return {"loss": loss, "preds": preds, "targets": trn_y, 'acc': acc}
@@ -263,7 +265,7 @@ class DARTSModel(BaseModel):
         # mflops, size = self.arch_size((2, 1, 32, 64, 64), convert=True)
         # logger.info(
         #     f"[rank {self.rank}] current model({self.arch}): {mflops:.4f} MFLOPs, {size:.4f} MB.")
-        logger.info(f"self.mutator._cache: {len(self.mutator._cache)} choices")
+        # logger.info(f"self.mutator._cache: {len(self.mutator._cache)} choices")
         for key, value in self.mutator.choices.items():
             logger.info(f"{key}: {value.detach().softmax(-1)}")
 

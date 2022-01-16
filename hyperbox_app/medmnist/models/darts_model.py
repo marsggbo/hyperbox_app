@@ -83,7 +83,7 @@ class DARTSModel(BaseModel):
         self.y_true_val = torch.tensor([]).to(self.device)
         self.y_score_trn = torch.tensor([]).to(self.device)
 
-    def training_step(self, batch: Any, batch_idx: int, optimizer_idx: int):
+    def training_step(self, batch: Any, batch_idx: int):
         if self.use_mixup:
             self.criterion.training = True
         self.to_aug = True
@@ -146,7 +146,9 @@ class DARTSModel(BaseModel):
             preds_en = torch.argmax(preds_en, dim=1)
             acc_ensemble = self.train_metric(preds_en, trn_y)
             self.log("train/acc_ensemble", acc_ensemble, on_step=True, on_epoch=True, prog_bar=False)
-        if batch_idx % 50 == 0:
+        if batch_idx % 10 == 0:
+            for key, value in self.mutator.choices.items():
+                logger.info(f"{key}: {value.detach().softmax(-1)}")
             logger.info(
                 f"Train epoch{self.current_epoch} batch{batch_idx}: loss={loss} (mutual={loss_mutual} ce{loss-loss_mutual}), acc={acc}, acc_en={acc_ensemble}")
         return {"loss": loss, "preds": preds, "targets": trn_y, 'acc': acc}
