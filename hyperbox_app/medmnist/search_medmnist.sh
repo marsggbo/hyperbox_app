@@ -2,12 +2,12 @@ exp=$1
 gpu=$2
 gpuNum=${gpu//,/}
 gpuNum=${#gpuNum}
-name=gdas_${exp}_gpu${gpuNum}_batchbalance
+name=mbv2_gdas_${exp}_gpu${gpuNum}
 others=$3
 echo $name
 
 CUDA_VISIBLE_DEVICES=$gpu python -m hyperbox.run \
-hydra.searchpath=[file:///home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/configs] \
+hydra.searchpath=[file:///home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/configs] \
 experiment=$exp.yaml \
 logger.wandb.name=$name \
 hydra.job.name=$name \
@@ -19,8 +19,8 @@ trainer.gpus=$gpuNum \
 datamodule.as_rgb=False \
 datamodule.batch_size=32 \
 datamodule.is_customized=True \
+model/network_cfg=dambv2_medmnist \
 model.network_cfg.in_channels=1 \
-model.network_cfg.stride_stages=[1,1,2,1,2,2] \
 trainer.max_epochs=50 \
 callbacks.model_checkpoint.monitor='val/auc' \
 callbacks.model_checkpoint.save_top_k=1 \
