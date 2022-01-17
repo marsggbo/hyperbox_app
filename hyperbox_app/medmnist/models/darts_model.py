@@ -86,7 +86,7 @@ class DARTSModel(BaseModel):
     def training_step(self, batch: Any, batch_idx: int):
         if self.use_mixup:
             self.criterion.training = True
-        self.to_aug = True
+        self.to_aug = False
         # debug info
         (trn_X, trn_y) = batch['train']
         (val_X, val_y) = batch['val']
@@ -151,7 +151,7 @@ class DARTSModel(BaseModel):
                 logger.info(f"{key}: {value.detach().softmax(-1)}")
             logger.info(
                 f"Train epoch{self.current_epoch} batch{batch_idx}: loss={loss} (mutual={loss_mutual} ce{loss-loss_mutual}), acc={acc}, acc_en={acc_ensemble}")
-        return {"loss": loss, "preds": preds, "targets": trn_y, 'acc': acc}
+        return {"loss": loss, "preds": preds.detach(), "targets": trn_y, 'acc': acc}
 
     def _logits_and_loss(self, X, y, to_aug):
         is_squeeze = False

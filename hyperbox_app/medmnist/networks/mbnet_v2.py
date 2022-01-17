@@ -26,7 +26,8 @@ class Mobile3DNet(BaseNASNetwork):
         'Identity'
     ]
     def __init__(
-        self, in_channels=3,
+        self,
+        in_channels=3,
         first_stride=1,
         width_stages=[16,24,40,80,96,128,160,320],
         n_cell_stages=[2,3,3,3,3,3,3,2],
@@ -76,8 +77,8 @@ class Mobile3DNet(BaseNASNetwork):
                     # s=1: no stride_op
                     # s=0: needs to search stride
                     stride_op = None
-                    if s == 2:
-                        stride_op = OPS['3x3_MBConv3SE'](input_channel, width, 2)
+                    if s in [1, 2]:
+                        stride_op = OPS['3x3_MBConv3SE'](input_channel, width, s)
                     elif s == 0:
                         stride_op = OperationSpace(
                             candidates=[
@@ -186,9 +187,11 @@ class Mobile3DNet(BaseNASNetwork):
 class DAMobile3DNet(BaseNASNetwork):
     def __init__(
         self,
-        in_channels=3, first_stride=1, width_stages=[24,40,80,96,192,320],
-        n_cell_stages=[4,4,4,4,4,1],
-        stride_stages=[2,2,2,1,2,1],
+        in_channels=3,
+        first_stride=1,
+        width_stages=[16,24,40,80,96,128,160,320],
+        n_cell_stages=[2,3,3,3,3,3,3,2],
+        stride_stages=[2,2,1,1,2,1,1,1],
         width_mult=1, num_classes=1000,
         dropout_rate=0, bn_param=(0.1, 1e-3),
         candidate_ops=None,

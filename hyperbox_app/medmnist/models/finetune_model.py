@@ -148,7 +148,7 @@ class FinetuneModel(BaseModel):
         if batch_idx % 50 == 0:
             logger.info(
                 f"Train epoch{self.current_epoch} batch{batch_idx}: loss={loss} (mutual={loss_mutual} ce{loss-loss_mutual}), acc={acc}")
-        return {"loss": loss, "preds": preds, "targets": targets, 'acc': acc}
+        return {"loss": loss, "preds": preds.detach(), "targets": targets, 'acc': acc}
 
     def training_epoch_end(self, outputs: List[Any]):
         self.y_true_trn = self.y_true_trn.detach().cpu().numpy()

@@ -86,9 +86,9 @@ def DAOperation3D(
     #     invert += prob_list_gen(RandomInvert3d, probs=[0.5, 1], max_val=val)
     # ops['invert'] = invert
 
-    gauNoise = [nn.Identity()]
-    gauNoise += prob_list_gen(RandomGaussianNoise3d, probs=[0.5, 0.9])
-    ops['gauNoise'] = gauNoise
+    # gauNoise = [nn.Identity()]
+    # gauNoise += prob_list_gen(RandomGaussianNoise3d, probs=[0.5, 0.9])
+    # ops['gauNoise'] = gauNoise
 
     # erase = [nn.Identity()]
     # for scale in [(0.02, 0.1), (0.1, 0.33)]:
