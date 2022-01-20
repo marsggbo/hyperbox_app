@@ -3,6 +3,7 @@ from typing import Any, cast, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
+import kornia
 from einops import rearrange, reduce, repeat
 from kornia import image_to_tensor, tensor_to_image
 from kornia.augmentation import *
@@ -18,6 +19,7 @@ __all__ = [
     'RandomErasing3d',
     'RandomSharpness3d',
     'RandomResizedCrop3d'
+    'BrightContrast3d'
 ]
 
 
@@ -32,6 +34,26 @@ class Base2dTo3d(nn.Module):
         x = self.aug(x)
         x = rearrange(x, '(b d) c h w -> b c d h w', b=bs)
         return x
+
+
+class BrightContrast3d(nn.Module):
+    def __init__(self, brightness=0.4, contrast=0.4, p=0.5):
+        super(BrightContrast3d, self).__init__()
+        self.brightness = brightness
+        self.contrast = contrast
+        self.p = p
+        self.bright_op = kornia.enhance.adjust_brightness
+        self.contr_op = kornia.enhance.adjust_contrast
+
+    def forward(self, x):
+        prob = torch.rand(1).item()
+        if prob < self.p:
+            x = self.bright_op(x, self.brightness)
+            x = self.contr_op(x, self.contrast)
+        return x
+
+    def __repr__(self):
+        return f"BrightContrast3d(brightness={self.brightness}, contrast={self.contrast}, p={self.p})"
 
 
 class RandomResizedCrop3d(Base2dTo3d):
