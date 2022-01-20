@@ -111,7 +111,7 @@ class SEModule3D(nn.Module):
 
 class MobileInvertedResidualBlock(nn.Module):
     
-    def __init__(self, mobile_inverted_conv, shortcut, op_candidates_list):
+    def __init__(self, mobile_inverted_conv, shortcut, op_candidates_list=None):
         super(MobileInvertedResidualBlock, self).__init__()
 
         self.mobile_inverted_conv = mobile_inverted_conv
@@ -119,11 +119,12 @@ class MobileInvertedResidualBlock(nn.Module):
         self.op_candidates_list = op_candidates_list
 
     def forward(self, x):
-        out, idx = self.mobile_inverted_conv(x)
+        out = self.mobile_inverted_conv(x)
+        idx = getattr(self.mobile_inverted_conv, 'mask', None)
         # TODO: unify idx format
-        if not isinstance(idx, int):
-            idx = torch.nonzero(idx == 1)
-        if len(idx)==1 and self.op_candidates_list[idx].is_zero_layer():
+        if idx is not None:
+            idx = torch.argmax(idx.float())
+        if idx is not None and self.op_candidates_list[idx].is_zero_layer():
             res = x
         elif self.shortcut is None:
             res = out
