@@ -80,7 +80,7 @@ class Mobile3DNet(BaseNASNetwork):
                         OPS['Zero'](input_channel, width, stride),
                         OPS['Identity'](input_channel, width, stride)
                     ]
-                conv_op = OperationSpace(op_candidates, mask=self.mask, return_mask=True, key="s{}_c{}".format(stage_cnt, i))
+                conv_op = OperationSpace(op_candidates, mask=self.mask, return_mask=False, key="s{}_c{}".format(stage_cnt, i))
                 # shortcut
                 if stride == 1 and input_channel == width:
                     # if not first cell
@@ -115,6 +115,7 @@ class Mobile3DNet(BaseNASNetwork):
         for block in self.blocks:
             x = block(x)
         x = self.feature_mix_layer(x)
+        self.features = x
         x = self.global_avg_pooling(x)
         x = x.view(x.size(0), -1)
         # if not self.training:
