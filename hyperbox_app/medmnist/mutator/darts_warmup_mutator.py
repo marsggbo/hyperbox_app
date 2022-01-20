@@ -14,9 +14,9 @@ __all__ = [
 
 
 class DartsWarmupMutator(Mutator):
-    def __init__(self, model, *args, **kwargs):
+    def __init__(self, model, warmup_epoch=5):
         super().__init__(model)
-        self.warmup_epoch = 5
+        self.warmup_epoch = warmup_epoch
         self.current_epoch = 0
         self.choices = nn.ParameterDict()
         for mutable in self.mutables:

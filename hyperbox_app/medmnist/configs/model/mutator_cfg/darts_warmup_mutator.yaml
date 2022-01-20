@@ -1,1 +1,2 @@
 _target_: hyperbox_app.medmnist.mutator.DartsWarmupMutator
+warmup_epoch: 10
