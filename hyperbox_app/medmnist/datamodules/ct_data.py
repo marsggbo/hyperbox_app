@@ -159,6 +159,20 @@ class CTDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.samples)
 
+    def dataset_name(self):
+        root = self.root_dir.lower()
+        if 'cccc' in root:
+            name = 'CCCCII'
+        elif 'mosmed' in root:
+            name = 'MosMed'
+        elif 'covid' in root:
+            name = 'Iran-COVID'
+        return name
+
+    def __repr__(self):
+        name = self.dataset_name
+        return f"{super(CTDataset, self).__repr__()} ({name})"
+
 
 @hparams_wrapper
 class CTDatamodule(LightningDataModule):
@@ -239,6 +253,10 @@ class CTDatamodule(LightningDataModule):
     def change_slice_num(self, slice_num):
         for dataset in self.datasets:
             dataset.slice_num = slice_num
+
+    def __repr__(self):
+        name = self.dataset_test.dataset_name
+        return f"{super(CTDatamodule, self).__repr__()} ({name})"
 
 
 if __name__ == '__main__':
