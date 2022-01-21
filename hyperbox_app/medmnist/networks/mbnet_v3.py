@@ -9,7 +9,7 @@ from hyperbox.networks.base_nas_network import BaseNASNetwork
 from hyperbox_app.medmnist.networks.aug_v2 import DataAugmentation
 from hyperbox_app.medmnist.networks.mobile3d_ops import *
 from hyperbox_app.medmnist.networks.mobile_utils import *
-from hyperbox_app.medmnist.networks.mobile3d_net import Mobile3DNet as MBNetV1
+
 
 __all__ = [
     'Mobile3DNet',
@@ -23,20 +23,15 @@ class Mobile3DNet(BaseNASNetwork):
         '3x3_MBConv4',
         '5x5_MBConv3',
         '7x7_MBConv3',
-        'Identity'
     ]
     def __init__(
-        self,
-        in_channels=3,
+        self, in_channels=3,
         first_stride=1,
-        width_stages=[16,24,40,80,96,128,160,320],
-        n_cell_stages=[2,3,3,3,3,3,3,2],
-        stride_stages=[2,2,1,1,2,1,1,1],
-        width_mult=1,
-        num_classes=1000,
-        dropout_rate=0,
-        bn_param=(0.1, 1e-3),
-        last_channels=1280, # 1024 for small, 1280 for large
+        width_stages=[24,40,80,96,192,320],
+        n_cell_stages=[4,4,4,4,4,1],
+        stride_stages=[2,2,2,1,2,1],
+        width_mult=1, num_classes=1000,
+        dropout_rate=0, bn_param=(0.1, 1e-3),
         candidate_ops=None,
         mask=None
     ):
@@ -57,15 +52,12 @@ class Mobile3DNet(BaseNASNetwork):
             self.candidate_ops = candidate_ops
         else:
             self.candidate_ops = self.DEFAULT_OPS
-        self.last_channels = last_channels
         input_channel = make_divisible(32 * width_mult, 8)
         first_cell_width = make_divisible(16 * width_mult, 8)
         for i in range(len(width_stages)):
             width_stages[i] = make_divisible(width_stages[i] * width_mult, 8)
         # first conv
-        self.first_conv = ConvLayer(
-            in_channels, input_channel, kernel_size=3, stride=first_stride,
-            use_bn=True, act_func='relu6', ops_order='weight_bn_act')
+        self.first_conv = ConvLayer(in_channels, input_channel, kernel_size=3, stride=first_stride, use_bn=True, act_func='relu6', ops_order='weight_bn_act')
 
         # first block
         first_block = OPS['3x3_MBConv1'](input_channel, first_cell_width, 1)
@@ -75,46 +67,38 @@ class Mobile3DNet(BaseNASNetwork):
         stage_cnt = 0
         for width, n_cell, s in zip(width_stages, n_cell_stages, stride_stages):
             for i in range(n_cell):
-                layer_op = []
                 if i == 0:
-                    # s=2: stride is 2
-                    # s=1: no stride_op
-                    # s=0: needs to search stride
-                    stride_op = None
-                    if s in [1, 2]:
-                        stride_op = OPS['3x3_MBConv1'](input_channel, width, s)
-                    elif s == 0:
-                        stride_op = OperationSpace(
-                            candidates=[
-                                OPS['3x3_MBConv1'](input_channel, width, 1),
-                                OPS['3x3_MBConv1'](input_channel, width, 2)
-                            ],
-                            mask=self.mask, return_mask=False, key="stride_op{}".format(stage_cnt)
-                        )
-                    if stride_op is not None:
-                        input_channel = width
-                        layer_op.append(stride_op)
-
+                    stride = s
+                else:
+                    stride = 1
                 op_candidates = [
-                    OPS[key](input_channel, width, 1) for key in self.candidate_ops
+                    OPS[key](input_channel, width, stride) for key in self.candidate_ops
                 ]
+                if stride == 1 and input_channel == width:
+                    # if it is not the first one
+                    op_candidates += [
+                        OPS['Zero'](input_channel, width, stride),
+                        OPS['Identity'](input_channel, width, stride)
+                    ]
                 conv_op = OperationSpace(op_candidates, mask=self.mask, return_mask=False, key="s{}_c{}".format(stage_cnt, i))
-                shortcut = IdentityLayer(input_channel, input_channel)
+                # shortcut
+                if stride == 1 and input_channel == width:
+                    # if not first cell
+                    shortcut = IdentityLayer(input_channel, input_channel)
+                else:
+                    shortcut = None
                 inverted_residual_block = MobileInvertedResidualBlock(conv_op, shortcut, op_candidates)
-                layer_op.append(inverted_residual_block)
-
-                layer_op = nn.Sequential(*layer_op)
-                blocks.append(layer_op)
+                blocks.append(inverted_residual_block)
                 input_channel = width
             stage_cnt += 1
         self.blocks = nn.ModuleList(blocks)
 
         # feature mix layer
         # last_channel = input_channel
-        last_channel = make_devisible(self.last_channels * width_mult, 8) if width_mult > 1.0 else self.last_channels
+        last_channel = make_devisible(1280 * width_mult, 8) if width_mult > 1.0 else 1280
         self.feature_mix_layer = ConvLayer(
             input_channel, last_channel, kernel_size=1,
-            use_bn=True, act_func='relu', ops_order='weight_bn_act'
+            use_bn=True, act_func=None, ops_order='weight_bn_act'
         ) # disable activation, otherwise the final predictions will be the same class for all inputs
 
         self.global_avg_pooling = nn.AdaptiveAvgPool3d(1)
@@ -128,7 +112,7 @@ class Mobile3DNet(BaseNASNetwork):
     def forward(self, x, **kwargs):
         gamma = 0.8 # 0 equals to training mode
         x = self.first_conv(x)
-        for idx, block in enumerate(self.blocks):
+        for block in self.blocks:
             x = block(x)
         x = self.feature_mix_layer(x)
         x = self.global_avg_pooling(x)
@@ -193,14 +177,13 @@ class DAMobile3DNet(BaseNASNetwork):
         self,
         in_channels=3,
         first_stride=1,
-        width_stages=[16,24,40,80,96,128,160,320],
-        n_cell_stages=[2,3,3,3,3,3,3,2],
-        stride_stages=[2,2,1,1,2,1,1,1],
+        width_stages=[24,40,80,96,192,320],
+        n_cell_stages=[4,4,4,4,4,1],
+        stride_stages=[2,2,2,1,2,1],
         width_mult=1,
         num_classes=1000,
         dropout_rate=0,
         bn_param=(0.1, 1e-3),
-        last_channels=1280, # 1024 for small, 1280 for large
         candidate_ops=None,
 
         rotate_degree=30, crop_size=[(32,128,128), (32,256,256)],
@@ -211,48 +194,39 @@ class DAMobile3DNet(BaseNASNetwork):
         super(DAMobile3DNet, self).__init__(mask)
         self.network = Mobile3DNet(
             in_channels, first_stride, width_stages, n_cell_stages, stride_stages, width_mult,
-            num_classes, dropout_rate, bn_param, last_channels, candidate_ops, mask)
+            num_classes, dropout_rate, bn_param, candidate_ops, mask)
         self.augmentation = DataAugmentation(
             rotate_degree, crop_size, affine_degree, affine_scale, affine_shears, mean, std, mask)
 
-    def forward(self, x, to_aug=False, return_aug_img=False):
+    def forward(self, x, to_aug=False):
         x = self.augmentation(x, to_aug)
-        self.aug_img = x.detach()
         x = self.network(x)
         return x
 
 if __name__ == '__main__':
     from hyperbox.mutator import DartsMutator, RandomMutator, OnehotMutator
-    from hyperbox.utils.utils import save_arch_to_json
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    net = DAMobile3DNet(1, num_classes=10, crop_size=[[8,360,360], [12,512,512]], stride_stages=[2,2,1,2,1,1], first_stride=2).to(device)
-    # net = Mobile3DNet(1, n_cell_stages=[2,2,2,2,2,2], num_classes=10).to(device)
+    net = DAMobile3DNet(1, num_classes=10).to(device)
+    # net = Mobile3DNet(1, num_classes=10).to(device)
     dm = OnehotMutator(net)
-    opt = torch.optim.SGD(net.parameters(), lr=0.1)
     for i in range(10):
         dm.reset()
-        print('\nsampling...')
-        opt.zero_grad()
-        save_arch_to_json(dm.export, './dambv2_1.json')
         # if i > 5:
         #     net = net.eval()
-        x = torch.rand(8,1,32,512,512).to(device)
+        x = torch.rand(10,1,64,300,300).to(device)
         y = net(x)
         print(y.argmax(-1))
-        z = y.sum()
-        z.backward()
-        opt.step()
 
-    # from omegaconf import OmegaConf
-    # from hyperbox.networks.utils import extract_net_from_ckpt
-    # cfg = OmegaConf.load('/home/comp/18481086/code/hyperbox_app/logs/runs/gdas_fracture3d_gpu1_batchbalance/2022-01-06_15-33-58/.hydra_only_test/config.yaml')
-    # netcfg = cfg.model.network_cfg
-    # netcfg.pop('_target_')
-    # mask = '/home/comp/18481086/code/hyperbox_app/logs/runs/gdas_fracture3d_gpu1_batchbalance/2022-01-06_15-33-58/mask_json/mask_epoch_3.json'
-    # # netcfg.mask=mask
-    # net = DAMobile3DNet(**netcfg)
-    # ckpt = '/home/comp/18481086/code/hyperbox_app/logs/runs/gdas_fracture3d_gpu1_batchbalance/2022-01-06_15-33-58/checkpoints/last.ckpt'
-    # weight_supernet = extract_net_from_ckpt(ckpt)
-    # print('extract_net_from_ckpt')
-    # net.load_from_supernet(weight_supernet)
-    # print('load_from_supernet')
+    from omegaconf import OmegaConf
+    from hyperbox.networks.utils import extract_net_from_ckpt
+    cfg = OmegaConf.load('/home/comp/18481086/code/hyperbox_app/logs/runs/gdas_fracture3d_gpu1_batchbalance/2022-01-06_15-33-58/.hydra_only_test/config.yaml')
+    netcfg = cfg.model.network_cfg
+    netcfg.pop('_target_')
+    mask = '/home/comp/18481086/code/hyperbox_app/logs/runs/gdas_fracture3d_gpu1_batchbalance/2022-01-06_15-33-58/mask_json/mask_epoch_3.json'
+    # netcfg.mask=mask
+    net = DAMobile3DNet(**netcfg)
+    ckpt = '/home/comp/18481086/code/hyperbox_app/logs/runs/gdas_fracture3d_gpu1_batchbalance/2022-01-06_15-33-58/checkpoints/last.ckpt'
+    weight_supernet = extract_net_from_ckpt(ckpt)
+    print('extract_net_from_ckpt')
+    net.load_from_supernet(weight_supernet)
+    print('load_from_supernet')

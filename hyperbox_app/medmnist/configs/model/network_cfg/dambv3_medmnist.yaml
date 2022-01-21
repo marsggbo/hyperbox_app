@@ -1,14 +1,13 @@
-_target_: hyperbox_app.medmnist.networks.mbnet_v2.DAMobile3DNet
+_target_: hyperbox_app.medmnist.networks.mbnet_v3.DAMobile3DNet
 in_channels: 1
-width_stages: [24,40,80,96,128,160,320]
-n_cell_stages: [3,3,3,3,3,3,2]
-stride_stages: [2,1,0,0,0,1,0]
+width_stages: [24,40,80,96,192,320]
+n_cell_stages: [4,4,4,4,4,1]
+stride_stages: [1,1,2,1,2,2]
 width_mult: 1
 first_stride: 1
 num_classes: 3
 dropout_rate: 0
 bn_param: [0.1,1e-5]
-last_channels: 1024
 rotate_degree: 30
 # search
 crop_size:

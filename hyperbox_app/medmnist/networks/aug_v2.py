@@ -14,7 +14,8 @@ from hyperbox_app.medmnist.networks.kornia_aug import (RandomBoxBlur3d,
                                                        RandomGaussianNoise3d,
                                                        RandomInvert3d,
                                                        RandomSharpness3d,
-                                                       RandomResizedCrop3d)
+                                                       RandomResizedCrop3d,
+                                                       BrightContrast3d)
 
 __all__ = [
     'DataAugmentation',
@@ -56,17 +57,21 @@ def DAOperation3D(
                 ops['affine'] += affine
 
     # random crop
-    ops['rcrop'] = []
-    if isinstance(crop_size, (float, int)):
-        # e.g., crop_size = 32
-        crop_size = [(crop_size,)*3]
-        rcrop = prob_list_gen(RandomCrop3D, same_on_batch=False, size=crop_size)
-    elif isinstance(crop_size[0], (float, int)):
-        # e.g., crop_size = (16,64,64)
-        crop_size = [crop_size]
-    for size in crop_size:
-        rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
-        ops['rcrop'] += rcrop
+    # ops['rcrop'] = []
+    # if isinstance(crop_size[0], list) and len(crop_size[0]) > 1:
+    #     for size in crop_size:
+    #         rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
+    #         ops['rcrop'] += rcrop
+    # if isinstance(crop_size, (float, int)):
+    #     # e.g., crop_size = 32
+    #     crop_size = [(crop_size,)*3]
+    #     rcrop = prob_list_gen(RandomCrop3D, same_on_batch=False, size=crop_size)
+    # elif isinstance(crop_size[0], (float, int)):
+    #     # e.g., crop_size = (16,64,64)
+    #     crop_size = [crop_size]
+    # for size in crop_size:
+    #     rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
+    #     ops['rcrop'] += rcrop
 
     # resize_crop = [nn.Identity()]
     # for size in crop_size[:1]:
@@ -75,6 +80,12 @@ def DAOperation3D(
     #         for ratio in [(1, 1), (3/4, 4/3)]:
     #             resize_crop += prob_list_gen(RandomResizedCrop3d, probs=[0.5, 1], size=size, scale=scale, ratio=ratio)
     # ops['resize_crop'] = resize_crop
+
+    ops['bright_contrast'] = []
+    for brightness in [0.8, 1.2]:
+        for contrast in [0.8, 1.2]:
+            ops['bright_contrast'] += prob_list_gen(
+                BrightContrast3d, probs=[0.5, 0.9], brightness=brightness, contrast=contrast)
 
     # boxblur = [nn.Identity()]
     # for ks in [(3,3), (5,5)]:
@@ -113,7 +124,8 @@ class DataAugmentation(BaseNASNetwork):
         self.ops = DAOperation3D(affine_degree, affine_scale, affine_shears, rotate_degree, crop_size)
         transforms = []
         for key, value in self.ops.items():
-            transforms.append(OperationSpace(candidates=value, key=key, mask=self.mask, reduction='mean'))
+            if value:
+                transforms.append(OperationSpace(candidates=value, key=key, mask=self.mask, reduction='mean'))
         self.transforms = nn.Sequential(*transforms)
         self.mean = mean
         self.std = std
