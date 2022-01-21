@@ -113,7 +113,8 @@ class DataAugmentation(BaseNASNetwork):
         self.ops = DAOperation3D(affine_degree, affine_scale, affine_shears, rotate_degree, crop_size)
         transforms = []
         for key, value in self.ops.items():
-            transforms.append(OperationSpace(candidates=value, key=key, mask=self.mask, reduction='mean'))
+            if value:
+                transforms.append(OperationSpace(candidates=value, key=key, mask=self.mask, reduction='mean'))
         self.transforms = nn.Sequential(*transforms)
         self.mean = mean
         self.std = std
