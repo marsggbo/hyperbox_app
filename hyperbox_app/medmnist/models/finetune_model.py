@@ -11,6 +11,7 @@ from torchmetrics.classification.accuracy import Accuracy
 from kornia.augmentation import RandomMixUp
 
 from hyperbox.utils.logger import get_logger
+from hyperbox.networks.network_ema import ModelEma
 from hyperbox.models.base_model import BaseModel
 from hyperbox_app.medmnist.utils import getAUC
 from hyperbox_app.medmnist.losses import MixupLoss, MutualLoss
@@ -56,6 +57,7 @@ class FinetuneModel(BaseModel):
         self.use_mixup = use_mixup
         self.random_mixup = RandomMixUp()
         self.input_size = input_size
+        # self.net_ema = ModelEma(self.network, decay=0.9).eval()
 
     def on_fit_start(self):
         n_channel = 1
@@ -81,11 +83,15 @@ class FinetuneModel(BaseModel):
         else:
             self.input_size = (2,3,28,28,28)
         mflops, size = self.arch_size(self.input_size, convert=True)
+        # for name, p in self.network.named_parameters():
+        #     if 'classifier' not in name:
+        #         p.requires_grad = False
         logger.info(f"[rank {self.rank}] current model({self.arch}): {mflops:.4f} MFLOPs, {size:.4f} MB.")
 
-    def forward(self, x: torch.Tensor):
-        # return self.network(x)
-        return self.network(x, self.to_aug)
+    def forward(self, x: torch.Tensor, network=None):
+        if network is None:
+            network = self.network
+        return network(x, self.to_aug)
 
     def step(self, batch: Any):
         x, y = batch
@@ -150,6 +156,9 @@ class FinetuneModel(BaseModel):
                 f"Train epoch{self.current_epoch} batch{batch_idx}: loss={loss} (mutual={loss_mutual} ce{loss-loss_mutual}), acc={acc}")
         return {"loss": loss, "preds": preds.detach(), "targets": targets, 'acc': acc}
 
+    # def on_train_batch_end(self, outputs, batch, batch_idx):
+        # self.net_ema.update(self.network)
+
     def training_epoch_end(self, outputs: List[Any]):
         self.y_true_trn = self.y_true_trn.detach().cpu().numpy()
         self.y_score_trn = self.y_score_trn.detach().cpu().numpy()
@@ -165,13 +174,14 @@ class FinetuneModel(BaseModel):
         self.y_score = torch.tensor([]).to(self.device)
         if self.use_mixup:
             self.criterion.training = False
+        self.eval_net = self.net_ema if hasattr(self, 'net_ema') else self.network
         # self.reset_running_statistics()
 
     def validation_step(self, batch: Any, batch_idx: int):
         self.to_aug = False
         with torch.no_grad():
             x, targets = batch
-            preds = self.forward(x)
+            preds = self.forward(x, network=self.eval_net)
             if len(preds.shape) == 3:
                 loss = 0.
                 for logit in preds:
