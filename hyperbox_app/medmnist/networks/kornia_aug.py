@@ -1,6 +1,7 @@
 import os
 from typing import Any, cast, Dict, List, Optional, Tuple, Union
 
+import numpy as np
 import torch
 import torch.nn as nn
 import kornia
@@ -34,6 +35,39 @@ class Base2dTo3d(nn.Module):
         x = self.aug(x)
         x = rearrange(x, '(b d) c h w -> b c d h w', b=bs)
         return x
+
+
+def mixup_data(x, y, alpha=1.0):
+
+    '''Compute the mixup data. Return mixed inputs, pairs of targets, and lambda'''
+    if alpha > 0.:
+        lam = [np.random.beta(alpha, alpha) for _ in range(len(x))]
+        if len(x.shape)==5:
+            lam = torch.tensor(lam).to(x.device).view(-1, 1, 1, 1, 1)
+        elif len(x.shape)==4:
+            lam = torch.tensor(lam).to(x.device).view(-1, 1, 1, 1)
+    else:
+        lam = torch.ones(x.shape[0], 1, 1, 1, 1).to(x.device)
+    batch_size = x.shape[0]
+    index = torch.randperm(batch_size).to(x.device)
+
+    mixed_x = lam * x + (1 - lam) * x[index,:]
+    y_a, y_b = y, y[index]
+    mixed_y = torch.cat((y_a.view(-1, 1), y_b.view(-1, 1), lam.view(-1, 1)), dim=1)
+    return mixed_x, mixed_y
+
+
+class RandomMixUp3d(Base2dTo3d):
+    def __init__(self, alpha: float = 1.0):
+        super().__init__()
+        self.alpha = alpha
+
+    def forward(self, x, y):
+        bs = x.shape[0]
+        bs, c, d, h, w = x.shape
+        assert len(x.shape) == 5, f"len of x.shape should be 5, i.e., B,C,D,H,W"
+        x, y = mixup_data(x, y, self.alpha)
+        return x, y
 
 
 class BrightContrast3d(nn.Module):
