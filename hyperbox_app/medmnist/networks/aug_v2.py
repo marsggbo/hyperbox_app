@@ -41,20 +41,20 @@ def DAOperation3D(
     # ops['equal'] = prob_list_gen(RandomEqualize3D, probs=[0, 0.5, 0.9], same_on_batch=False)
 
     # affine
-    ops['affine'] = [nn.Identity()]
-    if isinstance(affine_degree, (float, int)):
-        # rotation degree
-        affine_degree = [affine_degree]
-    if isinstance(affine_shears, (float, int)):
-        affine_shears = [affine_shears]
-    if isinstance(affine_scale[0], (float, int)):
-        # scale, similar to zoom in/out
-        affine_scale = [affine_scale]
-    for ad_ in affine_degree:
-        for ash_ in affine_shears:
-            for asc_ in affine_scale:
-                affine = prob_list_gen(RandomAffine3D, probs=[0.5, 0.9], same_on_batch=False, degrees=ad_, scale=asc_, shears=ash_) 
-                ops['affine'] += affine
+    # ops['affine'] = [nn.Identity()]
+    # if isinstance(affine_degree, (float, int)):
+    #     # rotation degree
+    #     affine_degree = [affine_degree]
+    # if isinstance(affine_shears, (float, int)):
+    #     affine_shears = [affine_shears]
+    # if isinstance(affine_scale[0], (float, int)):
+    #     # scale, similar to zoom in/out
+    #     affine_scale = [affine_scale]
+    # for ad_ in affine_degree:
+    #     for ash_ in affine_shears:
+    #         for asc_ in affine_scale:
+    #             affine = prob_list_gen(RandomAffine3D, probs=[0.5, 0.9], same_on_batch=False, degrees=ad_, scale=asc_, shears=ash_) 
+    #             ops['affine'] += affine
 
     # random crop
     # ops['rcrop'] = []
