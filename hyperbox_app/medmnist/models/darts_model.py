@@ -9,11 +9,11 @@ import torch.nn as nn
 import medmnist
 import imblearn
 from omegaconf import DictConfig
-from kornia.augmentation import RandomMixUp
 
 from hyperbox.utils.logger import get_logger
 from hyperbox.models.base_model import BaseModel
 from hyperbox_app.medmnist.utils import getAUC
+from hyperbox_app.medmnist.networks.kornia_aug import RandomMixUp3d
 from hyperbox_app.medmnist.losses import MixupLoss, MutualLoss
 
 logger = get_logger(__name__, rank_zero=True)
@@ -57,7 +57,8 @@ class DARTSModel(BaseModel):
         self.is_net_parallel = is_net_parallel
         self.is_sync = is_sync
         self.use_mixup = use_mixup
-        self.random_mixup = RandomMixUp()
+        if use_mixup:
+            self.random_mixup = RandomMixUp3d()
 
     def on_fit_start(self):
         # self.logger.experiment[0].watch(self.network, log='all', log_freq=100)
@@ -86,7 +87,7 @@ class DARTSModel(BaseModel):
     def training_step(self, batch: Any, batch_idx: int):
         if self.use_mixup:
             self.criterion.training = True
-        self.to_aug = False
+        self.to_aug = True
         # debug info
         (trn_X, trn_y) = batch['train']
         (val_X, val_y) = batch['val']
@@ -131,8 +132,8 @@ class DARTSModel(BaseModel):
                 loss = loss + 0.1 * loss_mutual
             else:
                 loss = loss + 0.8 * loss_mutual
-        if self.trainer.world_size > 1:
-            preds_en = torch.tensor(self.all_gather(preds.detach())).mean(dim=0)
+        # if self.trainer.world_size > 1:
+        #     preds_en = torch.tensor(self.all_gather(preds.detach())).mean(dim=0)
         self.manual_backward(loss)
         nn.utils.clip_grad_norm_(self.network.parameters(), 5.)  # gradient clipping
         self.weight_optim.step()
@@ -142,10 +143,10 @@ class DARTSModel(BaseModel):
         self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=False)
         self.log("train/acc", acc, on_step=True, on_epoch=True, prog_bar=False)
         acc_ensemble = 0.
-        if self.trainer.world_size > 1:
-            preds_en = torch.argmax(preds_en, dim=1)
-            acc_ensemble = self.train_metric(preds_en, trn_y)
-            self.log("train/acc_ensemble", acc_ensemble, on_step=True, on_epoch=True, prog_bar=False)
+        # if self.trainer.world_size > 1:
+        #     preds_en = torch.argmax(preds_en, dim=1)
+        #     acc_ensemble = self.train_metric(preds_en, trn_y)
+        #     self.log("train/acc_ensemble", acc_ensemble, on_step=True, on_epoch=True, prog_bar=False)
         if batch_idx % 10 == 0:
             for key, value in self.mutator.choices.items():
                 logger.info(f"{key}: {value.detach().softmax(-1)}")
@@ -154,18 +155,12 @@ class DARTSModel(BaseModel):
         return {"loss": loss, "preds": preds.detach(), "targets": trn_y, 'acc': acc}
 
     def _logits_and_loss(self, X, y, to_aug):
-        is_squeeze = False
         if self.task == 'multi-label, binary-class':
             y = y.to(torch.float32)
         else:
             y = y.squeeze().long()
         if self.use_mixup and self.criterion.training:
-            if len(X.shape) == 5 and X.shape[1]==1:
-                X = X.squeeze(1)
-                is_squeeze = True
             X, y = self.random_mixup(X, y)
-            if is_squeeze:
-                X = X.unsqueeze(1)
         output = self.network(X, to_aug=to_aug)
         if isinstance(output, tuple):
             output, aux_output = output
@@ -282,11 +277,12 @@ class DARTSModel(BaseModel):
         loss_epoch = self.trainer.callback_metrics['train/loss_epoch'].item()
         cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true_trn, self.y_score_trn.argmax(-1), digits=6)
         logger.info(f"Train classification report:\n{cls_report}")
-        if self.trainer.world_size > 1:
-            acc_en_epoch = self.trainer.callback_metrics['train/acc_ensemble_epoch'].item()
-            logger.info(f'Train epoch{self.trainer.current_epoch} loss={loss_epoch:.4f} acc={acc_epoch:.4f} acc_en:{acc_en_epoch:.4f}')
-        else:
-            logger.info(f'Train epoch{self.trainer.current_epoch} loss={loss_epoch:.4f} acc={acc_epoch:.4f}')
+        # if self.trainer.world_size > 1:
+        #     acc_en_epoch = self.trainer.callback_metrics['train/acc_ensemble_epoch'].item()
+        #     logger.info(f'Train epoch{self.trainer.current_epoch} loss={loss_epoch:.4f} acc={acc_epoch:.4f} acc_en:{acc_en_epoch:.4f}')
+        # else:
+        #     logger.info(f'Train epoch{self.trainer.current_epoch} loss={loss_epoch:.4f} acc={acc_epoch:.4f}')
+        logger.info(f'Train epoch{self.trainer.current_epoch} loss={loss_epoch:.4f} acc={acc_epoch:.4f}')
 
     def on_validation_epoch_start(self):
         self.y_true = torch.tensor([]).to(self.device)
@@ -302,17 +298,17 @@ class DARTSModel(BaseModel):
             preds, loss = self._logits_and_loss(X, targets, to_aug=False)
         self.y_true = torch.cat((self.y_true, targets), 0)
         self.y_score = torch.cat((self.y_score, preds.softmax(dim=-1)), 0)
-        if self.trainer.world_size > 1:
-            preds_en = torch.tensor(self.all_gather(preds.detach())).mean(dim=0)
-            self.y_score_en = torch.cat((self.y_score_en, preds_en.softmax(dim=-1)), 0)
+        # if self.trainer.world_size > 1:
+        #     preds_en = torch.tensor(self.all_gather(preds.detach())).mean(dim=0)
+        #     self.y_score_en = torch.cat((self.y_score_en, preds_en.softmax(dim=-1)), 0)
 
         # log val metrics
         preds = torch.argmax(preds, dim=1)
         acc = self.val_metric(preds, targets)
-        if self.trainer.world_size > 1:
-            preds_en = torch.argmax(preds_en, dim=1)
-            acc_ensemble = self.val_metric(preds_en, targets)
-            self.log("val/acc_ensemble", acc_ensemble, on_step=True, on_epoch=True, prog_bar=False)
+        # if self.trainer.world_size > 1:
+        #     preds_en = torch.argmax(preds_en, dim=1)
+        #     acc_ensemble = self.val_metric(preds_en, targets)
+        #     self.log("val/acc_ensemble", acc_ensemble, on_step=True, on_epoch=True, prog_bar=False)
         self.log("val/loss", loss, on_step=True, on_epoch=True, prog_bar=False)
         self.log("val/acc", acc, on_step=True, on_epoch=True, prog_bar=False)
         # if batch_idx % 10 == 0:
@@ -336,11 +332,11 @@ class DARTSModel(BaseModel):
         self.log("val/auc", auc, on_step=False, on_epoch=True, prog_bar=False)
         auc_en = 0
         acc_en_epoch = 0
-        if self.trainer.world_size > 1:
-            self.y_score_en = self.y_score_en.detach().cpu().numpy()
-            auc_en = getAUC(self.y_true, self.y_score_en, self.task)
-            acc_en_epoch = self.trainer.callback_metrics['val/acc_ensemble_epoch'].item()
-            self.log("val/auc_ensemble", auc_en, on_step=False, on_epoch=True, prog_bar=False)
+        # if self.trainer.world_size > 1:
+        #     self.y_score_en = self.y_score_en.detach().cpu().numpy()
+        #     auc_en = getAUC(self.y_true, self.y_score_en, self.task)
+        #     acc_en_epoch = self.trainer.callback_metrics['val/acc_ensemble_epoch'].item()
+        #     self.log("val/auc_ensemble", auc_en, on_step=False, on_epoch=True, prog_bar=False)
             # logger.info(f'Val epoch{self.trainer.current_epoch} auc_en={auc_en:.4f} acc_en={acc_en_epoch:.4f}')
         logger.info(f'Val epoch{self.trainer.current_epoch} loss={loss_epoch:.4f} auc={auc:.4f} acc={acc_epoch:.4f} auc_en={auc_en:.4f} acc_en={acc_en_epoch:.4f}')
 
@@ -371,19 +367,19 @@ class DARTSModel(BaseModel):
         (X, targets) = batch
         with torch.no_grad():
             preds, loss = self._logits_and_loss(X, targets, to_aug=False)
-        if self.trainer.world_size > 1:
-            preds_en = torch.tensor(self.all_gather(preds.detach())).mean(dim=0)
-            self.y_score_en = torch.cat((self.y_score_en, preds_en.softmax(dim=-1)), 0)
+        # if self.trainer.world_size > 1:
+        #     preds_en = torch.tensor(self.all_gather(preds.detach())).mean(dim=0)
+        #     self.y_score_en = torch.cat((self.y_score_en, preds_en.softmax(dim=-1)), 0)
         self.y_true = torch.cat((self.y_true, targets), 0)
         self.y_score = torch.cat((self.y_score, preds.softmax(dim=-1)), 0)
 
         # log test metrics
         acc = self.test_metric(preds, targets)
         acc_ensemble = 0.
-        if self.trainer.world_size > 1:
-            preds_en = torch.argmax(preds_en, dim=1)
-            acc_ensemble = self.val_metric(preds_en, targets)
-            self.log("test/acc_ensemble", acc_ensemble, on_step=True, on_epoch=True, prog_bar=False)
+        # if self.trainer.world_size > 1:
+        #     preds_en = torch.argmax(preds_en, dim=1)
+        #     acc_ensemble = self.val_metric(preds_en, targets)
+        #     self.log("test/acc_ensemble", acc_ensemble, on_step=True, on_epoch=True, prog_bar=False)
         self.log("test/loss", loss, on_step=False, on_epoch=True)
         self.log("test/acc", acc, on_step=False, on_epoch=True)
         if batch_idx % 10 == 0:
@@ -402,12 +398,12 @@ class DARTSModel(BaseModel):
         self.log("test/acc", acc, on_step=False, on_epoch=True, prog_bar=False)
         auc_en = 0.
         acc_en_epoch = 0.
-        if self.trainer.world_size > 1:
-            self.y_score_en = self.y_score_en.detach().cpu().numpy()
-            auc_en = getAUC(self.y_true, self.y_score_en, self.task)
-            acc_en_epoch = self.trainer.callback_metrics['test/acc_ensemble_epoch'].item()
-            self.log("test/auc_ensemble", auc_en, on_step=False, on_epoch=True, prog_bar=False)
-            self.log("test/acc_ensemble", acc_en_epoch, on_step=False, on_epoch=True, prog_bar=False)
+        # if self.trainer.world_size > 1:
+        #     self.y_score_en = self.y_score_en.detach().cpu().numpy()
+        #     auc_en = getAUC(self.y_true, self.y_score_en, self.task)
+        #     acc_en_epoch = self.trainer.callback_metrics['test/acc_ensemble_epoch'].item()
+        #     self.log("test/auc_ensemble", auc_en, on_step=False, on_epoch=True, prog_bar=False)
+        #     self.log("test/acc_ensemble", acc_en_epoch, on_step=False, on_epoch=True, prog_bar=False)
         logger.info(f'Test epoch{self.trainer.current_epoch} auc={auc:.4f} acc={acc:.4f} auc_en={auc_en:.4f} acc_en={acc_en_epoch:.4f} loss={loss:.4f}')
 
     def configure_optimizers(self):

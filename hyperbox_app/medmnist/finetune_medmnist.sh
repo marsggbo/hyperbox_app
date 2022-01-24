@@ -17,16 +17,23 @@ experiment=finetune.yaml \
 logger.wandb.name=$name \
 hydra.job.name=$name \
 datamodule=$datamodule \
-datamodule.batch_size=32 \
+datamodule.batch_size=16 \
++datamodule.concat_train_val=True \
++datamodule.use_weighted_sampler=True \
++datamodule.use_balanced_batch_sampler=False \
 trainer.gpus=$gpuNum \
 trainer.accelerator='gpu' \
 trainer.max_epochs=100 \
+trainer.log_every_n_steps=10 \
 callbacks.model_checkpoint.save_top_k=1 \
-model/network_cfg=dambv2_medmnist \
+model/network_cfg=dambv3_medmnist \
 model.network_cfg.mask=$mask \
 ++trainer.amp_backend=apex \
 ++trainer.amp_level=o1 \
 $others
 
+# +datamodule.use_weighted_sampler=True \
+# model/network_cfg=da_mobile3dnet \
+# model/network_cfg=dambv2_medmnist \
 # example
 # bash ./finetune_medmnist.sh organ3dmnist 0 /path/to/mask.json

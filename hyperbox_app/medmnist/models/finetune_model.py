@@ -14,6 +14,7 @@ from hyperbox.utils.logger import get_logger
 from hyperbox.networks.network_ema import ModelEma
 from hyperbox.models.base_model import BaseModel
 from hyperbox_app.medmnist.utils import getAUC
+from hyperbox_app.medmnist.networks.kornia_aug import RandomMixUp3d
 from hyperbox_app.medmnist.losses import MixupLoss, MutualLoss
 
 logger = get_logger(__name__)
@@ -55,7 +56,8 @@ class FinetuneModel(BaseModel):
         super().__init__(network_cfg, None, optimizer_cfg,
                          loss_cfg, metric_cfg, scheduler_cfg, **kwargs)
         self.use_mixup = use_mixup
-        self.random_mixup = RandomMixUp()
+        if use_mixup:
+            self.random_mixup = RandomMixUp3d()
         self.input_size = input_size
         # self.net_ema = ModelEma(self.network, decay=0.9).eval()
 
@@ -96,12 +98,7 @@ class FinetuneModel(BaseModel):
     def step(self, batch: Any):
         x, y = batch
         if self.use_mixup and self.criterion.training:
-            if len(x.shape) == 5 and x.shape[1]==1:
-                x = x.squeeze(1)
-                is_squeeze = True
             x, y = self.random_mixup(x, y)
-            if is_squeeze:
-                x = x.unsqueeze(1)
         logits = self.forward(x)
         if len(logits.shape) == 3:
             # ensemble branches mode
@@ -174,14 +171,14 @@ class FinetuneModel(BaseModel):
         self.y_score = torch.tensor([]).to(self.device)
         if self.use_mixup:
             self.criterion.training = False
-        self.eval_net = self.net_ema if hasattr(self, 'net_ema') else self.network
         # self.reset_running_statistics()
 
     def validation_step(self, batch: Any, batch_idx: int):
         self.to_aug = False
         with torch.no_grad():
             x, targets = batch
-            preds = self.forward(x, network=self.eval_net)
+            eval_net = self.net_ema if hasattr(self, 'net_ema') else self.network
+            preds = self.forward(x, network=eval_net)
             if len(preds.shape) == 3:
                 loss = 0.
                 for logit in preds:
