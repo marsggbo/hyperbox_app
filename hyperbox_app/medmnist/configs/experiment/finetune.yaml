@@ -10,7 +10,7 @@ defaults:
   - override /callbacks: default.yaml
   - override /logger: wandb.yaml
   - override /model/scheduler_cfg: CosineAnnealingLR.yaml
-  - override /model/loss_cfg: cross_entropy_labelsmooth.yaml
+  - override /model/loss_cfg: cross_entropy.yaml
   - override /model/optimizer_cfg: adam.yaml
   - override /model/network_cfg: da_mobile3dnet.yaml
   - override /model/mutator_cfg: random_mutator.yaml
@@ -25,8 +25,6 @@ trainer:
   min_epochs: 1
   max_epochs: 200
   gpus: 1
-  # accelerator: horovod
-  accelerator: dp
 
 datamodule:
   # is_customized: True
@@ -37,9 +35,9 @@ model:
   network_cfg:
     mask: null
   optimizer_cfg:
-    lr: 0.001
+    lr: 0.0003
   scheduler_cfg:
-    T_max: 250
+    T_max: 80
 
 logger:
   wandb:

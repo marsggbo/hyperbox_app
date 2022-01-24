@@ -171,14 +171,14 @@ class FinetuneModel(BaseModel):
         self.y_score = torch.tensor([]).to(self.device)
         if self.use_mixup:
             self.criterion.training = False
-        self.eval_net = self.net_ema if hasattr(self, 'net_ema') else self.network
         # self.reset_running_statistics()
 
     def validation_step(self, batch: Any, batch_idx: int):
         self.to_aug = False
         with torch.no_grad():
             x, targets = batch
-            preds = self.forward(x, network=self.eval_net)
+            eval_net = self.net_ema if hasattr(self, 'net_ema') else self.network
+            preds = self.forward(x, network=eval_net)
             if len(preds.shape) == 3:
                 loss = 0.
                 for logit in preds:
