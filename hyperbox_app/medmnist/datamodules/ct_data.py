@@ -11,6 +11,7 @@ import torch.nn as nn
 import torchvision.transforms as TF
 
 from torch.utils.data import DataLoader, Dataset, random_split
+from torch.utils.data.sampler import WeightedRandomSampler
 from kornia import image_to_tensor, tensor_to_image
 from pytorch_lightning import LightningDataModule
 from hyperbox.utils.utils import hparams_wrapper
@@ -38,6 +39,7 @@ class CTDataset(torch.utils.data.Dataset):
         loader=pil_loader,
         transforms=None,
         label_transforms=None,
+        use_weighted_sampler: bool = False,
         *args, **kwargs
     ):
         '''
@@ -61,6 +63,7 @@ class CTDataset(torch.utils.data.Dataset):
 
     def convert_json_to_list(self, data):
         samples = {} # {0: {'scans': [], 'labels': 0}}
+        labels = []
         idx = 0
         for cls_ in data:
             for pid in data[cls_]:
@@ -73,7 +76,9 @@ class CTDataset(torch.utils.data.Dataset):
                         scan_path = os.path.join(self.root_dir,cls_,pid,scan_id)
                     if os.path.exists(scan_path) and len(slices)>0:
                             samples[idx] = {'slices':slices, 'label': label, 'path': scan_path}
+                            labels.append(label)
                             idx += 1
+        self.labels = torch.tensor(labels).view(-1)
         return samples
 
     def preprocessing(self, img):
@@ -194,10 +199,14 @@ class CTDatamodule(LightningDataModule):
         shuffle: bool = False,
         pin_memory: bool = False,
         drop_last: bool = False,
+        use_weighted_sampler: bool = False,
+        class_weights: list = None
     ):
         super().__init__()
         self.is_setup = False
         self.setup()
+        self.use_weighted_sampler = use_weighted_sampler
+        self.class_weights = class_weights
 
     def setup(self, stage: Optional[str] = None):
         if self.is_setup:
@@ -205,18 +214,37 @@ class CTDatamodule(LightningDataModule):
         self.dataset_train = CTDataset(
             self.root_dir, data_list=self.data_list_train, is_train=True, is_color=self.is_color,
             is_3d=self.is_3d, img_size=self.img_size, center_size=self.center_size, slice_num=self.slice_num)
-        self.dataset_val = CTDataset(
-            self.root_dir, data_list=self.data_list_val, is_train=True, is_color=self.is_color,
-            is_3d=self.is_3d, img_size=self.img_size, center_size=self.center_size, slice_num=self.slice_num)
+        if self.is_customized:
+            self.dataset_val = self.dataset_train
+        else:
+            self.dataset_val = CTDataset(
+                self.root_dir, data_list=self.data_list_val, is_train=False, is_color=self.is_color,
+                is_3d=self.is_3d, img_size=self.img_size, center_size=self.center_size, slice_num=self.slice_num)
         self.dataset_test = CTDataset(
-            self.root_dir, data_list=self.data_list_test, is_train=True, is_color=self.is_color,
+            self.root_dir, data_list=self.data_list_test, is_train=False, is_color=self.is_color,
             is_3d=self.is_3d, img_size=self.img_size, center_size=self.center_size, slice_num=self.slice_num)
         self.datasets = [
             self.dataset_train, self.dataset_val, self.dataset_test
         ]
         self.is_setup = True
 
-    def _data_loader(self, dataset: Dataset, shuffle: bool = False) -> DataLoader:
+    def build_weighted_sampler(self, dataset, class_weights: list=None):
+        '''
+        class_weights: class_weights list
+        '''
+        labels = torch.tensor(dataset.labels).view(-1)
+        if class_weights is None:
+            class_sample_count = torch.tensor(
+                [(labels == t).sum() for t in torch.unique(labels, sorted=True)])
+            class_weights = 1. / class_sample_count.float()
+            print(class_weights)
+        samples_weight = torch.tensor([class_weights[t.item()] for t in labels])
+        sampler = WeightedRandomSampler(samples_weight, len(samples_weight), replacement=True)
+        return sampler
+
+    def _data_loader(self, dataset: Dataset, shuffle: bool = False, sampler=None) -> DataLoader:
+        if sampler is not None:
+            shuffle = False
         return DataLoader(
             dataset,
             batch_size=self.batch_size,
@@ -224,14 +252,23 @@ class CTDatamodule(LightningDataModule):
             num_workers=self.num_workers,
             drop_last=self.drop_last,
             pin_memory=self.pin_memory,
+            sampler=sampler
         )
 
     def train_dataloader(self):
-        train_loader = self._data_loader(self.dataset_train, shuffle=True)
+        tr_sampler = None
+        if self.use_weighted_sampler:
+            weights = self.class_weights
+            tr_sampler = self.build_weighted_sampler(self.dataset_train, weights)
+        train_loader = self._data_loader(self.dataset_train, True, tr_sampler)
         if self.is_customized:
+            val_sampler = None
+            if self.use_weighted_sampler:
+                weights = self.class_weights
+                val_sampler = self.build_weighted_sampler(self.dataset_val, weights)
             train_val_loader = {
                 'train': train_loader,
-                'val': self._data_loader(self.dataset_val)
+                'val': self._data_loader(self.dataset_val, True, val_sampler)
             }
             return train_val_loader
         return train_loader
@@ -284,6 +321,7 @@ if __name__ == '__main__':
     BS = 32
     print('start')
     logging.info('start')
+    use_weighted_sampler = True
     # mosmed
     # mean=0.4570799767971039, std=0.1314811408519745
     datamodule1 = CTDatamodule(
@@ -291,6 +329,8 @@ if __name__ == '__main__':
         is_color=False,
         batch_size=BS,
         num_workers=4,
+        use_weighted_sampler=use_weighted_sampler,
+        class_weights=[1/178, 1/601],
         data_list_train='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_train.json',
         data_list_val='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_test.json',
         data_list_test='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_test.json',
@@ -302,6 +342,8 @@ if __name__ == '__main__':
         is_color=False,
         batch_size=BS,
         num_workers=4,
+        use_weighted_sampler=use_weighted_sampler,
+        class_weights=[1/1210, 1/1213,1/772],
         data_list_train='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/ccccii/ct_train.json',
         data_list_val='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/ccccii/ct_test.json',
         data_list_test='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/ccccii/ct_test.json',
@@ -313,6 +355,8 @@ if __name__ == '__main__':
         is_color=False,
         batch_size=BS,
         num_workers=4,
+        use_weighted_sampler=use_weighted_sampler,
+        class_weights=[1/236, 1/595],
         data_list_train='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/train.json',
         data_list_val='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/test.json',
         data_list_test='/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/test.json',
@@ -323,15 +367,22 @@ if __name__ == '__main__':
     for datamodule in [datamodule1, datamodule2, datamodule3]:
         mean = 0.
         std = 0.
+        labels = []
         for idx, data in enumerate(datamodule.train_dataloader()):
-            if idx > 2:
-                break
+            # if idx > 2:
+            #     break
             img, label = data
-            mean += img.view(img.shape[0], -1).mean()
-            std += img.view(img.shape[0], -1).std()
-        mean /= (idx+1)
-        std /= (idx+1)
-        logging.info(f"mean={mean}, std={std}")
+            labels.append(label)
+            # mean += img.view(img.shape[0], -1).mean()
+            # std += img.view(img.shape[0], -1).std()
+        # mean /= (idx+1)
+        # std /= (idx+1)
+        # logging.info(f"mean={mean}, std={std}")
+        labels = torch.cat(labels).view(-1)
+        num0 = (labels==0).sum()
+        num1 = (labels==1).sum()
+        num2 = (labels==2).sum()
+        print(f"0:{num0} 1:{num1} 2:{num2} ")
     cost = time() - start
     logging.info(f"cost {cost/(idx+1)} sec")
     logging.info('end')
