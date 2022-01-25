@@ -1,6 +1,7 @@
 import os
 from typing import Union
 
+import wandb
 import torch
 import torch.nn as nn
 from kornia import image_to_tensor, tensor_to_image
@@ -41,38 +42,39 @@ def DAOperation3D(
     # ops['equal'] = prob_list_gen(RandomEqualize3D, probs=[0, 0.5, 0.9], same_on_batch=False)
 
     # affine
-    # ops['affine'] = [nn.Identity()]
-    # if isinstance(affine_degree, (float, int)):
-    #     # rotation degree
-    #     affine_degree = [affine_degree]
-    # if isinstance(affine_shears, (float, int)):
-    #     affine_shears = [affine_shears]
-    # if isinstance(affine_scale[0], (float, int)):
-    #     # scale, similar to zoom in/out
-    #     affine_scale = [affine_scale]
-    # for ad_ in affine_degree:
-    #     for ash_ in affine_shears:
-    #         for asc_ in affine_scale:
-    #             affine = prob_list_gen(RandomAffine3D, probs=[0.5, 0.9], same_on_batch=False, degrees=ad_, scale=asc_, shears=ash_) 
-    #             ops['affine'] += affine
+    ops['affine'] = [nn.Identity()]
+    if isinstance(affine_degree, (float, int)):
+        # rotation degree
+        affine_degree = [affine_degree]
+    if isinstance(affine_shears, (float, int)):
+        affine_shears = [affine_shears]
+    if isinstance(affine_scale[0], (float, int)):
+        # scale, similar to zoom in/out
+        affine_scale = [affine_scale]
+    for ad_ in affine_degree:
+        for ash_ in affine_shears:
+            for asc_ in affine_scale:
+                affine = prob_list_gen(RandomAffine3D, probs=[0.5, 0.9], same_on_batch=False, degrees=ad_, scale=asc_, shears=ash_) 
+                ops['affine'] += affine
 
     # random crop
-    # ops['rcrop'] = []
-    # if isinstance(crop_size[0], list) and len(crop_size[0]) > 1:
-    #     for size in crop_size:
-    #         rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
-    #         ops['rcrop'] += rcrop
-    # if isinstance(crop_size, (float, int)):
-    #     # e.g., crop_size = 32
-    #     crop_size = [(crop_size,)*3]
-    #     rcrop = prob_list_gen(RandomCrop3D, same_on_batch=False, size=crop_size)
-    # elif isinstance(crop_size[0], (float, int)):
-    #     # e.g., crop_size = (16,64,64)
-    #     crop_size = [crop_size]
-    # for size in crop_size:
-    #     rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
-    #     ops['rcrop'] += rcrop
+    ops['rcrop'] = []
+    if isinstance(crop_size[0], list) and len(crop_size[0]) > 1:
+        for size in crop_size:
+            rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
+            ops['rcrop'] += rcrop
+    if isinstance(crop_size, (float, int)):
+        # e.g., crop_size = 32
+        crop_size = [(crop_size,)*3]
+        rcrop = prob_list_gen(RandomCrop3D, same_on_batch=False, size=crop_size)
+    elif isinstance(crop_size[0], (float, int)):
+        # e.g., crop_size = (16,64,64)
+        crop_size = [crop_size]
+    for size in crop_size:
+        rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
+        ops['rcrop'] += rcrop
 
+    # crop part of image and resize it to specified size
     # resize_crop = [nn.Identity()]
     # for size in crop_size[:1]:
     #     size = size[1:]
@@ -81,31 +83,36 @@ def DAOperation3D(
     #             resize_crop += prob_list_gen(RandomResizedCrop3d, probs=[0.5, 1], size=size, scale=scale, ratio=ratio)
     # ops['resize_crop'] = resize_crop
 
+    # brightness and contrast
     ops['bright_contrast'] = []
-    for brightness in [0.8, 1.2]:
-        for contrast in [0.8, 1.2]:
+    for brightness in [0.3, 0.5]:
+        for contrast in [0.3, 0.8]:
             ops['bright_contrast'] += prob_list_gen(
                 BrightContrast3d, probs=[0.5, 0.9], brightness=brightness, contrast=contrast)
 
-    # boxblur = [nn.Identity()]
-    # for ks in [(3,3), (5,5)]:
-    #     boxblur += prob_list_gen(RandomBoxBlur3d, probs=[0.5, 0.9], kernel_size=ks)
-    # ops['boxnlur'] = boxblur
+    # blur
+    boxblur = [nn.Identity()]
+    for ks in [(3,3), (2,2)]:
+        boxblur += prob_list_gen(RandomBoxBlur3d, probs=[0.5, 0.9], kernel_size=ks)
+    ops['boxblur'] = boxblur
 
-    # invert = [nn.Identity()]
-    # for val in [0.25, 0.5, 0.75, 1]:
-    #     invert += prob_list_gen(RandomInvert3d, probs=[0.5, 1], max_val=val)
-    # ops['invert'] = invert
+    # color invert
+    invert = [nn.Identity()]
+    for val in [0.25, 0.5, 0.75, 1]:
+        invert += prob_list_gen(RandomInvert3d, probs=[0.5, 1], max_val=val)
+    ops['invert'] = invert
 
-    # gauNoise = [nn.Identity()]
-    # gauNoise += prob_list_gen(RandomGaussianNoise3d, probs=[0.5, 0.9])
-    # ops['gauNoise'] = gauNoise
+    # add gaussian noise
+    gauNoise = [nn.Identity()]
+    gauNoise += prob_list_gen(RandomGaussianNoise3d, probs=[0.5, 0.9], mean=0.05, std=0.01)
+    ops['gauNoise'] = gauNoise
 
-    # erase = [nn.Identity()]
-    # for scale in [(0.02, 0.1), (0.1, 0.33)]:
-    #     for ratio in [(0.3, 3.3)]:
-    #         erase += prob_list_gen(RandomErasing3d, probs=[0.5, 0.9], scale=scale, ratio=ratio)
-    # ops['erase'] = erase
+    # random cutout
+    erase = [nn.Identity()]
+    for scale in [(0.02, 0.1), (0.1, 0.33)]:
+        for ratio in [(0.3, 3.3)]:
+            erase += prob_list_gen(RandomErasing3d, probs=[0.5, 0.9], scale=scale, ratio=ratio)
+    ops['erase'] = erase
 
     return ops
 
@@ -117,23 +124,41 @@ class DataAugmentation(BaseNASNetwork):
         self,
         rotate_degree=30, crop_size=[(32,128,128), (16,128,128)],
         affine_degree=0, affine_scale=(1.1, 1.5), affine_shears=20,
-        mean=0.5, std=0.5,
+        mean=0.5, std=0.5, aug_keys=None, ignore_keys=None,
         mask=None
     ):
         super().__init__(mask)
         self.ops = DAOperation3D(affine_degree, affine_scale, affine_shears, rotate_degree, crop_size)
+        
+        if aug_keys is None:
+            aug_keys = list(self.ops.keys())
+
+        if ignore_keys is None:
+            ignore_keys = []
+
         transforms = []
         for key, value in self.ops.items():
-            if value:
+            if value and key in aug_keys and key not in ignore_keys:
                 transforms.append(OperationSpace(candidates=value, key=key, mask=self.mask, reduction='mean'))
         self.transforms = nn.Sequential(*transforms)
         self.mean = mean
         self.std = std
+        self.count = 0
 
     def sub_forward(self, x: torch.Tensor, aug=True):
         if aug:
+            if self.count < 2:
+                depth = x.shape[2]
+                filename = f"origin{self.count}"
+                index = depth//2
+                wandb.log({filename: wandb.Image(x[0,0,index,...].cpu().detach().numpy())})
             for idx, trans in enumerate(self.transforms):
                 x = trans(x) # BxCXDxHxW
+                if self.count < 2:
+                    aug_op = trans.value.__class__.__name__
+                    filename = f"aug{self.count}_{idx}_{aug_op}"
+                    wandb.log({filename: wandb.Image(x[0,0,index,...].cpu().detach().numpy())})
+            self.count += 1
         # normalize
         # Todo: compare with no normalization
         # x = (x-self.mean)/self.std

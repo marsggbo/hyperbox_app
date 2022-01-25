@@ -32,9 +32,9 @@ datamodule:
   # is_customized: True
   is_customized: False
   batch_size: 8
-  img_size: [256,256]
+  img_size: [300,300]
   center_size: [256,256]
-  slice_num: 32
+  slice_num: 40
 
 model:
   network_cfg:
@@ -45,21 +45,21 @@ model:
       - [24,256,256]
       - [32,256,256]
     affine_degree:
-    - 10
-    - 30
+    - 0
+    - 3
     affine_scale:
     - - 0.8
       - 1
     - - 1.1
       - 1.6
     affine_shears:
-    - 10
-    - 20
+    - 0
+    - 2
     candidate_ops:
-    - 3x3_MBConv3SE
-    - 3x3_MBConv4SE
-    - 5x5_MBConv3SE
-    - 7x7_MBConv3SE
+    - 3x3_MBConv3
+    - 3x3_MBConv4
+    - 5x5_MBConv3
+    - 7x7_MBConv3
     mask: null
     stride_stages: [2,2,2,2,2,2]
     num_classes: 2
