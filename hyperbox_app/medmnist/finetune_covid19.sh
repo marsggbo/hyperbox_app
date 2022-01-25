@@ -15,10 +15,13 @@ hydra.searchpath=[file:///home/comp/18481086/code/hyperbox_app/hyperbox_app/medm
 experiment=$exp \
 logger.wandb.name=$name \
 hydra.job.name=$name \
++datamodule.use_weighted_sampler=True \
 trainer.gpus=$gpuNum \
-trainer.accelerator=dp \
+trainer.accelerator='gpu' \
 trainer.max_epochs=100 \
 callbacks.model_checkpoint.save_top_k=2 \
+model/network_cfg=dambv3_covid19 \
++model.network_cfg.first_stride=2 \
 model.network_cfg.mask=$mask \
 $others
 # ++trainer.amp_backend=apex \
