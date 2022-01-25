@@ -19,7 +19,7 @@ __all__ = [
     'RandomBoxBlur3d',
     'RandomErasing3d',
     'RandomSharpness3d',
-    'RandomResizedCrop3d'
+    'RandomResizedCrop3d',
     'BrightContrast3d'
 ]
 
@@ -72,6 +72,9 @@ class RandomMixUp3d(Base2dTo3d):
 
 class BrightContrast3d(nn.Module):
     def __init__(self, brightness=0.4, contrast=0.4, p=0.5):
+        '''
+        if brightness<0, the image will be very dark. 
+        '''
         super(BrightContrast3d, self).__init__()
         self.brightness = brightness
         self.contrast = contrast
