@@ -147,17 +147,19 @@ class DataAugmentation(BaseNASNetwork):
 
     def sub_forward(self, x: torch.Tensor, aug=True):
         if aug:
-            if self.count < 2:
+            if self.count < 5:
                 depth = x.shape[2]
-                filename = f"origin{self.count}"
                 index = depth//2
-                wandb.log({filename: wandb.Image(x[0,0,index,...].cpu().detach().numpy())})
+                for i in range(5):
+                    filename = f"origin{self.count}_slice{index+i}"
+                    wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
             for idx, trans in enumerate(self.transforms):
                 x = trans(x) # BxCXDxHxW
-                if self.count < 2:
-                    aug_op = trans.value.__class__.__name__
-                    filename = f"aug{self.count}_{idx}_{aug_op}"
-                    wandb.log({filename: wandb.Image(x[0,0,index,...].cpu().detach().numpy())})
+            if self.count < 5:
+                aug_op = trans.value.__class__.__name__
+                for i in range(5):
+                    filename = f"aug{self.count}_slice{index+i}"
+                    wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
             self.count += 1
         # normalize
         # Todo: compare with no normalization
