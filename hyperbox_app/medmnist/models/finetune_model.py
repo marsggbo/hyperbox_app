@@ -260,6 +260,13 @@ class FinetuneModel(BaseModel):
         acc = self.trainer.callback_metrics['test/acc'].item()
         loss = self.trainer.callback_metrics['test/loss'].item()
         logger.info(f'Test epoch{self.trainer.current_epoch} auc={auc:.4f} acc={acc:.4f} loss={loss:.4f}')
+        try:
+            import wandb
+            wandb.log(
+                {"roc": wandb.plots.ROC(self.y_true, self.y_score),}
+            )
+        except Exception as e:
+            print(e)
 
     def on_fit_end(self):
         mflops, size = self.arch_size(self.input_size, convert=True)

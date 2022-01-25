@@ -405,6 +405,13 @@ class DARTSModel(BaseModel):
         #     self.log("test/auc_ensemble", auc_en, on_step=False, on_epoch=True, prog_bar=False)
         #     self.log("test/acc_ensemble", acc_en_epoch, on_step=False, on_epoch=True, prog_bar=False)
         logger.info(f'Test epoch{self.trainer.current_epoch} auc={auc:.4f} acc={acc:.4f} auc_en={auc_en:.4f} acc_en={acc_en_epoch:.4f} loss={loss:.4f}')
+        try:
+            import wandb
+            wandb.log(
+                {"roc": wandb.plots.ROC(self.y_true, self.y_score),}
+            )
+        except Exception as e:
+            print(e)
 
     def configure_optimizers(self):
         """Choose what optimizers and learning-rate schedulers to use in your optimization.
