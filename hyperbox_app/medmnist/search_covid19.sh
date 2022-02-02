@@ -19,9 +19,9 @@ datamodule.img_size=[128,128] \
 datamodule.center_size=[96,96] \
 datamodule.slice_num=32 \
 datamodule.num_workers=3 \
-datamodule.batch_size=24 \
-model/optimizer_cfg=sgd \
-model.optimizer_cfg.lr=0.025 \
+datamodule.batch_size=32 \
+model/optimizer_cfg=adam \
+model.optimizer_cfg.lr=0.001 \
 model.metric_cfg._target_=hyperbox.utils.metrics.Accuracy \
 model/network_cfg=dambv3_covid19 \
 trainer.gpus=$gpuNum \
@@ -30,8 +30,8 @@ trainer.strategy=null \
 trainer.max_epochs=50 \
 ++trainer.amp_backend=apex \
 ++trainer.amp_level=o1 \
-callbacks.model_checkpoint.monitor='val/auc' \
-callbacks.model_checkpoint.save_top_k=1 \
+callbacks.model_checkpoint.monitor='val/acc' \
+callbacks.model_checkpoint.save_top_k=2 \
 $others
 
 # ++model.network_cfg.candidate_ops=['3x3_MBConv3SE','3x3_MBConv4SE','5x5_MBConv3SE','7x7_MBConv3SE','Identity'] \

@@ -32,7 +32,7 @@ datamodule:
   # is_customized: True
   is_customized: False
   batch_size: 16
-  img_size: [128,128]
+  img_size: [160,160]
   center_size: [128,128]
   slice_num: 32
 
@@ -45,8 +45,8 @@ model:
       - [24,128,128]
       - [32,128,128]
     affine_degree:
-    - 0
-    - 3
+    - [1.,1.,15.]
+    - [1.,1.,30.]
     affine_scale:
     - - 0.8
       - 1
@@ -54,13 +54,9 @@ model:
       - 1.6
     affine_shears:
     - 0
-    - 2
-    candidate_ops:
-    - 3x3_MBConv3
-    - 3x3_MBConv4
-    - 5x5_MBConv3
-    - 7x7_MBConv3
-    stride_stages: [2,2,2,2,2,2]
+    - 0
+    width_stages: [32,64,128,256,512,1024]
+    stride_stages: [2,2,2,1,2,1]
     mask: null
     num_classes: 3
   optimizer_cfg:
@@ -80,5 +76,5 @@ hydra:
 
 callbacks:
   model_checkpoint:
-    monitor: 'val/auc'
+    monitor: 'val/acc'
     filename: "{epoch:02d}_{val/auc:.4f}_{val/acc:.4f}"

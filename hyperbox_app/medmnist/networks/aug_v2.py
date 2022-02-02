@@ -41,6 +41,17 @@ def DAOperation3D(
     ops['vflip'] = prob_list_gen(RandomVerticalFlip3D, probs=[0, 0.5, 0.9], same_on_batch=False)
     # ops['equal'] = prob_list_gen(RandomEqualize3D, probs=[0, 0.5, 0.9], same_on_batch=False)
 
+    # # rotate
+    # ops['rotate'] = [nn.Identity()]
+    # rotate_degrees = [
+    #     [rotate_degree, 0, 0],
+    #     [0, rotate_degree, 0],
+    #     [0, 0, rotate_degree],
+    #     [rotate_degree] * 3
+    # ]
+    # for d in rotate_degrees:
+    #     ops['rotate'] += prob_list_gen(RandomVerticalFlip3D, probs=[0.5], same_on_batch=False, degrees=d)
+
     # affine
     ops['affine'] = [nn.Identity()]
     if isinstance(affine_degree, (float, int)):
@@ -52,27 +63,29 @@ def DAOperation3D(
         # scale, similar to zoom in/out
         affine_scale = [affine_scale]
     for ad_ in affine_degree:
+        if not isinstance(ad_, tuple):
+            ad_ = tuple(ad_)
         for ash_ in affine_shears:
             for asc_ in affine_scale:
                 affine = prob_list_gen(RandomAffine3D, probs=[0.5, 0.9], same_on_batch=False, degrees=ad_, scale=asc_, shears=ash_) 
                 ops['affine'] += affine
 
     # random crop
-    ops['rcrop'] = []
-    if isinstance(crop_size[0], list) and len(crop_size[0]) > 1:
-        for size in crop_size:
-            rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
-            ops['rcrop'] += rcrop
-    if isinstance(crop_size, (float, int)):
-        # e.g., crop_size = 32
-        crop_size = [(crop_size,)*3]
-        rcrop = prob_list_gen(RandomCrop3D, same_on_batch=False, size=crop_size)
-    elif isinstance(crop_size[0], (float, int)):
-        # e.g., crop_size = (16,64,64)
-        crop_size = [crop_size]
-    for size in crop_size:
-        rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
-        ops['rcrop'] += rcrop
+    # ops['rcrop'] = []
+    # if isinstance(crop_size[0], list) and len(crop_size[0]) > 1:
+    #     for size in crop_size:
+    #         rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
+    #         ops['rcrop'] += rcrop
+    # if isinstance(crop_size, (float, int)):
+    #     # e.g., crop_size = 32
+    #     crop_size = [(crop_size,)*3]
+    #     rcrop = prob_list_gen(RandomCrop3D, same_on_batch=False, size=crop_size)
+    # elif isinstance(crop_size[0], (float, int)):
+    #     # e.g., crop_size = (16,64,64)
+    #     crop_size = [crop_size]
+    # for size in crop_size:
+    #     rcrop = [RandomCrop3D(same_on_batch=False, size=size, p=1)]
+    #     ops['rcrop'] += rcrop
 
     # crop part of image and resize it to specified size
     # resize_crop = [nn.Identity()]
@@ -99,7 +112,7 @@ def DAOperation3D(
     # color invert
     invert = [nn.Identity()]
     for val in [0.25, 0.5, 0.75, 1]:
-        invert += prob_list_gen(RandomInvert3d, probs=[0.5, 1], max_val=val)
+        invert += prob_list_gen(RandomInvert3d, probs=[0.5, 0.9], max_val=val)
     ops['invert'] = invert
 
     # add gaussian noise
@@ -109,7 +122,7 @@ def DAOperation3D(
 
     # random cutout
     erase = [nn.Identity()]
-    for scale in [(0.02, 0.1), (0.1, 0.33)]:
+    for scale in [(0.02, 0.1), (0.1, 0.2)]:
         for ratio in [(0.3, 3.3)]:
             erase += prob_list_gen(RandomErasing3d, probs=[0.5, 0.9], scale=scale, ratio=ratio)
     ops['erase'] = erase
@@ -129,6 +142,13 @@ class DataAugmentation(BaseNASNetwork):
     ):
         super().__init__(mask)
         self.ops = DAOperation3D(affine_degree, affine_scale, affine_shears, rotate_degree, crop_size)
+        if self.mask is not None:
+            keys = list(self.mask.keys())
+            ops = {}
+            for key, value in self.ops.items():
+                if key in keys:
+                    ops[key] = value
+            self.ops = ops
         
         if aug_keys is None:
             aug_keys = list(self.ops.keys())
@@ -147,7 +167,7 @@ class DataAugmentation(BaseNASNetwork):
 
     def sub_forward(self, x: torch.Tensor, aug=True):
         if aug:
-            if self.count < 5:
+            if self.count < 10:
                 depth = x.shape[2]
                 index = depth//2
                 for i in range(5):
@@ -155,15 +175,21 @@ class DataAugmentation(BaseNASNetwork):
                     wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
             for idx, trans in enumerate(self.transforms):
                 x = trans(x) # BxCXDxHxW
-            if self.count < 5:
+            if self.count < 10:
                 aug_op = trans.value.__class__.__name__
                 for i in range(5):
                     filename = f"aug{self.count}_slice{index+i}"
                     wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
             self.count += 1
+            x = (x-self.mean)/self.std
+            if self.count < 10:
+                for i in range(5):
+                    filename = f"aug{self.count}_slice{index+i}_norm"
+                    wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
         # normalize
         # Todo: compare with no normalization
-        # x = (x-self.mean)/self.std
+        else:
+            x = (x-self.mean)/self.std
         return x
 
     def forward(self, x, aug=True):

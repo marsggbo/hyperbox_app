@@ -116,7 +116,12 @@ class FinetuneModel(BaseModel):
 
     def training_step(self, batch: Any, batch_idx: int):
         loss_mutual = 0.
-        self.to_aug = True
+        if torch.rand(1).item() < 0.1:
+            self.to_aug = True
+            self.criterion.training = False
+        else:
+            self.to_aug = False
+            self.criterion.training = True
         trn_X, trn_y = batch
         self.y_true_trn = torch.cat((self.y_true_trn, trn_y), 0)
         loss, preds, targets = self.step(batch)

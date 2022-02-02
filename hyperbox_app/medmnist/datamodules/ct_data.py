@@ -239,7 +239,7 @@ class CTDatamodule(LightningDataModule):
             class_weights = 1. / class_sample_count.float()
             print(class_weights)
         samples_weight = torch.tensor([class_weights[t.item()] for t in labels])
-        sampler = WeightedRandomSampler(samples_weight, len(samples_weight), replacement=True)
+        sampler = WeightedRandomSampler(samples_weight, len(samples_weight)*2, replacement=True)
         return sampler
 
     def _data_loader(self, dataset: Dataset, shuffle: bool = False, sampler=None) -> DataLoader:

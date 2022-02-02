@@ -2,7 +2,7 @@ _target_: hyperbox_app.medmnist.networks.mbnet_v3.DAMobile3DNet
 in_channels: 1
 width_stages: [24,40,80,96,192,320]
 n_cell_stages: [4,4,4,4,4,1]
-stride_stages: [2,2,2,2,2,2]
+stride_stages: [2,2,2,1,2,1]
 width_mult: 1
 num_classes: 3
 dropout_rate: 0
@@ -15,11 +15,18 @@ crop_size:
   - [16,96,96]
   - [24,96,96]
   - [32,96,96]
-affine_degree: [0, 3]
+affine_degree:
+- [10.,1.,1.]
+- [1.,10.,1.]
+- [1.,1.,10.]
+- [5.,5.,5.]
 affine_scale:
-  - [0.8,1]
-  - [1.1,1.6]
-affine_shears: [0, 3]
+- - 0.8
+  - 1
+- - 1.
+  - 1.2
+affine_shears:
+- 0
 mean: 0.5
 std: 0.5
 mask: null

@@ -26,6 +26,7 @@ class Mobile3DNet(BaseNASNetwork):
     ]
     def __init__(
         self, in_channels=3,
+        input_channel=None,
         first_stride=1,
         width_stages=[24,40,80,96,192,320],
         n_cell_stages=[4,4,4,4,4,1],
@@ -52,7 +53,8 @@ class Mobile3DNet(BaseNASNetwork):
             self.candidate_ops = candidate_ops
         else:
             self.candidate_ops = self.DEFAULT_OPS
-        input_channel = make_divisible(32 * width_mult, 8)
+        if input_channel is None:
+            input_channel = make_divisible(32 * width_mult, 8)
         first_cell_width = make_divisible(16 * width_mult, 8)
         for i in range(len(width_stages)):
             width_stages[i] = make_divisible(width_stages[i] * width_mult, 8)
@@ -175,7 +177,9 @@ class Mobile3DNet(BaseNASNetwork):
 class DAMobile3DNet(BaseNASNetwork):
     def __init__(
         self,
-        in_channels=3, first_stride=1, width_stages=[24,40,80,96,192,320],
+        in_channels=3, 
+        input_channel=None,
+        first_stride=1, width_stages=[24,40,80,96,192,320],
         n_cell_stages=[4,4,4,4,4,1],
         stride_stages=[2,2,2,1,2,1],
         width_mult=1, num_classes=1000,
@@ -189,7 +193,7 @@ class DAMobile3DNet(BaseNASNetwork):
     ):
         super(DAMobile3DNet, self).__init__(mask)
         self.network = Mobile3DNet(
-            in_channels, first_stride, width_stages, n_cell_stages, stride_stages, width_mult,
+            in_channels, input_channel, first_stride, width_stages, n_cell_stages, stride_stages, width_mult,
             num_classes, dropout_rate, bn_param, candidate_ops, mask)
         self.augmentation = DataAugmentation(
             rotate_degree, crop_size, affine_degree, affine_scale, affine_shears,
