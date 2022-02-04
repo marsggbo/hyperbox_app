@@ -8,10 +8,10 @@ defaults:
   - override /model: finetune.yaml
   - override /datamodule: ctset_datamodule.yaml
   - override /callbacks: default.yaml
-  - override /logger: wandb.yaml
-  - override /model/scheduler_cfg: CosineAnnealingLR.yaml
+  - override /logger: many_loggers.yaml
+  - override /model/scheduler_cfg: MultiStepLR.yaml
   - override /model/loss_cfg: cross_entropy_labelsmooth.yaml
-  - override /model/optimizer_cfg: adam.yaml
+  - override /model/optimizer_cfg: sgd.yaml
   - override /model/network_cfg: da_mbv3_covid19.yaml
   - override /model/mutator_cfg: random_mutator.yaml
 
@@ -31,32 +31,41 @@ trainer:
 datamodule:
   # is_customized: True
   is_customized: False
-  batch_size: 6
+  batch_size: 16
   img_size: [512,512]
-  center_size: [400,400]
+  center_size: [360,360]
   slice_num: 32
 
 model:
   network_cfg:
     crop_size:
-      - [8,400,400]
-      - [12,400,400]
-      - [16,400,400]
-      - [24,400,400]
-      - [32,400,400]
+      - [8,512,512]
+      - [12,512,512]
+      - [16,512,512]
+      - [24,512,512]
+      - [32,512,512]
     affine_degree:
-    - 0
-    - 3
+    - - 5.0
+      - 1.0
+      - 1.0
+    - - 1.0
+      - 5.0
+      - 1.0
+    - - 1.0
+      - 1.0
+      - 5.0
+    - - 3.0
+      - 3.0
+      - 3.0
     affine_scale:
     - - 0.8
       - 1
-    - - 1.1
-      - 1.6
+    - - 1.0
+      - 1.2
     affine_shears:
     - 0
-    - 2
     mask: null
-    stride_stages: [2,2,2,2,2,2]
+    stride_stages: [2,2,2,1,2,1]
     num_classes: 2
     candidate_ops:
     - 3x3_MBConv3
@@ -64,9 +73,11 @@ model:
     - 5x5_MBConv3
     - 7x7_MBConv3
   optimizer_cfg:
-    lr: 0.001
+    lr: 0.01
   scheduler_cfg:
-    T_max: 250
+    # T_max: 250
+    milestones: [30,60]
+    gamma: 0.5
 
 logger:
   wandb:
