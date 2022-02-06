@@ -397,11 +397,7 @@ class CalibrationLayer(nn.Module):
 
     def __init__(self, in_channels, out_channels, stride):
         super(CalibrationLayer, self).__init__()
-        if stride == 1:
-            conv = nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=1)
-        elif stride == 2:
-            conv = nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=2)
-        self.conv = conv
+        self.conv = nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=stride)
 
     def forward(self, x):
         out = self.conv(x)
