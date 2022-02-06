@@ -190,6 +190,13 @@ class DataAugmentation(BaseNASNetwork):
         # Todo: compare with no normalization
         else:
             x = (x-self.mean)/self.std
+            if self.count < 10:
+                depth = x.shape[2]
+                index = depth//2
+                for i in range(5):
+                    filename = f"noaug{self.count}_slice{index+i}"
+                    wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
+                self.count += 1
         return x
 
     def forward(self, x, aug=True):

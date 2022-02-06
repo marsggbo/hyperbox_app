@@ -30,7 +30,8 @@ class FinetuneModel(BaseModel):
         metric_cfg: Optional[Union[DictConfig, dict]] = None,
         scheduler_cfg: Optional[Union[DictConfig, dict]] = None,
         use_mixup: bool = False,
-        input_size= (2,3,28,28,28),
+        aug_prob: float = 0.5,
+        input_size = (2,3,28,28,28),
         **kwargs
     ):
         r'''Finetune model
@@ -59,6 +60,7 @@ class FinetuneModel(BaseModel):
         if use_mixup:
             self.random_mixup = RandomMixUp3d()
         self.input_size = input_size
+        self.aug_prob = aug_prob
         # self.net_ema = ModelEma(self.network, decay=0.9).eval()
 
     def on_fit_start(self):
@@ -116,7 +118,7 @@ class FinetuneModel(BaseModel):
 
     def training_step(self, batch: Any, batch_idx: int):
         loss_mutual = 0.
-        if torch.rand(1).item() < 0.5:
+        if torch.rand(1).item() < self.aug_prob:
             self.to_aug = True
             self.criterion.training = False
         else:
@@ -268,7 +270,7 @@ class FinetuneModel(BaseModel):
         try:
             import wandb
             wandb.log(
-                {"roc": wandb.plots.ROC(self.y_true, self.y_score),}
+                {"roc": wandb.plot.roc_curve(self.y_true, self.y_score)}
             )
         except Exception as e:
             print(e)

@@ -31,9 +31,9 @@ trainer:
 datamodule:
   # is_customized: True
   is_customized: False
-  batch_size: 16
-  img_size: [512,512]
-  center_size: [360,360]
+  batch_size: 12
+  img_size: [640,640]
+  center_size: [512,512]
   slice_num: 32
 
 model:
@@ -74,6 +74,8 @@ model:
     - 7x7_MBConv3
   optimizer_cfg:
     lr: 0.01
+    momentum: 0.9
+    weight_decay: 0.0005
   scheduler_cfg:
     # T_max: 250
     milestones: [30,60]

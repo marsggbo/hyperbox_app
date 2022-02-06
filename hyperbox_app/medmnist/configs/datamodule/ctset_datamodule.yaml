@@ -1,8 +1,11 @@
 _target_: hyperbox_app.medmnist.datamodules.CTDatamodule
 root_dir: '/home/datasets/COVID-CTset_visual'
-data_list_train: '/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/train.json'
-data_list_val: '/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/test.json'
-data_list_test: '/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/test.json'
+data_list_train: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/covid_ctset/train_balance.json'
+data_list_val: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/covid_ctset/test_balance.json'
+data_list_test: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/covid_ctset/test_balance.json'
+# data_list_train: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/train.json'
+# data_list_val: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/test.json'
+# data_list_test: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/iran/test.json'
 is_color: False
 is_3d: True
 img_size: [512, 512]

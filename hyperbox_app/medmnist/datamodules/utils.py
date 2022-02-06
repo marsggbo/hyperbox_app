@@ -4,19 +4,25 @@ import cv2
 import numpy as np
 from PIL import Image
 
-
 def pil_loader(path):
-    return cv2.imread(path, cv2.IMREAD_UNCHANGED)
-    if 'tif' in path.lower():
-        img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-    else:
-        img = Image.open(path)
-        bands = img.getbands()
-        if len(bands) >= 3:
-            img = img.convert('RGB')
-        else:
-            img = img.convert('L')
+    img = Image.open(path)
+    bands = img.getbands()
+    if len(bands) >= 3:
+        img = img.convert('RGB')
     return img
+
+# def pil_loader(path):
+#     return cv2.imread(path, cv2.IMREAD_UNCHANGED)
+#     if 'tif' in path.lower():
+#         img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+#     else:
+#         img = Image.open(path)
+#         bands = img.getbands()
+#         if len(bands) >= 3:
+#             img = img.convert('RGB')
+#         else:
+#             img = img.convert('L')
+#     return img
 
 
 class Resampler(object):
