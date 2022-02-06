@@ -188,6 +188,11 @@ class DAMobile3DNet(BaseNASNetwork):
 
         rotate_degree=30, crop_size=[(32,128,128), (32,256,256)],
         affine_degree=0, affine_scale=(1.1, 1.5), affine_shears=20,
+        brightness=[0.3, 0.5], contrast=[0.3,0.8],
+        blur_ks=[(3,3), (2,2)],
+        invert_val=[0.25, 0.5, 0.75, 1],
+        noise_mean=0.1, noise_std=0.05,
+        erase_scale=[(0.02, 0.1), (0.1, 0.2)], erase_ratio=[(0.3, 3.3)],
         mean=0.5, std=0.5, aug_keys=None, ignore_keys=['invert', 'rcrop'],
         mask=None
     ):
@@ -197,6 +202,7 @@ class DAMobile3DNet(BaseNASNetwork):
             num_classes, dropout_rate, bn_param, candidate_ops, mask)
         self.augmentation = DataAugmentation(
             rotate_degree, crop_size, affine_degree, affine_scale, affine_shears,
+            brightness, contrast, blur_ks, invert_val, noise_mean, noise_std, erase_scale, erase_ratio,
             mean, std, aug_keys, ignore_keys, mask)
 
     def forward(self, x, to_aug=False):

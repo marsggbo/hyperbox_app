@@ -33,7 +33,13 @@ def prob_list_gen(func, num_probs=4, probs: list=None, *args, **kwargs):
 def DAOperation3D(
     affine_degree=30, affine_scale=(1.1, 1.5), affine_shears=20,
     rotate_degree=30,
-    crop_size=(16,128,128)
+    crop_size=(16,128,128),
+    brightness=[0.3, 0.5],
+    contrast=[0.3,0.8],
+    blur_ks=[(3,3), (2,2)],
+    invert_val=[0.25, 0.5, 0.75, 1],
+    noise_mean=0.01, noise_std=0.05,
+    erase_scale=[(0.02, 0.1), (0.1, 0.2)], erase_ratio=[(0.3, 3.3)],
 ):
     ops = {}
     ops['dflip'] = prob_list_gen(RandomDepthicalFlip3D, probs=[0, 0.5, 0.9], same_on_batch=False)
@@ -98,26 +104,26 @@ def DAOperation3D(
 
     # brightness and contrast
     ops['bright_contrast'] = []
-    for brightness in [0.3, 0.5]:
-        for contrast in [0.3, 0.8]:
+    for brightness_ in brightness:
+        for contrast_ in contrast:
             ops['bright_contrast'] += prob_list_gen(
-                BrightContrast3d, probs=[0.5, 0.9], brightness=brightness, contrast=contrast)
+                BrightContrast3d, probs=[0.5, 0.9], brightness=brightness_, contrast=contrast_)
 
     # blur
     boxblur = [nn.Identity()]
-    for ks in [(3,3), (2,2)]:
+    for ks in blur_ks:
         boxblur += prob_list_gen(RandomBoxBlur3d, probs=[0.5, 0.9], kernel_size=ks)
     ops['boxblur'] = boxblur
 
     # color invert
     invert = [nn.Identity()]
-    for val in [0.25, 0.5, 0.75, 1]:
+    for val in invert_val:
         invert += prob_list_gen(RandomInvert3d, probs=[0.5, 0.9], max_val=val)
     ops['invert'] = invert
 
     # add gaussian noise
     gauNoise = [nn.Identity()]
-    gauNoise += prob_list_gen(RandomGaussianNoise3d, probs=[0.5, 0.9], mean=0.05, std=0.01)
+    gauNoise += prob_list_gen(RandomGaussianNoise3d, probs=[0.5, 0.9], mean=noise_mean, std=noise_mean)
     ops['gauNoise'] = gauNoise
 
     # random cutout
@@ -137,11 +143,18 @@ class DataAugmentation(BaseNASNetwork):
         self,
         rotate_degree=30, crop_size=[(32,128,128), (16,128,128)],
         affine_degree=0, affine_scale=(1.1, 1.5), affine_shears=20,
-        mean=0.5, std=0.5, aug_keys=None, ignore_keys=None,
+        brightness=[0.3, 0.5], contrast=[0.3,0.8],
+        blur_ks=[(3,3), (2,2)],
+        invert_val=[0.25, 0.5, 0.75, 1],
+        noise_mean=0.1, noise_std=0.05,
+        erase_scale=[(0.02, 0.1), (0.1, 0.2)], erase_ratio=[(0.3, 3.3)],
+        mean=0.5, std=0.5, aug_keys=None, ignore_keys=['invert', 'erase'],
         mask=None
     ):
         super().__init__(mask)
-        self.ops = DAOperation3D(affine_degree, affine_scale, affine_shears, rotate_degree, crop_size)
+        self.ops = DAOperation3D(
+            affine_degree, affine_scale, affine_shears, rotate_degree, crop_size,
+            brightness, contrast, blur_ks, invert_val, noise_mean, noise_std, erase_scale, erase_ratio)
         if self.mask is not None:
             keys = list(self.mask.keys())
             ops = {}
