@@ -50,6 +50,8 @@ def DAOperation3D(
         # scale, similar to zoom in/out
         affine_scale = [affine_scale]
     for ad_ in affine_degree:
+        if not isinstance(ad_, tuple):
+            ad_ = tuple(ad_)
         for ash_ in affine_shears:
             for asc_ in affine_scale:
                 affine = prob_list_gen(RandomAffine3D, probs=[0.5, 1], same_on_batch=False, degrees=ad_, scale=asc_, shears=ash_) 
