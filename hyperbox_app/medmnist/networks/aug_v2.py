@@ -148,7 +148,7 @@ class DataAugmentation(BaseNASNetwork):
         invert_val=[0.25, 0.5, 0.75, 1],
         noise_mean=0.1, noise_std=0.05,
         erase_scale=[(0.02, 0.1), (0.1, 0.2)], erase_ratio=[(0.3, 3.3)],
-        mean=0.5, std=0.5, aug_keys=None, ignore_keys=['invert', 'erase'],
+        mean=None, std=None, aug_keys=None, ignore_keys=['invert', 'erase'],
         mask=None
     ):
         super().__init__(mask)
@@ -202,7 +202,8 @@ class DataAugmentation(BaseNASNetwork):
         # normalize
         # Todo: compare with no normalization
         else:
-            x = (x-self.mean)/self.std
+            if self.mean is not None:
+                x = (x-self.mean)/self.std
             if self.count < 10:
                 depth = x.shape[2]
                 index = depth//2
