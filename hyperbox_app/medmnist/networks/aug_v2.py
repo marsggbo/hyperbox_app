@@ -146,8 +146,8 @@ class DataAugmentation(BaseNASNetwork):
         brightness=[0.3, 0.5], contrast=[0.3,0.8],
         blur_ks=[(3,3), (2,2)],
         invert_val=[0.25, 0.5, 0.75, 1],
-        noise_mean=0.1, noise_std=0.05,
-        erase_scale=[(0.02, 0.1), (0.1, 0.2)], erase_ratio=[(0.3, 3.3)],
+        noise_mean=0.01, noise_std=0.05,
+        erase_scale=[(0.02, 0.08), (0.08, 0.12)], erase_ratio=[(0.3, 3.3)],
         mean=0.5, std=0.5, aug_keys=None, ignore_keys=['invert', 'erase'],
         mask=None
     ):
