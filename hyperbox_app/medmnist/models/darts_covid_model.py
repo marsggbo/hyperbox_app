@@ -130,17 +130,17 @@ class DARTSModel(BaseModel):
         backup_params = copy.deepcopy(tuple(self.network.parameters()))
 
         # do virtual step on training data
-        lr = self.optimizer.param_groups[0]["lr"]
-        momentum = self.optimizer.param_groups[0]["momentum"]
-        weight_decay = self.optimizer.param_groups[0]["weight_decay"]
+        lr = self.weight_optim.param_groups[0]["lr"]
+        momentum = self.weight_optim.param_groups[0]["momentum"]
+        weight_decay = self.weight_optim.param_groups[0]["weight_decay"]
         self._compute_virtual_model(trn_X, trn_y, lr, momentum, weight_decay)
 
         # calculate unrolled loss on validation data
         # keep gradients for model here for compute hessian
-        self.sample_search()
+        # self.sample_search()
         _, loss = self._logits_and_loss(val_X, val_y, to_aug=True)
         w_model, w_ctrl = tuple(self.network.parameters()), tuple(self.mutator.parameters())
-        w_grads = torch.autograd.grad(loss, w_model + w_ctrl)
+        w_grads = torch.autograd.grad(loss, w_model + w_ctrl, allow_unused=True, retain_graph=True)
         d_model, d_ctrl = w_grads[:len(w_model)], w_grads[len(w_model):]
 
         # compute hessian and final gradients
@@ -160,11 +160,17 @@ class DARTSModel(BaseModel):
         # don't need zero_grad, using autograd to calculate gradients
         self.sample_search()
         _, loss = self._logits_and_loss(X, y, to_aug=True)
-        gradients = torch.autograd.grad(loss, self.network.parameters())
+        gradients = torch.autograd.grad(loss, self.network.parameters(), allow_unused=True, retain_graph=True)
         with torch.no_grad():
+            idx = 0
             for w, g in zip(self.network.parameters(), gradients):
-                m = self.optimizer.state[w].get("momentum_buffer", 0.)
-                w = w - lr * (momentum * m + g + weight_decay * w)
+                m = self.weight_optim.state[w].get("momentum_buffer", 0.)
+                try:
+                    if g is not None:
+                        w = w - lr * (momentum * m + g + weight_decay * w)
+                        idx += 1
+                except Exception as e:
+                    print(str(e))
 
     def _restore_weights(self, backup_params):
         with torch.no_grad():
@@ -180,7 +186,7 @@ class DARTSModel(BaseModel):
             eps = 0.01 / ||dw||
         """
         self._restore_weights(backup_params)
-        norm = torch.cat([w.view(-1) for w in dw]).norm()
+        norm = torch.cat([w.view(-1) for w in dw if w is not None]).norm()
         eps = 0.01 / norm
         if norm < 1E-8:
             self.logger.warning(
@@ -191,11 +197,12 @@ class DARTSModel(BaseModel):
             # w+ = w + eps*dw`, w- = w - eps*dw`
             with torch.no_grad():
                 for p, d in zip(self.network.parameters(), dw):
-                    p += e * d
+                    if d is not None:
+                        p += e * d
 
-            self.sample_search()
+            # self.sample_search()
             _, loss = self._logits_and_loss(trn_X, trn_y, to_aug=True)
-            dalphas.append(torch.autograd.grad(loss, self.mutator.parameters()))
+            dalphas.append(torch.autograd.grad(loss, self.mutator.parameters(), retain_graph=True))
 
         dalpha_pos, dalpha_neg = dalphas  # dalpha { L_trn(w+) }, # dalpha { L_trn(w-) }
         hessian = [(p - n) / 2. * eps for p, n in zip(dalpha_pos, dalpha_neg)]
@@ -221,7 +228,8 @@ class DARTSModel(BaseModel):
         self.y_true = torch.tensor([]).to(self.device)
         self.y_score = torch.tensor([]).to(self.device)
         self.y_score_en = torch.tensor([]).to(self.device)
-        self.reset_running_statistics(subset_size=64, subset_batch_size=32)
+        if self.trainer.current_epoch > 0:
+            self.reset_running_statistics(subset_size=64, subset_batch_size=32)
         # if torch.rand(1) > 0.5:
         #     self.reset_running_statistics(subset_size=64, subset_batch_size=32)
         #     self.eval_net = self.network
