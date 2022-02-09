@@ -73,22 +73,26 @@ class Mobile3DNet(BaseNASNetwork):
         stage_cnt = 0
         for width, n_cell, s in zip(width_stages, n_cell_stages, stride_stages):
             for i in range(n_cell):
+                calibrate_op = None
                 if i == 0:
-                    stride = s
+                    stride = 1
+                    if stage_cnt <= 1:
+                        calibrate_op = CalibrationLayer(input_channel, width, stride=s)
+                    else:
+                        calibrate_op = OperationSpace(
+                            [CalibrationLayer(input_channel, width, stride=1),
+                            CalibrationLayer(input_channel, width, stride=2),
+                            ], mask=self.mask, return_mask=False, key="s{}_calib".format(stage_cnt)
+                        )
                 else:
                     stride = 1
-                calibrate_op = OperationSpace(
-                    [CalibrationLayer(input_channel, width, stride=1),
-                    CalibrationLayer(input_channel, width, stride=2),
-                    ], mask=self.mask, return_mask=False, key="s{}_c{}_calib".format(stage_cnt, i)
-                )
-                blocks.append(calibrate_op)
+                if calibrate_op is not None: blocks.append(calibrate_op)
                 op_candidates = [
                     OPS[key](width, width, stride) for key in self.candidate_ops
                 ]
                 conv_op = OperationSpace(op_candidates, mask=self.mask, return_mask=False, key="s{}_c{}".format(stage_cnt, i))
                 # shortcut
-                if stride == 1 and input_channel == width:
+                if stride == 1:
                     # if not first cell
                     shortcut = IdentityLayer(input_channel, input_channel)
                 else:
@@ -104,7 +108,7 @@ class Mobile3DNet(BaseNASNetwork):
         last_channel = make_devisible(1280 * width_mult, 8) if width_mult > 1.0 else 1280
         self.feature_mix_layer = ConvLayer(
             input_channel, last_channel, kernel_size=1,
-            use_bn=True, act_func='relu6', ops_order='weight_bn_act'
+            use_bn=True, act_func='relu', ops_order='weight_bn_act'
         ) # disable activation, otherwise the final predictions will be the same class for all inputs
 
         self.global_avg_pooling = nn.AdaptiveAvgPool3d(1)
@@ -118,8 +122,9 @@ class Mobile3DNet(BaseNASNetwork):
     def forward(self, x, **kwargs):
         gamma = 0.8 # 0 equals to training mode
         x = self.first_conv(x)
-        for block in self.blocks:
+        for idx, block in enumerate(self.blocks):
             x = block(x)
+            # print(f"{idx} {x.shape}")
         x = self.feature_mix_layer(x)
         x = self.global_avg_pooling(x)
         x = x.view(x.size(0), -1)
