@@ -269,9 +269,18 @@ class FinetuneModel(BaseModel):
         logger.info(f'Test epoch{self.trainer.current_epoch} auc={auc:.4f} acc={acc:.4f} loss={loss:.4f}')
         try:
             import wandb
-            wandb.log(
-                {"roc": wandb.plot.roc_curve(self.y_true, self.y_score)}
-            )
+            data = np.concatenate([self.y_true[:, None], self.y_score], axis=1)
+            columns = ['label'] + [f'class_{i}' for i in range(self.y_score.shape[-1])]
+            wandb.log({'targets_preds': wandb.Table(columns=columns, data=data)})
+            wandb.log({
+                    "roc": wandb.plot.roc_curve(self.y_true, self.y_score),
+            })
+            wandb.log({
+                    'pr': wandb.plot.pr_curve(self.y_true, self.y_score)
+            })
+            wandb.log({
+                    'confusion_matrix': wandb.sklearn.confusion_matrix(self.y_true, self.y_score.argmax(-1))
+            })
         except Exception as e:
             print(e)
 
