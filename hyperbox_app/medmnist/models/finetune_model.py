@@ -30,6 +30,7 @@ class FinetuneModel(BaseModel):
         metric_cfg: Optional[Union[DictConfig, dict]] = None,
         scheduler_cfg: Optional[Union[DictConfig, dict]] = None,
         use_mixup: bool = False,
+        mixup_alpha: float = 0.5,
         aug_prob: float = 0.5,
         input_size = (2,3,28,28,28),
         **kwargs
@@ -58,7 +59,7 @@ class FinetuneModel(BaseModel):
                          loss_cfg, metric_cfg, scheduler_cfg, **kwargs)
         self.use_mixup = use_mixup
         if use_mixup:
-            self.random_mixup = RandomMixUp3d()
+            self.random_mixup = RandomMixUp3d(mixup_alpha)
         self.input_size = input_size
         self.aug_prob = aug_prob
         # self.net_ema = ModelEma(self.network, decay=0.9).eval()
@@ -115,6 +116,19 @@ class FinetuneModel(BaseModel):
     def on_train_epoch_start(self):
         self.y_true_trn = torch.tensor([]).to(self.device)
         self.y_score_trn = torch.tensor([]).to(self.device)
+        epoch = self.current_epoch
+        if epoch < 5:
+            self.trainer.datamodule.use_balanced_batch_sampler = True
+        else:
+            if torch.rand(1).item() < 0.5:
+                self.trainer.datamodule.use_balanced_batch_sampler = False
+                self.trainer.datamodule.use_weighted_sampler = True
+            else:
+                self.trainer.datamodule.use_balanced_batch_sampler = True
+                self.trainer.datamodule.use_weighted_sampler = False
+        if epoch > 30:
+            self.trainer.datamodule.use_balanced_batch_sampler = False
+            self.trainer.datamodule.use_weighted_sampler = False
 
     def training_step(self, batch: Any, batch_idx: int):
         loss_mutual = 0.
@@ -127,6 +141,18 @@ class FinetuneModel(BaseModel):
         trn_X, trn_y = batch
         self.y_true_trn = torch.cat((self.y_true_trn, trn_y), 0)
         loss, preds, targets = self.step(batch)
+        if hasattr(self.network, 'aug_imgs') \
+            and self.current_epoch < 10 and batch_idx < 2:
+            aug_imgs = self.network.aug_imgs
+            epoch = self.current_epoch
+            depth = aug_imgs.shape[2]
+            for scan_idx in range(2):
+                for slice_idx in range(2):
+                    slice_idx += depth//2
+                    label = trn_y[scan_idx]
+                    name = f"train_epoch{epoch}_batch{batch_idx}_scan{scan_idx}_slice{slice_idx}_label{label}"
+                    img = aug_imgs[scan_idx,0,slice_idx,...].unsqueeze(0).cpu().numpy()
+                    self.logger[0].experiment.add_image(name, img)
         self.y_score_trn = torch.cat((self.y_score_trn, preds), 0)
         if getattr(self.network, 'num_branches', None):
             loss_mutual = 0.
@@ -149,7 +175,12 @@ class FinetuneModel(BaseModel):
                 loss = loss + 1000 * loss_mutual
 
         # log train metrics
-        acc = self.train_metric(preds, trn_y)
+        if self.use_mixup and self.criterion.training:
+            preds = torch.argmax(preds, dim=1)
+            acc = targets[:, 2] * preds.eq(targets[:, 0]).float() + (1 - targets[:, 2]) * preds.eq(targets[:, 1]).float()
+            acc = acc.mean()
+        else:
+            acc = self.train_metric(preds, trn_y)
         self.log("train/loss", loss, on_step=True, on_epoch=True, sync_dist=True, prog_bar=False)
         self.log("train/acc", acc, on_step=True, on_epoch=True, sync_dist=True, prog_bar=False)
         # we can return here dict with any tensors
@@ -168,10 +199,15 @@ class FinetuneModel(BaseModel):
         self.y_score_trn = self.y_score_trn.detach().cpu().numpy()
         print('Train class 0', sum(self.y_true_trn==0), 'class 1', sum(self.y_true_trn==1), 'all', len(self.y_true_trn))
         cls_report = imblearn.metrics.classification_report_imbalanced(self.y_true_trn, self.y_score_trn.argmax(-1), digits=6)
-        logger.info(f"Train classification report:\n{cls_report}")
+        logger.info(f"Train classification report:\n{cls_report}")        
+        try:
+            auc = getAUC(self.y_true_trn, self.y_score_trn, self.task)
+        except:
+            auc = -1
+        self.log("train/auc", auc, on_step=False, on_epoch=True, prog_bar=False)
         acc_epoch = self.trainer.callback_metrics['train/acc_epoch'].item()
         loss_epoch = self.trainer.callback_metrics['train/loss_epoch'].item()
-        logger.info(f'Train epoch{self.trainer.current_epoch} acc={acc_epoch:.4f} loss={loss_epoch:.4f}')
+        logger.info(f'Train epoch{self.trainer.current_epoch} acc={acc_epoch:.4f} auc={auc:.4f} loss={loss_epoch:.4f}')
 
     def on_validation_epoch_start(self):
         self.y_true = torch.tensor([]).to(self.device)
@@ -181,6 +217,7 @@ class FinetuneModel(BaseModel):
         # self.reset_running_statistics()
 
     def validation_step(self, batch: Any, batch_idx: int):
+        self.network.train()
         self.to_aug = False
         with torch.no_grad():
             x, targets = batch
@@ -197,11 +234,23 @@ class FinetuneModel(BaseModel):
         self.y_true = torch.cat((self.y_true, targets), 0)
         self.y_score = torch.cat((self.y_score, preds.softmax(dim=-1)), 0)
         try:
-            auc = getAUC(self.y_true, self.y_score, self.task)
+            auc = getAUC(self.y_true.cpu().detach().numpy(), self.y_score.cpu().detach().numpy(), self.task)
             self.log("val/auc", auc, on_step=False, on_epoch=True, prog_bar=False)
         except:
             auc = 0
 
+        if hasattr(self.network, 'aug_imgs') \
+            and self.current_epoch < 10 and batch_idx < 2:
+            aug_imgs = self.network.aug_imgs
+            epoch = self.current_epoch
+            depth = aug_imgs.shape[2]
+            for scan_idx in range(2):
+                for slice_idx in range(2):
+                    slice_idx += depth//2
+                    label = targets[scan_idx]
+                    name = f"valid_epoch{epoch}_batch{batch_idx}_scan{scan_idx}_slice{slice_idx}_label{label}"
+                    img = aug_imgs[scan_idx,0,slice_idx,...].unsqueeze(0).cpu().numpy()
+                    self.logger[0].experiment.add_image(name, img)
         # log val metrics
         acc = self.val_metric(preds, targets)
         self.log("val/loss", loss, on_step=True, on_epoch=True, prog_bar=False)
