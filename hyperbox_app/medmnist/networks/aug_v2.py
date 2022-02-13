@@ -194,11 +194,12 @@ class DataAugmentation(BaseNASNetwork):
                     filename = f"aug{self.count}_slice{index+i}"
                     wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
             self.count += 1
-            x = (x-self.mean)/self.std
-            if self.count < 10:
-                for i in range(5):
-                    filename = f"aug{self.count}_slice{index+i}_norm"
-                    wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
+            if self.mean is not None:
+                x = (x-self.mean)/self.std
+                if self.count < 10:
+                    for i in range(5):
+                        filename = f"aug{self.count}_slice{index+i}_norm"
+                        wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
         # normalize
         # Todo: compare with no normalization
         else:

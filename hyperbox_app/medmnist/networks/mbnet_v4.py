@@ -59,14 +59,15 @@ class Mobile3DNet(BaseNASNetwork):
             self.candidate_ops = self.DEFAULT_OPS
         if input_channel is None:
             input_channel = make_divisible(32 * width_mult, 8)
-        first_cell_width = make_divisible(16 * width_mult, 8)
+        first_cell_width = make_divisible(32 * width_mult, 8)
         for i in range(len(width_stages)):
             width_stages[i] = make_divisible(width_stages[i] * width_mult, 8)
         # first conv
         self.first_conv = ConvLayer(in_channels, input_channel, kernel_size=3, stride=first_stride, use_bn=True, act_func='relu6', ops_order='weight_bn_act')
+        # self.first_conv = OPS['3x3_MBConv3'](in_channels, input_channel, first_stride)
 
         # first block
-        first_block = OPS['3x3_MBConv1'](input_channel, first_cell_width, 1)
+        first_block = OPS['3x3_MBConv3'](input_channel, first_cell_width, 1)
 
         input_channel = first_cell_width
         blocks = [first_block]
@@ -108,7 +109,7 @@ class Mobile3DNet(BaseNASNetwork):
         last_channel = make_devisible(1280 * width_mult, 8) if width_mult > 1.0 else 1280
         self.feature_mix_layer = ConvLayer(
             input_channel, last_channel, kernel_size=1,
-            use_bn=True, act_func='relu', ops_order='weight_bn_act'
+            use_bn=True, act_func='relu6', ops_order='weight_bn_act'
         ) # disable activation, otherwise the final predictions will be the same class for all inputs
 
         self.global_avg_pooling = nn.AdaptiveAvgPool3d(1)
@@ -216,6 +217,7 @@ class DAMobile3DNet(BaseNASNetwork):
 
     def forward(self, x, to_aug=False):
         x = self.augmentation(x, to_aug)
+        self.aug_imgs = x.detach()
         x = self.network(x)
         return x
 
