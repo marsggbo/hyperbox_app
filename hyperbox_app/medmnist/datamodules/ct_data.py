@@ -1,22 +1,25 @@
-from typing import Union, List, Optional
 import json
 import os
 import random
-import nibabel as nib
-import numpy as np
+from typing import List, Optional, Union
 
 import cv2
+import nibabel as nib
+import numpy as np
 import torch
 import torch.nn as nn
 import torchvision.transforms as TF
-
-from torch.utils.data import DataLoader, Dataset, random_split
-from torch.utils.data.sampler import WeightedRandomSampler
+from hyperbox.utils.utils import hparams_wrapper
+from hyperbox_app.medmnist.datamodules.utils import (RandomResampler,
+                                                     SymmetricalResampler,
+                                                     normalize, pil_loader,
+                                                     resize_volume)
 from kornia import image_to_tensor, tensor_to_image
 from pytorch_lightning import LightningDataModule
-from hyperbox.utils.utils import hparams_wrapper
-from hyperbox_app.medmnist.datamodules.utils import RandomResampler, SymmetricalResampler, pil_loader
+from torch.utils.data import DataLoader, Dataset, random_split
+from torch.utils.data.sampler import WeightedRandomSampler
 
+from time import time
 
 __all__ = [
     'CTDataset',
@@ -40,6 +43,7 @@ class CTDataset(torch.utils.data.Dataset):
         transforms=None,
         label_transforms=None,
         use_weighted_sampler: bool = False,
+        use_balanced_batch_sampler: bool = False,
         *args, **kwargs
     ):
         '''
@@ -60,6 +64,7 @@ class CTDataset(torch.utils.data.Dataset):
             'normal': 0, 'covid': 1
         }
         self.samples = self.convert_json_to_list(self.data)
+        self.count = 1000
 
     def convert_json_to_list(self, data):
         samples = {} # {0: {'scans': [], 'labels': 0}}
@@ -116,12 +121,35 @@ class CTDataset(torch.utils.data.Dataset):
         # return slice_tensor, label, sample['path']
 
     def get_nifti(self, sample):
+        start = time()
         path = sample['path']
         slice_tensor = []
         slice_path = path
         img = nib.load(slice_path) 
+        end_load = time()
+        if self.count <= 100:
+            print(f'loading data costs {end_load-start} s')
         img_fdata = img.get_fdata()
         (x,y,z) = img.shape
+        img_fdata = normalize(img_fdata)
+        end_norm = time()
+        if self.count <= 100:
+            print(f'norm data costs {end_norm-end_load} s')
+
+        # # sample method 1: zoom
+        # depth, height, width = self.slice_num, self.img_size[0], self.img_size[1]
+        # slice_tensor = resize_volume(img_fdata, depth, height, width)
+        # end_zoom = time()
+        # if self.count <= 100:
+        #     print(f'zoom data costs {end_zoom-end_norm} s')
+        # slice_tensor = torch.from_numpy(slice_tensor).float().unsqueeze(dim=0)
+        # slice_tensor = slice_tensor.permute(0, 3, 1, 2)
+        # end = time()
+        # if self.count <= 100:
+        #     print(f'once loading data costs {end-start} s')
+        #     self.count += 1
+
+        # sample method 2: depth sampling
         slice_tensor = torch.FloatTensor(img_fdata)
         slice_tensor = slice_tensor.unsqueeze(dim=0)
         slice_tensor = slice_tensor.permute(0, 3, 1, 2)
@@ -133,8 +161,9 @@ class CTDataset(torch.utils.data.Dataset):
         # todo: imbalanced problem
         h, w = self.img_size[0], self.img_size[1]
         size = (h*5//4, w*5//4)
+        center_h, center_w = size[0]//2, size[1]//2
         slice_tensor = torch.nn.functional.interpolate(slice_tensor, size) # resize
-        slice_tensor = slice_tensor[:, :, size[0]-h//2:size[0]+h//2, size[1]-w//2:size[1]+w//2] # centercrop
+        slice_tensor = slice_tensor[:, :, center_h-h//2:center_h+h//2, center_w-w//2:center_w+w//2] # centercrop
 
         return slice_tensor
 
@@ -175,7 +204,7 @@ class CTDataset(torch.utils.data.Dataset):
         return name
 
     def __repr__(self):
-        name = self.dataset_name
+        name = self.dataset_name()
         return f"{super(CTDataset, self).__repr__()} ({name})"
 
 
@@ -200,6 +229,7 @@ class CTDatamodule(LightningDataModule):
         pin_memory: bool = False,
         drop_last: bool = False,
         use_weighted_sampler: bool = False,
+        use_balanced_batch_sampler: bool = False,
         class_weights: list = None
     ):
         super().__init__()
@@ -257,10 +287,27 @@ class CTDatamodule(LightningDataModule):
 
     def train_dataloader(self):
         tr_sampler = None
-        if self.use_weighted_sampler:
+        if self.use_balanced_batch_sampler:
+            from catalyst.data import BalanceClassSampler, BatchBalanceClassSampler
+            labels = self.dataset_train.labels
+            num_classes = len(set(np.array(labels)))
+            num_samples = self.batch_size
+            num_batches = max(50,  len(labels) // (num_classes * num_samples))
+            sampler = BatchBalanceClassSampler(
+                labels.tolist(), num_classes=num_classes, num_samples=num_samples, num_batches=num_batches)
+            # sampler = DistributedSamplerWrapper(sampler)
+            train_loader = DataLoader(
+                dataset=self.dataset_train,
+                num_workers=self.num_workers,
+                pin_memory=self.pin_memory,
+                batch_sampler=sampler,
+            )
+        elif self.use_weighted_sampler:
             weights = self.class_weights
             tr_sampler = self.build_weighted_sampler(self.dataset_train, weights)
-        train_loader = self._data_loader(self.dataset_train, True, tr_sampler)
+            train_loader = self._data_loader(self.dataset_train, True, tr_sampler)
+        else:
+            train_loader = self._data_loader(self.dataset_train, True, None)
         if self.is_customized:
             val_sampler = None
             if self.use_weighted_sampler:
@@ -292,7 +339,7 @@ class CTDatamodule(LightningDataModule):
             dataset.slice_num = slice_num
 
     def __repr__(self):
-        name = self.dataset_test.dataset_name
+        name = self.dataset_test.dataset_name()
         return f"{super(CTDatamodule, self).__repr__()} ({name})"
 
 
