@@ -12,7 +12,7 @@ defaults:
   # - override /model/scheduler_cfg: CosineAnnealingLR.yaml
   - override /model/scheduler_cfg: MultiStepLR.yaml
   - override /model/loss_cfg: cross_entropy_labelsmooth.yaml
-  - override /model/optimizer_cfg: sgd.yaml
+  - override /model/optimizer_cfg: adam.yaml
   - override /model/network_cfg: da_mbv3_covid19.yaml
   - override /model/mutator_cfg: random_mutator.yaml
 
@@ -32,10 +32,11 @@ trainer:
 datamodule:
   # is_customized: True
   is_customized: False
-  batch_size: 24
+  batch_size: 12
   img_size: [256,256]
-  center_size: [224,224]
-  slice_num: 40
+  center_size: [256,256]
+  slice_num: 32
+  num_workers: 2
 
 model:
   network_cfg:
@@ -46,38 +47,48 @@ model:
       - [24,256,256]
       - [32,256,256]
     affine_degree:
-    - - 10.0
-      - 1.0
-      - 1.0
     - - 1.0
-      - 10.0
       - 1.0
+      - 5.0
     - - 1.0
       - 1.0
       - 10.0
-    - - 5.0
-      - 5.0
-      - 5.0
+    - - 3.0
+      - 3.0
+      - 3.0
     affine_scale:
     - - 0.8
-      - 1
-    - - 1.0
       - 1.2
+    - - 0.7
+      - 1.1
     affine_shears:
     - 0
+    noise_mean: 0.01
+    noise_std: 0.05
+    erase_scale:
+    - - 0.02
+      - 0.05
+    - - 0.05
+      - 0.08
     candidate_ops:
     - 3x3_MBConv3
     - 3x3_MBConv4
+    - 3x3_MBConv6
     - 5x5_MBConv3
+    - 5x5_MBConv4
     - 7x7_MBConv3
+    - 7x7_MBConv4
+    - Identity
     mask: null
+    mean: null
+    std: null
+    # mean: 0.4570799767971039
+    # std: 0.1314811408519745
     # width_stages: [32,64,128,256,512,1024]
     stride_stages: [2,2,1,2,2,1]
     num_classes: 2
   optimizer_cfg:
-    lr: 0.01
-    weight_decay: 0.0005
-    momentum: 0.9
+    lr: 0.001
   scheduler_cfg:
     # T_max: 80
     milestones: [30,60]
