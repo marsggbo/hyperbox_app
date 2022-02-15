@@ -37,6 +37,7 @@ class Mobile3DNet(BaseNASNetwork):
         stride_stages=[2,2,2,1,2,1],
         width_mult=1, num_classes=1000,
         dropout_rate=0, bn_param=(0.1, 1e-3),
+        last_channel=1280,
         candidate_ops=None,
         mask=None
     ):
@@ -58,8 +59,8 @@ class Mobile3DNet(BaseNASNetwork):
         else:
             self.candidate_ops = self.DEFAULT_OPS
         if input_channel is None:
-            input_channel = make_divisible(32 * width_mult, 8)
-        first_cell_width = make_divisible(32 * width_mult, 8)
+            input_channel = make_divisible(16 * width_mult, 8)
+        first_cell_width = make_divisible(24 * width_mult, 8)
         for i in range(len(width_stages)):
             width_stages[i] = make_divisible(width_stages[i] * width_mult, 8)
         # first conv
@@ -87,9 +88,10 @@ class Mobile3DNet(BaseNASNetwork):
                         )
                 else:
                     stride = 1
+                    # calibrate_op = CalibrationLayer(input_channel, width, stride=1)
                 if calibrate_op is not None: blocks.append(calibrate_op)
                 op_candidates = [
-                    OPS[key](width, width, stride) for key in self.candidate_ops
+                    OPS[key](width, width, 1) for key in self.candidate_ops
                 ]
                 conv_op = OperationSpace(op_candidates, mask=self.mask, return_mask=False, key="s{}_c{}".format(stage_cnt, i))
                 # shortcut
@@ -106,7 +108,7 @@ class Mobile3DNet(BaseNASNetwork):
 
         # feature mix layer
         # last_channel = input_channel
-        last_channel = make_devisible(1280 * width_mult, 8) if width_mult > 1.0 else 1280
+        last_channel = make_devisible(self.last_channel * width_mult, 8) if width_mult > 1.0 else self.last_channel
         self.feature_mix_layer = ConvLayer(
             input_channel, last_channel, kernel_size=1,
             use_bn=True, act_func='relu6', ops_order='weight_bn_act'
@@ -123,9 +125,12 @@ class Mobile3DNet(BaseNASNetwork):
     def forward(self, x, **kwargs):
         gamma = 0.8 # 0 equals to training mode
         x = self.first_conv(x)
-        for idx, block in enumerate(self.blocks):
-            x = block(x)
-            # print(f"{idx} {x.shape}")
+        try:
+            for idx, block in enumerate(self.blocks):
+                x = block(x)
+        except Exception as e:
+            print(str(e), idx)
+            print(f"{idx} block {x.shape}")
         x = self.feature_mix_layer(x)
         x = self.global_avg_pooling(x)
         x = x.view(x.size(0), -1)
@@ -194,6 +199,7 @@ class DAMobile3DNet(BaseNASNetwork):
         stride_stages=[2,2,2,1,2,1],
         width_mult=1, num_classes=1000,
         dropout_rate=0, bn_param=(0.1, 1e-3),
+        last_channel=1280,
         candidate_ops=None,
 
         rotate_degree=30, crop_size=[(32,128,128), (32,256,256)],
@@ -209,7 +215,7 @@ class DAMobile3DNet(BaseNASNetwork):
         super(DAMobile3DNet, self).__init__(mask)
         self.network = Mobile3DNet(
             in_channels, input_channel, first_stride, width_stages, n_cell_stages, stride_stages, width_mult,
-            num_classes, dropout_rate, bn_param, candidate_ops, mask)
+            num_classes, dropout_rate, bn_param, last_channel, candidate_ops, mask)
         self.augmentation = DataAugmentation(
             rotate_degree, crop_size, affine_degree, affine_scale, affine_shears,
             brightness, contrast, blur_ks, invert_val, noise_mean, noise_std,

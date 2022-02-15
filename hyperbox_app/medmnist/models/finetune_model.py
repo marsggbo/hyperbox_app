@@ -116,19 +116,19 @@ class FinetuneModel(BaseModel):
     def on_train_epoch_start(self):
         self.y_true_trn = torch.tensor([]).to(self.device)
         self.y_score_trn = torch.tensor([]).to(self.device)
-        epoch = self.current_epoch
-        if epoch < 5:
-            self.trainer.datamodule.use_balanced_batch_sampler = True
-        else:
-            if torch.rand(1).item() < 0.5:
-                self.trainer.datamodule.use_balanced_batch_sampler = False
-                self.trainer.datamodule.use_weighted_sampler = True
-            else:
-                self.trainer.datamodule.use_balanced_batch_sampler = True
-                self.trainer.datamodule.use_weighted_sampler = False
-        if epoch > 30:
-            self.trainer.datamodule.use_balanced_batch_sampler = False
-            self.trainer.datamodule.use_weighted_sampler = False
+        # epoch = self.current_epoch
+        # if epoch < 5:
+        #     self.trainer.datamodule.use_balanced_batch_sampler = True
+        # else:
+        #     if torch.rand(1).item() < 0.5:
+        #         self.trainer.datamodule.use_balanced_batch_sampler = False
+        #         self.trainer.datamodule.use_weighted_sampler = True
+        #     else:
+        #         self.trainer.datamodule.use_balanced_batch_sampler = True
+        #         self.trainer.datamodule.use_weighted_sampler = False
+        # if epoch > 30:
+        #     self.trainer.datamodule.use_balanced_batch_sampler = False
+        #     self.trainer.datamodule.use_weighted_sampler = False
 
     def training_step(self, batch: Any, batch_idx: int):
         loss_mutual = 0.
@@ -142,7 +142,7 @@ class FinetuneModel(BaseModel):
         self.y_true_trn = torch.cat((self.y_true_trn, trn_y), 0)
         loss, preds, targets = self.step(batch)
         if hasattr(self.network, 'aug_imgs') \
-            and self.current_epoch < 10 and batch_idx < 2:
+            and self.current_epoch % 10 == 0 and batch_idx < 2:
             aug_imgs = self.network.aug_imgs
             epoch = self.current_epoch
             depth = aug_imgs.shape[2]
@@ -240,7 +240,7 @@ class FinetuneModel(BaseModel):
             auc = 0
 
         if hasattr(self.network, 'aug_imgs') \
-            and self.current_epoch < 10 and batch_idx < 2:
+            and self.current_epoch % 10 ==0 and batch_idx < 2:
             aug_imgs = self.network.aug_imgs
             epoch = self.current_epoch
             depth = aug_imgs.shape[2]
