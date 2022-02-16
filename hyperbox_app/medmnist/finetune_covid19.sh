@@ -11,13 +11,16 @@ others=$4
 # echo $mask
 
 CUDA_VISIBLE_DEVICES=$gpu python -m hyperbox.run \
-hydra.searchpath=[file:///home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/configs] \
+hydra.searchpath=[file:///home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/configs] \
 experiment=$exp \
 logger.wandb.name=$name \
+logger.wandb.offline=False \
 hydra.job.name=$name \
+datamodule.root_dir=/home/xihe/datasets/COVID19/mosmed/COVID19_1110/studies/ \
 +datamodule.use_balanced_batch_sampler=False \
 +datamodule.use_weighted_sampler=False \
-datamodule.num_workers=4 \
+datamodule.num_workers=3 \
++datamodule.class_weights=[2,1] \
 trainer.gpus=$gpuNum \
 trainer.accelerator='gpu' \
 trainer.max_epochs=100 \
@@ -27,22 +30,25 @@ callbacks.model_checkpoint.save_top_k=2 \
 model/network_cfg=dambv4_covid19 \
 +model.network_cfg.first_stride=2 \
 model.network_cfg.stride_stages=[2,2,2,1,2,1] \
-model.network_cfg.width_stages=[48,64,80,96,192,320] \
+model.network_cfg.width_stages=[32,48,64,96,160,320] \
 model.network_cfg.mask=$mask \
++model.network_cfg.last_channel=1024 \
 model.network_cfg.dropout_rate=0 \
 +model.network_cfg.input_channel=16 \
-+model.network_cfg.ignore_keys=['invert','erase'] \
-model.network_cfg.mean=0.5 \
-model.network_cfg.std=0.5 \
-model.network_cfg.num_classes=2 \
-model.network_cfg.candidate_ops=['3x3_MBConv3','3x3_MBConv4','3x3_MBConv6','5x5_MBConv3','5x5_MBConv4','7x7_MBConv3','7x7_MBConv4','Identity'] \
++model.network_cfg.ignore_keys=[] \
+model.network_cfg.mean=null \
+model.network_cfg.std=null \
+model.network_cfg.bn_param=[0.1,1e-5] \
+model.network_cfg.num_classes=100 \
+model.network_cfg.candidate_ops=['3x3_MBConv3','3x3_MBConv4','3x3_MBConv6','5x5_MBConv3','5x5_MBConv4','7x7_MBConv3','7x7_MBConv4','Identity','Zero','Zero'] \
 +model.use_mixup=False \
-+model.aug_prob=0.5 \
++model.aug_prob=0.8 \
 $others
 # ++trainer.amp_backend=apex \
 # ++trainer.amp_level=o1 \
 
 # example
+# model.network_cfg.width_stages=[32,48,64,96,160,320] \ [24,40,80,96,192,256]
 # model.network_cfg.width_stages=[32,64,128,256,512,1024] \
 # model/optimizer_cfg=adamw \
 # model.optimizer_cfg.lr=0.001 \

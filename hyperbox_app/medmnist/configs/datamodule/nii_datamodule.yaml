@@ -1,12 +1,12 @@
 _target_: hyperbox_app.medmnist.datamodules.CTDatamodule
-root_dir: '/home/datasets/MosMedData/COVID19_1110/pngs'
-data_list_train: '/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_train.json'
-data_list_val: '/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_test.json'
-data_list_test: '/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_test.json'
-# root_dir: '/home/datasets/MosMedData/COVID19_1110/studies'
-# data_list_train: '/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_train.json'
-# data_list_val: '/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_test.json'
-# data_list_test: '/home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_test.json'
+# root_dir: '/home/datasets/MosMedData/COVID19_1110/pngs'
+# data_list_train: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_train.json'
+# data_list_val: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_test.json'
+# data_list_test: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_png_test.json'
+root_dir: '/home/xihe/datasets/COVID19/mosmed/COVID19_1110/studies/'
+data_list_train: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_train.json'
+data_list_val: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_test.json'
+data_list_test: '/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/datamodules/mosmed/nii_test.json'
 is_color: False
 is_3d: True
 img_size: [512, 512]

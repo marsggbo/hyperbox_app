@@ -32,7 +32,7 @@ trainer:
 datamodule:
   # is_customized: True
   is_customized: False
-  batch_size: 8
+  batch_size: 16
   img_size: [320,320]
   center_size: [256,256]
   slice_num: 40
@@ -88,8 +88,8 @@ model:
     stride_stages: [2,2,1,2,2,1]
     num_classes: 2
   optimizer_cfg:
-    lr: 0.001
-    weight_decay: 0.001
+    lr: 0.0003
+    weight_decay: 0.0005
   scheduler_cfg:
     T_max: 160
     eta_min: 1e-6
