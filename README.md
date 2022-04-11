@@ -1,5 +1,13 @@
 # hyperbox_app
 
+# Dependency
+
+```
+pip install -r requirements.txt
+```
+
+# Run
+
 ```bash
 python -m hyperbox.run \
 hydra.searchpath=[/path/to/hyperbox_app/hyperbox_app/medmnist/configs] \
