@@ -57,7 +57,6 @@ hydra-colorlog         1.1.0.dev1
 hydra-core             1.1.1
 hydra-optuna-sweeper   1.1.0.dev2
 hyperbox               1.0.2
-hyperbox-app           0.1         /path/to/your/hyperbox_app
 identify               2.2.6
 idna                   2.10
 imageio                2.9.0
