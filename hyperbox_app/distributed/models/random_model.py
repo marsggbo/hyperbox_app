@@ -39,6 +39,8 @@ class RandomModel(BaseModel):
         scheduler_cfg: Optional[Union[DictConfig, dict]] = None,
         is_sync: bool = True,
         is_net_parallel: bool = True,
+        num_subnets: int = 1,
+        sample_interval: int = 1,
         **kwargs
     ):
         r"""Random NAS model
@@ -58,7 +60,10 @@ class RandomModel(BaseModel):
             scheduler_cfg,
             **kwargs
         )
-        self.network = self.network.to(self.device)
+        self.automatic_optimization = False
+        self.num_subnets = num_subnets
+        self.sample_interval = sample_interval
+        # self.network = self.network.to(self.device)
 
     def sample_search(self):
         super().sample_search(self.is_sync, self.is_net_parallel)
@@ -74,21 +79,34 @@ class RandomModel(BaseModel):
         return loss, preds, y
 
     def training_step(self, batch: Any, batch_idx: int):
+        opt = self.optimizers()
+        opt.zero_grad()
         self.network.train()
         self.mutator.eval()
-        if batch_idx % 5 == 0:
-            self.sample_search()
-        loss, preds, targets = self.step(batch)
-
-        # log train metrics
-        acc = self.train_metric(preds, targets)
+        loss = 0.
+        acc = 0.
+        if hasattr(self.mutator, 'num_path'):
+            num_subnets = self.mutator.num_path
+        else:
+            num_subnets = self.num_subnets
+        for i in range(num_subnets):
+            if batch_idx % self.sample_interval == 0:
+                self.sample_search()
+            loss_subnet, preds_subnet, targets_subnet = self.step(batch)
+            loss_subnet.backward()
+            acc_subnet = self.train_metric(preds_subnet, targets_subnet)
+            loss += loss_subnet
+            acc += acc_subnet
+        opt.step()
+        loss /= num_subnets
+        acc /= num_subnets
         self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=False)
         self.log("train/acc", acc, on_step=True, on_epoch=True, prog_bar=False)
-
+        return {'loss': loss}
         # we can return here dict with any tensors
         # and then read it in some callback or in training_epoch_end() below
         # remember to always return loss from training_step, or else backpropagation will fail!
-        return {"loss": loss, "preds": preds, "targets": targets}
+        # return {"loss": loss, "preds": preds, "targets": targets}
 
     def training_epoch_end(self, outputs: List[Any]):
         acc_epoch = self.trainer.callback_metrics['train/acc_epoch'].item()
