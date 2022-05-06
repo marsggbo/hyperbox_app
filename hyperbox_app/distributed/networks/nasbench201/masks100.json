@@ -1,0 +1,4402 @@
+{
+    "224340": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "322222": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "414442": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "423210": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "442013": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "332442": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "400413": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "342140": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "420241": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "301334": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "324001": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "034133": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "424121": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "032202": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "343013": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "002200": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "330120": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "012242": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "021320": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "041110": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "130042": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "303433": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "013114": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "310134": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "111412": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "304034": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "430323": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "310114": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "041233": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "322012": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "242442": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "003123": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "140341": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "303431": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "200114": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "010404": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "424130": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "442404": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "310100": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "423243": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "420430": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "300044": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "100211": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "013241": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "424422": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "441131": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "043432": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "112220": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "014021": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "214040": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "242212": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "310441": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "414414": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "432140": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "441104": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "333402": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "204002": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "420421": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "002224": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "414014": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "202234": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "100041": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "013102": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "344044": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "321123": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "300221": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "114004": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "102130": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "334424": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "114424": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "134123": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "202211": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "011114": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "422424": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "121133": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "014201": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "331431": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "013303": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "443202": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "322313": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "203441": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "124124": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "002004": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "221103": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "214334": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "401143": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "030140": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "420442": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "303440": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "320030": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
+    },
+    "023123": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "033331": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "004214": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "223003": {
+        "0_1": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "031122": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ]
+    },
+    "100431": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "140043": {
+        "0_1": [
+            false,
+            true,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "302033": {
+        "0_1": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_2": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            true,
+            false,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    },
+    "433044": {
+        "0_1": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ]
+    },
+    "043003": {
+        "0_1": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "0_2": [
+            false,
+            false,
+            false,
+            false,
+            true
+        ],
+        "0_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "1_2": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ],
+        "1_3": [
+            true,
+            false,
+            false,
+            false,
+            false
+        ],
+        "2_3": [
+            false,
+            false,
+            false,
+            true,
+            false
+        ]
+    }
+}

@@ -41,6 +41,7 @@ class RandomModel(BaseModel):
         is_net_parallel: bool = True,
         num_subnets: int = 1,
         sample_interval: int = 1,
+        set_to_none: bool = False,
         **kwargs
     ):
         r"""Random NAS model
@@ -63,6 +64,8 @@ class RandomModel(BaseModel):
         self.automatic_optimization = False
         self.num_subnets = num_subnets
         self.sample_interval = sample_interval
+        self.is_sync = is_sync
+        self.set_to_none = set_to_none
         # self.network = self.network.to(self.device)
 
     def sample_search(self):
@@ -80,7 +83,7 @@ class RandomModel(BaseModel):
 
     def training_step(self, batch: Any, batch_idx: int):
         opt = self.optimizers()
-        opt.zero_grad()
+        opt.zero_grad(set_to_none=self.set_to_none)
         self.network.train()
         self.mutator.eval()
         loss = 0.
@@ -116,9 +119,13 @@ class RandomModel(BaseModel):
     def on_validation_epoch_start(self):
         pass
         if self.is_network_search:
-            if not self.mutator._cache:
-                self.mutator.reset()
-            self.reset_running_statistics(subset_size=64, subset_batch_size=32)
+            try:
+                # if not self.mutator._cache:
+                #     self.mutator.reset()
+                self.reset_running_statistics(subset_size=64, subset_batch_size=32)
+            except Exception as e:
+                print(e)
+                print('you should reset the mutator before validation in search mode.')
 
     def validation_step(self, batch: Any, batch_idx: int):
         loss, preds, targets = self.step(batch)
