@@ -81,10 +81,19 @@ class EASearchNBMBNet(BaseEngine):
             reals = [info['real_perf'] for encoding, info in self.mutator.vis_dict.items() if 'real_perf' in info]
             proxies = [info['proxy_perf'] for encoding, info in self.mutator.vis_dict.items() if 'proxy_perf' in info]
             tau_visited, p_visited = kendalltau(reals, proxies)
+            self.mutator.plot_real_proxy_metrics(
+                real_metrics=reals,
+                proxy_metrics=proxies,
+                figname='evolution_visited_real_proxy_metrics.png')
 
-            reals = [info['real_perf'] for info in self.mutator.keep_top_k[self.topk] if 'real_perf' in info]
-            proxies = [info['proxy_perf'] for info in self.mutator.keep_top_k[self.topk] if 'proxy_perf' in info]
+            reals = [info['real_perf'] for info in self.mutator.keep_top_k[self.mutator.topk] if 'real_perf' in info]
+            proxies = [info['proxy_perf'] for info in self.mutator.keep_top_k[self.mutator.topk] if 'proxy_perf' in info]
             tau_topk, p_topk = kendalltau(reals, proxies)
+            self.mutator.plot_real_proxy_metrics(
+                real_metrics=reals,
+                proxy_metrics=proxies,
+                figname=f'evolution_top{self.mutator.topk}_real_proxy_metrics.png')
+
 
             results = {
                 'tau_visited': tau_visited,
@@ -100,10 +109,11 @@ class EASearchNBMBNet(BaseEngine):
                 #K(subnets), #B(sample_interval), dataset, PretrainedWeights, seed, #valBatch, Tau_visited, P_visited, Tau_topk, P_topk
                 valBatch = self.trainer.limit_val_batches
                 pw = self.cfg.pretrained_weight
-                K = self.cfg.model.num_subnets
-                B = self.cfg.model.sample_interval
+                K = pw.split('net')[0].split('_')[-1]
+                B = pw.split('batch')[0].split('_')[-1]
                 seed = self.cfg.seed
-                text = f"{K},{B},{dataset},{pw},{seed},{valBatch},{tau_visited},{p_visited},{tau_topk},{p_topk}\n"
+                text = f"{K},{B},{tau_visited},{p_visited},{tau_topk},{p_topk},{dataset},{seed},{valBatch},{pw}\n"
+                # text = f"{K},{B},{dataset},{pw},{seed},{valBatch},{tau_visited},{p_visited},{tau_topk},{p_topk}\n"
                 f.write(text)
                 log.info(text)
             return results

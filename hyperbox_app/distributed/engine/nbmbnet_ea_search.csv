@@ -1,0 +1,25 @@
+#K(subnets), #B(sample_interval), Tau_visited, P_visited, Tau_topk, P_topk, dataset, seed, #valBatch, PretrainedWeights
+1,1,0.7455693189125495,6.061317002991802e-28,0.6,0.025573669368214647,cifar10,7394,30,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch_NoneGrad/2022-05-04_07-21-40/checkpoints/last.ckpt
+1,1,0.738551029066151,1.9050479072582006e-27,0.7999999999999999,0.0029124200699637004,cifar10,7394,30,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch_NoneGrad/2022-05-04_06-55-10/checkpoints/last.ckpt
+1,1,0.5883110060307675,0.0003433378223314198,-0.6708203932499368,0.1171850871981381,cifar10,7394,2,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch_NoneGrad/2022-05-04_06-55-10/checkpoints/last.ckpt
+1,1,0.7430479798542268,6.037625583414651e-284,-0.16950029038814626,0,cifar10,7394,30.24162725783390793,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch/2022-05-04_07-21-40/checkpoints/last.ckpt
+1,1,0.7145154070711585,1.348283857605589e-262,0.06590154689540918,0.6546080999953743,cifar10,7394,30,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch_NoneGrad/2022-05-04_07-21-40/checkpoints/last.ckpt
+3,1,0.6882675514951291,1.6418540942927918e-243,0.08640231898641547,0.5564635900533683,cifar10,7394,30,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_3net_1batch/2022-05-04_07-21-42/checkpoints/last.ckpt
+6,1,0.7437733673307195,7.658446496925904e-28,0.6,0.025573669368214647,cifar10,7394,30,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_6net_1batch_NoneGrad/2022-05-04_07-11-04/checkpoints/last.ckpt
+6,1,0.718356976336916,3.2698907357678887e-265,0.18221492066002418,0.22496167805240652,cifar10,7394,30,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_6net_1batch/2022-05-04_10-05-14/checkpoints/last.ckpt
+6,1,0.7575466218640855,8.044549671551954e-29,0.0,1.0,cifar10,7394,30,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_6net_1batch_NoneGrad/2022-05-04_10-05-14/checkpoints/last.ckpt
+12,1,0.7537225075235215,5.515309089385237e-06,0.8222222222222221,0.0003576940035273369,cifar10,7394,2,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch/2022-05-04_10-05-16/checkpoints/last.ckpt
+12,1,0.7537225075235215,5.515309089385237e-06,0.8222222222222221,0.0003576940035273369,cifar10,7394,2,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch/2022-05-04_10-05-16/checkpoints/last.ckpt
+12,1,0.7586557676474321,2.157143541625983e-295,0.014543339304471143,0.9233010463716232,cifar10,7394,30,/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch/2022-05-04_10-05-16/checkpoints/last.ckpt
+
+#K(subnets), #B(sample_interval), Tau_visited, P_visited, Tau_topk, P_topk, dataset, seed, #valBatch, PretrainedWeights
+1,1,0.7455693189125495,6.061317002991802e-28,0.6,0.025573669368214647,cifar10,7394,30,search_nbmbnet_gpunum1_1net_1batch_NoneGrad/2022-05-04_07-21-40/checkpoints/last.ckpt
+1,1,0.738551029066151,1.9050479072582006e-27,0.7999999999999999,0.0029124200699637004,cifar10,7394,30,search_nbmbnet_gpunum1_1net_1batch_NoneGrad/2022-05-04_06-55-10/checkpoints/last.ckpt
+1,1,0.7145154070711585,1.348283857605589e-262,0.06590154689540918,0.6546080999953743,cifar10,7394,30,search_nbmbnet_gpunum1_1net_1batch_NoneGrad/2022-05-04_07-21-40/checkpoints/last.ckpt
+6,1,0.7437733673307195,7.658446496925904e-28,0.6,0.025573669368214647,cifar10,7394,30,search_nbmbnet_gpunum1_6net_1batch_NoneGrad/2022-05-04_07-11-04/checkpoints/last.ckpt
+6,1,0.7575466218640855,8.044549671551954e-29,0.0,1.0,cifar10,7394,30,search_nbmbnet_gpunum1_6net_1batch_NoneGrad/2022-05-04_10-05-14/checkpoints/last.ckpt
+
+1,1,0.7430479798542268,6.037625583414651e-284,-0.16950029038814626,0,cifar10,7394,30.24162725783390793,search_nbmbnet_gpunum1_1net_1batch/2022-05-04_07-21-40/checkpoints/last.ckpt
+3,1,0.6882675514951291,1.6418540942927918e-243,0.08640231898641547,0.5564635900533683,cifar10,7394,30,search_nbmbnet_gpunum1_3net_1batch/2022-05-04_07-21-42/checkpoints/last.ckpt
+6,1,0.718356976336916,3.2698907357678887e-265,0.18221492066002418,0.22496167805240652,cifar10,7394,30,search_nbmbnet_gpunum1_6net_1batch/2022-05-04_10-05-14/checkpoints/last.ckpt
+12,1,0.7586557676474321,2.157143541625983e-295,0.014543339304471143,0.9233010463716232,cifar10,7394,30,search_nbmbnet_gpunum1_12net_1batch/2022-05-04_10-05-16/checkpoints/last.ckpt
