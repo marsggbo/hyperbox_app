@@ -1,0 +1,44 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py experiment=example_simple.yaml
+
+defaults:
+    - override /trainer: default.yaml # choose trainer from 'configs/trainer/'
+    - override /model: random_search_model.yaml
+    - override /datamodule: cifar10_datamodule.yaml
+    - override /callbacks: default.yaml
+    - override /logger: wandb.yaml
+    - override /model/network_cfg: nasbench_mbnet.yaml
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+seed: 666
+
+
+trainer:
+    min_epochs: 1
+    max_epochs: 100
+    progress_bar_refresh_rate: 0
+model:
+    mutator_cfg:
+        _target_: hyperbox_app.distributed.mutator.ID_fewshot_mutator.IDFewshotMutator
+    network_cfg:
+        _target_: hyperbox_app.distributed.networks.nasbenchmb.network.NASBenchMBNet
+logger:
+    wandb:
+        project: "distributed"
+        offline: False
+callbacks:
+    model_checkpoint:
+        monitor: "val/acc" # name of the logged metric which determines when model is improving
+        save_top_k: 2 # save k best models (determined by above metric)
+engine:
+    _target_: hyperbox_app.distributed.engine.ID_fewshot.IDFewshot
+    ckpt_weight: /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch/2022-05-12_02-38-38/checkpoints/last.ckpt
+    ckpt_ea: /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/ea_search_search_nbmbnet_gpunum1_12net_1batch/2022-05-12_20-02-56/evolution_logs/checkpoint.pth.tar
+    num_IDs: 4
+    ID_groups_path: /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/engine/precomputed_IDs_nb201.pkl
+    precompute_IDs: true
+pretrained_weight: /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch/2022-05-12_02-38-38/checkpoints/last.ckpt
