@@ -1,0 +1,54 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py experiment=example_simple.yaml
+
+defaults:
+    - override /trainer: default.yaml # choose trainer from 'configs/trainer/'
+    - override /model: random_search_model.yaml
+    - override /datamodule: cifar10_datamodule.yaml
+    - override /callbacks: default.yaml
+    - override /logger: wandb.yaml
+    - override /model/optimizer_cfg: sgd.yaml
+    # - override /model/scheduler_cfg: CosineAnnealingLR.yaml
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+seed: 666
+
+
+trainer:
+    min_epochs: 1
+    max_epochs: 100
+    accelerator: gpu
+    strategy: ddp
+    progress_bar_refresh_rate: 0
+datamodule:
+    batch_size: 128
+    is_customized: False
+model:
+    optimizer_cfg:
+      lr: 0.005
+    mutator_cfg:
+        _target_: hyperbox_app.distributed.mutator.fewshot_mutator.FewshotMutator
+    network_cfg:
+        _target_: hyperbox_app.distributed.networks.nasbench201.nasbench201.NASBench201Network
+        # _target_: hyperbox_app.distributed.networks.nasbenchmb.network.NASBenchMBNet
+logger:
+    wandb:
+        project: "distributed"
+        offline: False
+callbacks:
+    model_checkpoint:
+        monitor: "val/acc" # name of the logged metric which determines when model is improving
+        save_top_k: 1 # save k best models (determined by above metric)
+engine:
+    _target_: hyperbox_app.distributed.engine.fewshot_search.FewshotSearch
+    wamrup_epochs: [20,20]
+    finetune_epoch: 50
+    split_criterion: ID
+    split_method: 'spectral_cluster'
+    is_single_path: True
+    repeat_num: 5
+# pretrained_weight: /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum1_c10_16net_1batch/2022-04-28_01-39-13/checkpoints/last.ckpt
