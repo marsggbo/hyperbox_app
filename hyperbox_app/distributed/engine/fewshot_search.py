@@ -37,30 +37,6 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # device = 'cpu'
 
 
-class MutableStatusCallback(Callback):
-    def __init__(self, supernet_mask=None):
-        self.supernet_mask = supernet_mask
-
-    def on_fit_start(self, trainer, pl_module):
-        mutator = pl_module.mutator
-        if self.supernet_mask is not None:
-            # mask = {}
-            # for m in mutator.mutables:
-            #     mask[m.key] = torch.ones_like(m.mask)
-            # self.supernet_mask = mask
-            mutator.sample_by_mask(self.supernet_mask)
-            for m in mutator.mutables:
-                mutator.freeze_mutable(m.key)
-            log.info(f'Supernet mask is set to {self.supernet_mask}')
-
-    def on_train_epoch_start(self, trainer, pl_module):
-        epoch = trainer.current_epoch
-        max_epochs = trainer.max_epochs
-        if epoch == max_epochs // 4:
-            for m in pl_module.mutator.mutables:
-                pl_module.mutator.defrost_mutable(m.key)
-
-
 @hparams_wrapper
 class FewshotSearch(BaseEngine):
     def __init__(
@@ -124,7 +100,7 @@ class FewshotSearch(BaseEngine):
                         warmup_epoch, supernet_mask)
 
                     # split current search space (supernet)
-                    splitted_supernet_masks = self.split_supernet(
+                    splitted_supernet_masks, best_infos, best_edge_key = self.split_supernet(
                         trainer, model, datamodule, config,
                         supernet_mask, self.hparams.split_criterion, self.hparams
                     )
@@ -132,33 +108,27 @@ class FewshotSearch(BaseEngine):
 
             if len(new_supernet_settings) > 0:
                 all_supernet_settings.append(new_supernet_settings)
-                # supernet_settings = new_supernet_settings
-
-        # fintune all supernets at final level
-        # supernet_masks = []
-        # for _, _, masks in supernet_settings[-1]:
-        #     supernet_masks += masks
-        # for idx, supernet_mask in enumerate(supernet_masks):
+                
         level = -1
         for idx, supernet_setting in enumerate(all_supernet_settings[level]):
             parent_trainer, parent_model, supernet_masks = supernet_setting
             for idy, supernet_mask in enumerate(supernet_masks):
-                log.info(f"Fintune level{level} ({idx}-{idy})-th sub-supernet with mask {supernet_mask}")
+                log.info(f"Fintune level[{level}] [{idx}-{idy}]-th sub-supernet with mask {supernet_mask}")
                 trainer, model = self.finetune(
                     parent_trainer, parent_model, datamodule, config,
                     self.finetune_epoch, supernet_mask, self.hparams)
                 results = trainer.callback_metrics
-                log.info(f"Fintune Done: level{level} ({idx}-{idy})-th sub-supernet with mask {supernet_mask} \nresults: {results}")
+                log.info(f"Fintune Done: level[{level}] [{idx}-{idy}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
                 
                 ckpt_path = os.path.join(
-                    os.getcwd(), f'checkpoints/level{level}-({idx}-{idy})-th_subSupernet_latest.ckpt'
+                    os.getcwd(), f'checkpoints/level[{level}]-[{idx}-{idy}]-th_subSupernet_latest.ckpt'
                 )
                 mask_path = os.path.join(
-                    os.getcwd(), f'checkpoints/level{level}-({idx}-{idy})-th_subSupernet_mask.json'
+                    os.getcwd(), f'checkpoints/level[{level}]-[{idx}-{idy}]-th_subSupernet_mask.json'
                 )
                 trainer.save_checkpoint(f"{ckpt_path}")
                 save_arch_to_json(supernet_mask, mask_path)
-                log.info(f"Saved level{level}-({idx}-{idy})-th sub-Supernet checkpoint to {ckpt_path}, mask to {mask_path}")
+                log.info(f"Saved level[{level}]-[{idx}-{idy}]-th sub-Supernet checkpoint to {ckpt_path}, mask to {mask_path}")
         return {}
 
     def warmup(
@@ -178,8 +148,7 @@ class FewshotSearch(BaseEngine):
 
         trainer_cfg = deepcopy(config.trainer)
         trainer_cfg.max_epochs = warmup_epoch
-        callbacks = [c for c in parent_trainer.callbacks if not isinstance(c, MutableStatusCallback)]
-        callbacks += [MutableStatusCallback(supernet_mask)]
+        callbacks = parent_trainer.callbacks
         trainer = instantiate(trainer_cfg, callbacks=callbacks,
             logger=parent_trainer.logger, _convert_="partial")
         trainer.fit(model, datamodule)
@@ -261,12 +230,14 @@ class FewshotSearch(BaseEngine):
         split_method = hparams.get('split_method', 'spectral_cluster')
 
         # best_value = -1e10 if split_method == 'spectral_cluster' else 1e10
-        best_value = -10
-        best_partition = None
+        best_value = 0
+        best_partition = []
         best_edge_key = None
         best_infos = None
         # enumerate all edges in the supernet
         for edge_key in edge_keys:
+            if not base_mask[edge_key].all():
+                continue
             num_ops = len(base_mask[edge_key])
             # enumerate all enabled operations of the current edge
             similarity_avg = 0
@@ -274,7 +245,7 @@ class FewshotSearch(BaseEngine):
                 if batch_idx == repeat_num:
                     break
                 
-                crt_mask = {}
+                crt_mask = deepcopy(base_mask)
                 for k, v in base_mask.items():
                     if k == edge_key:
                         crt_mask[k] = torch.zeros_like(v)
@@ -303,7 +274,8 @@ class FewshotSearch(BaseEngine):
                             'op_idx': op_idx,
                         }
                     elif split_criterion == 'ID':
-                        IDs = calc_IDs(model.network, self.dataloader, 2)
+                        IDs = calc_IDs(model.network, data, 2)
+                        # IDs = calc_IDs(model.network, self.dataloader, 2)
                         info = {
                             'mask': crt_mask,
                             'IDs': IDs,
@@ -340,7 +312,15 @@ class FewshotSearch(BaseEngine):
                     log.info(f"Edge {edge_key}: Best cluster={best_partition} \
                         with averaged similarity {best_value:4f}")
             elif split_method == 'mincut':
-                cut_value, partition = mincut(similarity, 2)
+                dist = 1 - similarity
+                cut_value, partition = mincut(dist, 2)
+                if cut_value > best_value:
+                    best_value = cut_value
+                    best_edge_key = edge_key
+                    best_partition = partition
+                    best_infos = infos
+                    log.info(f"Edge {edge_key}: Best cluster={best_partition} \
+                        with cut value {best_value:4f}")
             elif split_method == 'stoer_wagner':
                 G = nx.from_numpy_matrix(similarity)
                 cut_value, partition = nx.stoer_wagner(G)
@@ -360,7 +340,7 @@ class FewshotSearch(BaseEngine):
             for idx in range(len(indices)):
                 crt_mask[best_edge_key][indices[idx]] = 1
             supernet_masks.append(crt_mask)
-        return supernet_masks
+        return supernet_masks, best_infos, best_edge_key
 
     def finetune(
         self,
@@ -377,8 +357,7 @@ class FewshotSearch(BaseEngine):
 
         trainer_cfg = deepcopy(config.trainer)
         trainer_cfg.max_epochs = hparams.finetune_epoch
-        callbacks = [c for c in parent_trainer.callbacks if not isinstance(c, MutableStatusCallback)]
-        callbacks += [MutableStatusCallback(supernet_mask)]
+        callbacks = parent_trainer.callbacks
         trainer = instantiate(trainer_cfg, callbacks=callbacks,
             logger=parent_trainer.logger, _convert_="partial")
         trainer.fit(model, datamodule)
@@ -461,7 +440,7 @@ def mincut(dist_avg, split_num): # note: this is not strictly mincut, but it's f
     # assert split_num == 2, 'always split into 2 groups for 201 (when using gradient to split)'
     assert isinstance(dist_avg, np.ndarray)
     dist_avg = dist_avg - np.tril(dist_avg)
-    best_dist, best_groups, best_edge_score = float('inf'), [], 0
+    best_dist, best_groups, best_edge_score = -1*float('inf'), [], 0
     for opid1 in range(dist_avg.shape[0]):
         for opid2 in range(opid1 + 1, dist_avg.shape[0]):
             group1 = np.array([opid1, opid2]) # always 2
@@ -475,15 +454,37 @@ def mincut(dist_avg, split_num): # note: this is not strictly mincut, but it's f
                 best_edge_score = dist_avg.sum() - best_dist # dist_avg should be upper-triangular
     return best_edge_score, best_groups
 
-def calc_IDs(supernet, dataloader, num_batches=3):
+
+# def mincut(sim_avg, split_num): # note: this is not strictly mincut, but it's fine for 201
+#     # assert split_num == 2, 'always split into 2 groups for 201 (when using gradient to split)'
+#     assert isinstance(sim_avg, np.ndarray)
+#     sim_avg = sim_avg - np.tril(sim_avg)
+#     best_sim, best_groups, best_edge_score = -1*float('inf'), [], 0
+#     for opid1 in range(sim_avg.shape[0]):
+#         for opid2 in range(opid1 + 1, sim_avg.shape[0]):
+#             group1 = np.array([opid1, opid2]) # always 2
+#             group2 = np.setdiff1d(np.array(list(range(sim_avg.shape[0]))), group1)
+#             sim = sim_avg[group1[0], group1[1]] + sim_avg[group2[0], group2[1]]
+#             if group2.shape[0] > 2:
+#                 sim += sim_avg[group2[0], group2[2]] + sim_avg[group2[1], group2[2]]
+#             if sim > best_sim:
+#                 best_sim = sim
+#                 best_groups = [group1, group2]
+#                 best_edge_score = sim_avg.sum() - best_sim # sim_avg should be upper-triangular
+#     return best_edge_score, best_groups
+
+# def calc_IDs(supernet, dataloader, num_batches=3):
+def calc_IDs(supernet, data_batch, num_batches=3):
     supernet = supernet.to(device)
     # device = next(supernet.parameters()).device
     IDs = []
-    for batch_idx, batch in enumerate(dataloader):
-        id_batch = []
-        if batch_idx+1 > num_batches:
-            break
-        imgs, labels = batch
+    # for batch_idx, batch in enumerate(dataloader):
+    #     id_batch = []
+    #     if batch_idx+1 > num_batches:
+    #         break
+    #     imgs, labels = batch
+    id_batch = []
+    for imgs, labels in [data_batch]:
         imgs, labels = imgs.to(device), labels.to(device)
         bs = imgs.shape[0]
         with torch.no_grad():
@@ -522,7 +523,10 @@ def calc_grads(model, data_batch, split_edge_key, crt_mask):
     mutator = model.mutator
     device = next(supernet.parameters()).device
 
-    optimizer = model.configure_optimizers()
+    model.configure_optimizers()
+    optimizer = model.optimizers()
+    if isinstance(optimizer, tuple):
+        optimizer = optimizer[0]
     optimizer.zero_grad()
     imgs, labels = data_batch
     imgs, labels = imgs.to(device), labels.to(device)
@@ -540,9 +544,10 @@ def get_splitted_grads(model, mutator, split_edge_key, crt_mask):
     for name, module in model.named_modules():
         if isinstance(module, OperationSpace):
             if module.key != split_edge_key:
-                op_index = torch.where(crt_mask[module.key]!=0)[0]
-                op = module.candidates[op_index]
-                params += list(op.parameters())
+                op_indices = torch.where(crt_mask[module.key]!=0)[0]
+                for op_index in op_indices:
+                    op = module.candidates[op_index]
+                    params += list(op.parameters())
     if hasattr(model, 'classifier'):
         params += list(model.classifier.parameters())
     param_grads = [p.grad for p in params if p.grad is not None]

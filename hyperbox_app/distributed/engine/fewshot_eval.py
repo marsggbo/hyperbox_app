@@ -8,9 +8,9 @@ import torch
 from hydra.utils import instantiate
 from hyperbox.engine.base_engine import BaseEngine
 from hyperbox.utils.logger import get_logger
-from hyperbox.utils.utils import load_json
+from hyperbox.utils.utils import load_json, save_arch_to_json
 from omegaconf import DictConfig
-from scipy.stats import kendalltau
+from scipy.stats import kendalltau, spearmanr
 
 log = get_logger(__name__)
 
@@ -55,6 +55,8 @@ class FewshotEval(BaseEngine):
         self.search_space_to_eval = self.partition_search_space(masks=self.masks)
         self.idx = 0
         self.performance_history = {}
+        for i in range(len(self.search_space_to_eval)):
+            log.info(f"{i}-th search space: {len(self.search_space_to_eval[i])}")
 
     def is_subnet_in_supernet(self, subnet_mask, supernet_mask):
         enc_supernet = torch.vstack([v.bool() for v in supernet_mask.values()])
@@ -97,6 +99,13 @@ class FewshotEval(BaseEngine):
 
         for space_idx in self.search_space_to_eval:
             path = self.ckpts_path[space_idx]
+            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_1net_1batch/2022-05-17_00-14-09/checkpoints/last.ckpt'
+            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_1net_1batch/2022-04-27_09-41-26/checkpoints/last.ckpt'
+            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_5net_1batch/2022-04-27_12-28-35/checkpoints/last.ckpt'
+            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_8net_1batch/2022-04-27_23-57-53/checkpoints/last.ckpt'
+            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_16net_1batch/2022-04-28_05-43-05/checkpoints/last.ckpt'
+            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_32net_1batch/2022-04-28_06-04-10/checkpoints/last.ckpt'
+            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_origin_fairnas_5net_1batch/2022-04-28_06-04-29/checkpoints/last.ckpt'
             # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch/2022-05-12_02-38-38/checkpoints/last.ckpt'
             self.model.network.load_from_ckpt(path)
             num = len(self.search_space_to_eval[space_idx])
@@ -107,12 +116,13 @@ class FewshotEval(BaseEngine):
                 metrics = self.trainer.validate(model=self.model, datamodule=self.datamodule, verbose=False)
                 metrics = metrics[0][self.metric_key]
                 if arch not in self.performance_history:
-                    self.performance_history[arch] = {'proxy': 0, 'real': 0}
+                    self.performance_history[arch] = {'proxy': 0, 'real': 0, 'mask': mask}
                 self.performance_history[arch]['proxy'] = metrics
                 real = self.model.network.query_by_key()
                 self.performance_history[arch]['real'] = real
                 log.info(f"{self.idx}-{arch}: {metrics} {real}")
                 self.idx += 1
+        save_arch_to_json(self.performance_history, self.logpath.replace('.csv', '.json'))
         proxies = []
         reals = []
         for arch in self.performance_history:
@@ -121,11 +131,14 @@ class FewshotEval(BaseEngine):
         indices = np.argsort(proxies)
         proxies = np.array(proxies)[indices]
         reals = np.array(reals)[indices]
-        tau, p = kendalltau(proxies, reals)
         log.info(f"#valid_batches={self.trainer.limit_val_batches}")
-        log.info(f"Kendall's Tau: {tau}, p-value: {p}")
+        tau, p_tau = kendalltau(proxies, reals)
+        log.info(f"Kendall's Tau: {tau}, p-value: {p_tau}")
+        spearman, p_sp = spearmanr(proxies, reals)
+        log.info(f"spearman: {spearman}, p-value: {p_sp}")
         with open(self.logpath, 'a') as f:
-            f.write(f"{tau}, {p}, {len(self.search_space_to_eval)}, {self.trainer.limit_val_batches}\n")
+            f.write("tau, p-tau, spearman, p-spearman, #search_space, #valid_batches\n")
+            f.write(f"{tau}, {p_tau}, {spearman}, {p_sp} {len(self.search_space_to_eval)}, {self.trainer.limit_val_batches}\n")
             # pw = self.cfg.pretrained_weight
             # num_nets = pw.split('net')[0].split('_')[-1]
             # interval = pw.split('batch')[0].split('_')[-1]
@@ -133,4 +146,4 @@ class FewshotEval(BaseEngine):
             # bs = self.trainer.limit_val_batches
             # # #GPUs, Hete/Homo, #EvalBatch, #nets, dataset, PretrainedWeights, Tau, P-value
             # f.write(f"\n{num_nets}, {interval}, {tau}, {p}, {pw}, {gpus}, {bs}")
-        return {'tau': tau, 'p': p}
+        return {'tau': tau, 'p_tau': p_tau, 'spearman': spearman, 'p_spearman': p_sp}

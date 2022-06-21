@@ -20,7 +20,7 @@ class FewshotMutator(RandomMutator):
     ):
         '''
         '''
-        super(IDFewshotMutator, self).__init__(model)
+        super(FewshotMutator, self).__init__(model)
 
     def sample_search(self, *args, **kwargs):
         result = super().sample_search(*args, **kwargs)
