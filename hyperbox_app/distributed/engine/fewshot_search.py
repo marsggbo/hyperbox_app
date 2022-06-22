@@ -51,14 +51,7 @@ class FewshotSearch(BaseEngine):
         split_method: str='spectral_cluster', # 'spectral_cluster' or 'mincut'
         is_single_path: bool=False,
         repeat_num: int=1,
-
-        ckpt_weight: str=None,
-        ckpt_ea: str=None,
-        partition_flag: str='sub-supernet',
-        partition_metric: str='ID',
-        num_IDs: int=100,
-        ID_groups_path: str=None,
-        precompute_IDs: bool=False,
+        supernet_masks_path: str=None,
     ):
         super().__init__(trainer, model, datamodule, cfg)
         datamodule_cfg = deepcopy(self.cfg.datamodule)
@@ -67,6 +60,7 @@ class FewshotSearch(BaseEngine):
         datamodule.setup()
         self.dataloader = datamodule.train_dataloader()
         self.mutator = self.model.mutator
+        self.supernet_masks_path = supernet_masks_path # e.g., /path/to/*json
 
     def run(self):
         trainer = self.trainer
@@ -74,61 +68,87 @@ class FewshotSearch(BaseEngine):
         datamodule = self.datamodule
         config = self.cfg
 
-        # split search space
-        split_history = {}
-        supernet_mask = {m.key: torch.ones_like(m.mask) for m in self.mutator.mutables}
-        all_supernet_settings = [
-            [
-                [trainer, model, supernet_mask]
-            ],
-        ]
-        for level, warmup_epoch in enumerate(self.wamrup_epochs):
-            supernet_settings = all_supernet_settings[level]
-            split_history[level] = supernet_settings
-            new_supernet_settings = []
+        if self.supernet_masks_path is None:
+            # split search space
+            split_history = {}
+            supernet_mask = {m.key: torch.ones_like(m.mask) for m in self.mutator.mutables}
+            all_supernet_settings = [
+                [
+                    [trainer, model, supernet_mask]
+                ],
+            ]
+            # warmup and split the supernet
+            for level, warmup_epoch in enumerate(self.wamrup_epochs):
+                supernet_settings = all_supernet_settings[level]
+                split_history[level] = supernet_settings
+                new_supernet_settings = []
 
-            # train all supernets at current level, and split them along the way
-            for idx, supernet_setting in enumerate(supernet_settings):
-                flag = f'{level}_{idx}'
+                # train all supernets at current level, and split them along the way
+                for idx, supernet_setting in enumerate(supernet_settings):
+                    flag = f'{level}_{idx}'
+                    parent_trainer, parent_model, supernet_masks = supernet_setting
+                    if not isinstance(supernet_masks, list):
+                        supernet_masks = [supernet_masks]
+                    for supernet_mask in supernet_masks:
+                        # warmup
+                        trainer, model = self.warmup(
+                            parent_trainer, parent_model, datamodule, config,
+                            warmup_epoch, supernet_mask)
+
+                        # split current search space (supernet)
+                        splitted_supernet_masks, best_infos, best_edge_key = self.split_supernet(
+                            trainer, model, datamodule, config,
+                            supernet_mask, self.hparams.split_criterion, self.hparams
+                        )
+                        new_supernet_settings.append([trainer, model, deepcopy(splitted_supernet_masks)])
+
+                if len(new_supernet_settings) > 0:
+                    all_supernet_settings.append(new_supernet_settings)
+
+            level = -1
+            # save supernet masks
+            for idx, supernet_setting in enumerate(all_supernet_settings[level]):
                 parent_trainer, parent_model, supernet_masks = supernet_setting
-                if not isinstance(supernet_masks, list):
-                    supernet_masks = [supernet_masks]
-                for supernet_mask in supernet_masks:
-                    # warmup
-                    trainer, model = self.warmup(
-                        parent_trainer, parent_model, datamodule, config,
-                        warmup_epoch, supernet_mask)
-
-                    # split current search space (supernet)
-                    splitted_supernet_masks, best_infos, best_edge_key = self.split_supernet(
-                        trainer, model, datamodule, config,
-                        supernet_mask, self.hparams.split_criterion, self.hparams
+                for idy, supernet_mask in enumerate(supernet_masks):
+                    mask_path = os.path.join(
+                        os.getcwd(), f'checkpoints/level[{level}]-[{idx}-{idy}]-th_subSupernet_mask.json'
                     )
-                    new_supernet_settings.append([trainer, model, deepcopy(splitted_supernet_masks)])
+                    save_arch_to_json(supernet_mask, mask_path)
 
-            if len(new_supernet_settings) > 0:
-                all_supernet_settings.append(new_supernet_settings)
-                
-        level = -1
-        for idx, supernet_setting in enumerate(all_supernet_settings[level]):
-            parent_trainer, parent_model, supernet_masks = supernet_setting
+            # finetune all supernets
+            for idx, supernet_setting in enumerate(all_supernet_settings[level]):
+                parent_trainer, parent_model, supernet_masks = supernet_setting
+                for idy, supernet_mask in enumerate(supernet_masks):
+                    log.info(f"Fintune level[{level}] [{idx}-{idy}]-th sub-supernet with mask {supernet_mask}")
+                    trainer, model = self.finetune(
+                        parent_trainer, parent_model, datamodule, config,
+                        self.finetune_epoch, supernet_mask, self.hparams)
+                    results = trainer.callback_metrics
+                    log.info(f"Fintune Done: level[{level}] [{idx}-{idy}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
+                    
+                    ckpt_path = os.path.join(
+                        os.getcwd(), f'checkpoints/level[{level}]-[{idx}-{idy}]-th_subSupernet_latest.ckpt'
+                    )
+                    trainer.save_checkpoint(f"{ckpt_path}")
+                    log.info(f"Saved level[{level}]-[{idx}-{idy}]-th sub-Supernet checkpoint to {ckpt_path}")
+        else:
+            # load supernet masks
+            supernet_masks_path = glob(self.supernet_masks_path)
+            supernet_masks = [load_json(path) for path in supernet_masks_path]
+            
             for idy, supernet_mask in enumerate(supernet_masks):
-                log.info(f"Fintune level[{level}] [{idx}-{idy}]-th sub-supernet with mask {supernet_mask}")
+                log.info(f"Fintune [{idy}]-th sub-supernet with mask {supernet_mask}")
                 trainer, model = self.finetune(
-                    parent_trainer, parent_model, datamodule, config,
+                    trainer, model, datamodule, config,
                     self.finetune_epoch, supernet_mask, self.hparams)
                 results = trainer.callback_metrics
-                log.info(f"Fintune Done: level[{level}] [{idx}-{idy}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
+                log.info(f"Fintune Done: [{idy}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
                 
                 ckpt_path = os.path.join(
-                    os.getcwd(), f'checkpoints/level[{level}]-[{idx}-{idy}]-th_subSupernet_latest.ckpt'
-                )
-                mask_path = os.path.join(
-                    os.getcwd(), f'checkpoints/level[{level}]-[{idx}-{idy}]-th_subSupernet_mask.json'
+                    os.getcwd(), f'checkpoints/[{idy}]-th_subSupernet_latest.ckpt'
                 )
                 trainer.save_checkpoint(f"{ckpt_path}")
-                save_arch_to_json(supernet_mask, mask_path)
-                log.info(f"Saved level[{level}]-[{idx}-{idy}]-th sub-Supernet checkpoint to {ckpt_path}, mask to {mask_path}")
+                log.info(f"Saved [{idy}]-th sub-Supernet checkpoint to {ckpt_path}")
         return {}
 
     def warmup(
