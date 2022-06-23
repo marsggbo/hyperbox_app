@@ -1,0 +1,26 @@
+#Nets, #interval, Tau, P-value, Checkpoint
+1, 1, 0.778407,1.951357e-30, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch_NoneGrad/2022-05-04_06-55-10/checkpoints/last.ckpt
+1, 1, 0.770692,6.939292e-30, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch_NoneGrad/2022-05-04_07-21-40/checkpoints/last.ckpt
+3, 1, 0.752149,1.636924e-28, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_3net_1batch_NoneGrad/2022-05-04_07-11-04/checkpoints/last.ckpt
+3, 1, 0.781554,1.201573e-30, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_3net_1batch_NoneGrad/2022-05-04_07-21-41/checkpoints/last.ckpt
+6, 1, 0.765622,1.730955e-29, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_6net_1batch_NoneGrad/2022-05-04_07-11-04/checkpoints/last.ckpt
+6, 1, 0.785758,6.005504e-31, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_6net_1batch_NoneGrad/2022-05-04_10-05-14/checkpoints/last.ckpt
+12, 1, 0.772438,6.008176e-30, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch_NoneGrad/2022-05-04_07-11-05/checkpoints/last.ckpt
+12, 1, 0.802386,3.058137e-32, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch_NoneGrad/2022-05-04_10-05-14/checkpoints/last.ckpt
+
+1, 1, 0.822768,8.434867e-34, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch/2022-05-04_07-21-40/checkpoints/last.ckpt
+1, 1, 0.806145,1.557761e-32, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch/2022-05-12_01-22-19/checkpoints/last.ckpt
+1, 1, 0.799070,5.766414e-32, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch/2022-05-12_01-22-21/checkpoints/last.ckpt
+1, 1, 0.730820,4.969550e-27, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch/2022-05-16_19-12-18/checkpoints/last.ckpt
+1, 1, 0.657504,3.390087e-22, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_1net_1batch/2022-05-16_19-12-30/checkpoints/last.ckpt
+3, 1, 0.751087,1.996604e-28, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_3net_1batch/2022-05-04_07-21-42/checkpoints/last.ckpt
+3, 1, 0.760797,4.014498e-29, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_3net_1batch/2022-05-12_01-00-16/checkpoints/last.ckpt
+3, 1, 0.768079,1.189348e-29, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_3net_1batch/2022-05-13_05-41-38/checkpoints/last.ckpt
+3, 1, 0.763320,2.511714e-29, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_originFairNAS_3net_1batch/2022-05-13_05-43-58/checkpoints/last.ckpt
+3, 1, 0.710082,1.365154e-25, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_originFairNAS_3net_1batch/2022-05-13_05-46-10/checkpoints/last.ckpt
+6, 1, 0.781237,1.204418e-30, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_6net_1batch/2022-05-04_10-05-14/checkpoints/last.ckpt
+6, 1, 0.745629,4.437236e-28, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_6net_1batch/2022-05-12_01-22-19/checkpoints/last.ckpt
+6, 1, 0.773835,4.292735e-30, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_6net_1batch/2022-05-12_02-38-38/checkpoints/last.ckpt
+12, 1, 0.805825,1.788662e-32, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch/2022-05-04_10-05-16/checkpoints/last.ckpt
+12, 1, 0.777722,2.164709e-30, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch/2022-05-12_01-22-19/checkpoints/last.ckpt
+12, 1, 0.773430,4.596575e-30, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch/2022-05-12_02-38-38/checkpoints/last.ckpt

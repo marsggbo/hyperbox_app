@@ -1,0 +1,20 @@
+#GPUs, Hete/Homo, #EvalBatch, #nets, dataset, PretrainedWeights, Tau, P-value
+1, homo, 0.5, 100, cifar10,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_hete/2022-04-06_23-23-01/checkpoints/last.ckpt, 0.839283849223847, 2.671673446772958e-33
+1, homo, 0.5, 100, cifar10,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_hete/2022-04-07_04-53-22/checkpoints/last.ckpt, 0.8071608217130993, 6.232579022805925e-31
+1, homo, 10, 100, cifar10,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_homo/2022-04-07_07-25-50/checkpoints/last.ckpt, 0.15708909546783298, 0.024631507406236302
+1, homo, 10, 100, cifar10,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_homo/2022-04-07_07-29-41/checkpoints/last.ckpt, 0.030430287368482092, 0.663538291963784
+
+1, homo, 10, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum1_c100/2022-04-12_06-04-53/checkpoints/last.ckpt, 0.15938765477740813, 0.022868333184885084
+1, homo, 0.5, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum1_c100/2022-04-12_06-04-53/checkpoints/last.ckpt, 0.15856938214324387, 0.023427463172820476
+1, homo, 10, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum1_c100/2022-04-12_06-10-08/checkpoints/last.ckpt, 0.49085946702344574, 3.132341629404227e-12
+1, homo, 0.5, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum1_c100/2022-04-12_06-10-08/checkpoints/last.ckpt, 0.5430535705998185, 1.0929736902477936e-14
+1, homo, 10, 1000, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum1_c100/2022-04-12_06-04-53/checkpoints/last.ckpt, 0.15843631553177479, 1.1010146151155295e-13
+1, homo, 10, 1000, cifar100, /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum1_c100/2022-04-12_06-10-08/checkpoints/last.ckpt, 0.3724804629464373, 3.6882543960075627e-68
+1, homo, 10, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_c100_homo/2022-04-12_21-42-34/checkpoints/last.ckpt, 0.1343289350517045, 0.05497350687727152
+1, homo, 10, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_c100_homo/2022-04-12_23-37-03/checkpoints/last.ckpt, 0.3660779269083002, 1.8334658312916864e-07
+1, homo, 0.5, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_c100_homo/2022-04-12_21-42-34/checkpoints/last.ckpt, 0.13828090060584108, 0.04843122676380184
+1, homo, 0.5, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_c100_homo/2022-04-12_23-37-03/checkpoints/last.ckpt, 0.246704178174237, 0.00044424620528041916
+1, hete, 0.5, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_c100_hete/2022-04-12_06-04-53/checkpoints/last.ckpt, 0.5888959480062915, 3.5569123796128205e-17
+1, hete, 0.5, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_c100_hete/2022-04-12_07-45-35/checkpoints/last.ckpt, 0.7235143457425992, 4.235886284953201e-25
+1, hete, 10, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_c100_hete/2022-04-12_06-04-53/checkpoints/last.ckpt, 0.5967979951995659, 1.4362032953353908e-17
+1, hete, 10, 100, cifar100,  /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum4_c100_hete/2022-04-12_07-45-35/checkpoints/last.ckpt, 0.7166852204893579, 1.1829989056484488e-24

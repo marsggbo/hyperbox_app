@@ -22,7 +22,28 @@ class IDFewshotMutator(RandomMutator):
         '''
         super(IDFewshotMutator, self).__init__(model)
 
-    def sample_search(self):
+    def sample_search(self, *args, **kwargs):
+        result = super().sample_search(*args, **kwargs)
+        if getattr(self, 'supernet_mask', None):
+            supernet_mask = self.supernet_mask
+            for key, val in supernet_mask.items():
+                mutable = self[key]
+                if not getattr(mutable, 'is_freeze', False):
+                    # 1. mutable shoule be not frozen
+                    # 2. mutable's mask should be not all ones
+                    #    e.g., [1,0,1] indicates the second operation is disabled,
+                    #    so we should sample only the first or third operation.
+                    candidate_indices = torch.where(val!=0)[0]
+                    gen_index = random.choice(candidate_indices)
+                    result[key] = F.one_hot(gen_index, num_classes=len(val)).view(-1).bool()
+                    self[key].mask = result[key].detach()
+        return result
+
+    def sample_search2(self):
+        if getattr(self, 'partition_flag', False):
+            partition_flag = self.partition_flag
+            if partition_flag == 'sub-supernet':
+                pass
         if getattr(self, 'precompute_IDs', False):
             key = random.choice(list(self.crt_ID_group.keys()))
             result = self.crt_ID_group[key]['mask']

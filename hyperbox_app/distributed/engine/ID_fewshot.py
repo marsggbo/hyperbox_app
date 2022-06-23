@@ -16,10 +16,11 @@ from skdim.id import ESS
 from sklearn.cluster import SpectralClustering
 from ipdb import set_trace
 
+from hyperbox.mutables.spaces import OperationSpace
 from hyperbox.engine.base_engine import BaseEngine
 from hyperbox.mutator import RandomMutator
 from hyperbox.utils.logger import get_logger
-from hyperbox.utils.utils import load_json
+from hyperbox.utils.utils import load_json, hparams_wrapper
 from hyperbox_app.distributed.networks.nasbench201.nasbench201 import \
     NASBench201Network
 from hyperbox_app.distributed.networks.nasbenchmb import NASBenchMBNet
@@ -28,9 +29,11 @@ from hyperbox.utils import utils, logger
 
 log = get_logger(__name__)
 
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = 'cpu'
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# device = 'cpu'
 
+
+@hparams_wrapper
 class IDFewshot(BaseEngine):
     def __init__(
         self,
@@ -40,6 +43,8 @@ class IDFewshot(BaseEngine):
         cfg: DictConfig,
         ckpt_weight: str,
         ckpt_ea: str,
+        partition_flag: str='sub-supernet',
+        partition_metric: str='ID',
         num_IDs: int=100,
         ID_groups_path: str=None,
         precompute_IDs: bool=False,
@@ -52,55 +57,146 @@ class IDFewshot(BaseEngine):
         datamodule_cfg.batch_size = 16
         datamodule = instantiate(datamodule_cfg)
         datamodule.setup()
-        self.test_loader = datamodule.test_dataloader()
-        if ID_groups_path is not None:
-            with open(ID_groups_path, "rb") as f:
-                self.ID_groups = pickle.load(f)
-        else:
-            self.ID_infos = self.calc_ID_infos(
-                self.model.network,
-                self.mutator,
-                ckpt_ea,
-                ckpt_weight,
-                test_loader=self.test_loader,
-                topk=-1,
-                num_IDs=num_IDs
-            )
-            self.IDs = np.array([val['ID'] for k, val in self.ID_infos.items()])
+        self.dataloader = datamodule.train_dataloader()
+        self.ID_groups = self.get_ID_groups(
+            partition_flag, partition_metric, ckpt_ea, ckpt_weight, num_IDs, ID_groups_path, precompute_IDs,
+        )
 
-            log.info("Calc similarity...")
-            self.similarity = self.calc_similarity(self.ID_infos)
+    def get_ID_groups(
+        self,
+        partition_flag: str,
+        partition_metric: str,
+        ckpt_ea: str,
+        ckpt_weight: str,
+        num_IDs: int=100,
+        ID_groups_path: str=None,
+        precompute_IDs: bool=False,
+    ) -> dict:
+        '''Get ID groups by partitioning search space
+        Args:
+            partition_flag: 'sub-supernet', 'subnet', 'spectral'
+        '''        
+        if partition_flag == 'sub-supernet':
+            self.ID_groups = self.enumerate_sub_supernets(partition_metric)
+        elif partition_flag == 'subnet':
+            if ID_groups_path is not None:
+                with open(ID_groups_path, "rb") as f:
+                    self.ID_groups = pickle.load(f)
+            else:
+                self.ID_infos = self.calc_ID_infos(
+                    self.model.network,
+                    self.mutator,
+                    ckpt_ea,
+                    ckpt_weight,
+                    dataloader=self.dataloader,
+                    topk=-1,
+                    num_IDs=num_IDs
+                )
+                self.IDs = np.array([val['ID'] for k, val in self.ID_infos.items()])
 
-            log.info("Generate cluster...")
-            self.cluster, self.cluster_sim_avg = self.gen_cluster(self.similarity)
-            log.info(f"Cluster={self.cluster} with averaged similarity {self.cluster_sim_avg:4f}")
-            self.labels = self.cluster.labels_
-            self.u_labels = set(self.labels)
+                log.info("Calc similarity...")
+                self.similarity = self.calc_similarity(self.ID_infos)
 
-            log.info("Cluster ID groups ...")
-            self.ID_groups = {}
-            self.crt_ID_group_label = 0
-            for label in self.u_labels:
-                indices = np.where(self.labels == label)[0]
-                # crt_ID_group = {idx: self.ID_infos[indices[idx]] for idx in range(len(indices))}
-                crt_ID_group = {}
-                for idx in range(len(indices)):
-                    id_info = self.ID_infos[indices[idx]]
-                    arch = id_info['arch']
-                    crt_ID_group[f"{arch}"] = id_info
-                self.ID_groups[label] = crt_ID_group
-            with open(f"precompute_IDs.pkl", "wb") as f:
-                pickle.dump(self.ID_groups, f)
-        if precompute_IDs:
-            self.mutator.precompute_IDs = precompute_IDs
-            try:
-                self.ID_groups = self.enumarate_all_subnets(self.ID_groups)
-            except (Exception, KeyboardInterrupt) as e:
-                log.error(f"Failed to enumerate all subnets: {e}")
-                raise e
-            finally:
+                log.info("Generate cluster...")
+                self.cluster, self.cluster_sim_avg = self.gen_cluster(self.similarity)
+                log.info(f"Cluster={self.cluster} with averaged similarity {self.cluster_sim_avg:4f}")
+                self.labels = self.cluster.labels_
+                self.u_labels = set(self.labels)
+
+                log.info("Cluster ID groups ...")
+                self.ID_groups = {}
+                self.crt_ID_group_label = 0
+                for label in self.u_labels:
+                    indices = np.where(self.labels == label)[0]
+                    # crt_ID_group = {idx: self.ID_infos[indices[idx]] for idx in range(len(indices))}
+                    crt_ID_group = {}
+                    for idx in range(len(indices)):
+                        id_info = self.ID_infos[indices[idx]]
+                        arch = id_info['arch']
+                        crt_ID_group[f"{arch}"] = id_info
+                    self.ID_groups[label] = crt_ID_group
                 with open(f"precompute_IDs.pkl", "wb") as f:
                     pickle.dump(self.ID_groups, f)
+            if precompute_IDs:
+                self.mutator.precompute_IDs = precompute_IDs
+                try:
+                    self.ID_groups = self.enumarate_all_subnets(self.ID_groups)
+                except (Exception, KeyboardInterrupt) as e:
+                    log.error(f"Failed to enumerate all subnets: {e}")
+                    raise e
+                finally:
+                    with open(f"precompute_IDs.pkl", "wb") as f:
+                        pickle.dump(self.ID_groups, f)
+        return self.ID_groups
+
+    def enumerate_sub_supernets(self, partition_metric: str='ID') -> dict:
+        """
+        Enumerate all subnets and supernets of each ID group.
+        """
+        infos = {}
+        base_mask = {}
+        for m in self.mutator.mutables:
+            base_mask[m.key] = torch.ones_like(m.mask)
+        keys = list(base_mask.keys())
+        for key in keys:
+            num = len(base_mask[key])
+            for i in range(num):
+                mask = deepcopy(base_mask)
+                mask[key][i] = 0
+                mask = {k: v.bool() for k, v in mask.items()}
+                self.mutator.sample_by_mask(mask)
+                flag = (key, i)
+                if partition_metric == 'ID':
+                    info = {
+                            'arch': flag,
+                            'mask': mask,
+                            'IDs': None,
+                            'ID': None,
+                            'key': key,
+                            'partition_metric': partition_metric,
+                            'op_idx': i,
+                    }
+                    IDs = calc_IDs(self.model.network, self.dataloader, 20)
+                    info['IDs'] = IDs
+                    info['ID'] = IDs.mean(0)
+                elif partition_metric == 'gradient':
+                    info = {
+                            'arch': flag,
+                            'mask': mask,
+                            'grads': None,
+                            'partition_metric': partition_metric,
+                            'key': key,
+                            'op_idx': i,
+                    }
+                    grads = calc_grads(self.model, self.dataloader, flag, 20)
+                infos[flag] = info
+
+        self.infos = infos
+        log.info("Calc similarity...")
+        self.similarity = self.calc_similarity(self.infos)
+
+        log.info("Generate cluster...")
+        self.cluster, self.cluster_sim_avg = self.gen_cluster(self.similarity)
+        log.info(f"Cluster={self.cluster} with averaged similarity {self.cluster_sim_avg:4f}")
+        self.labels = self.cluster.labels_
+        self.u_labels = set(self.labels)
+
+        log.info("Cluster groups ...")
+        self.groups = {}
+        self.crt_ID_group_label = 0
+        for label in self.u_labels:
+            indices = np.where(self.labels == label)[0]
+            # crt_ID_group = {idx: self.infos[indices[idx]] for idx in range(len(indices))}
+            crt_ID_group = {}
+            for idx in range(len(indices)):
+                info = self.infos[indices[idx]]
+                arch = info['arch']
+                crt_ID_group[f"{arch}"] = info
+            self.groups[label] = crt_ID_group
+        with open(f"groups.pkl", "wb") as f:
+            pickle.dump(self.groups, f)
+
+        return self.groups
 
     def enumarate_all_subnets(self, ID_groups: dict) -> dict:
         '''
@@ -143,7 +239,7 @@ class IDFewshot(BaseEngine):
                         'real_acc': None
                 }
 
-                IDs = calc_IDs(self.model.network, self.test_loader, 2)
+                IDs = calc_IDs(self.model.network, self.dataloader, 2)
                 ID_info['IDs'] = IDs
                 ID_info['ID'] = IDs.mean(0)
                 label = self.mutator.get_nearest_ID_group_label(ID_info['ID'], ID_groups, n_neighbors=3)
@@ -157,7 +253,7 @@ class IDFewshot(BaseEngine):
         datamodule = self.datamodule
         config = self.cfg
         self.mutator.ID_groups = self.ID_groups
-        self.mutator.test_loader = self.test_loader
+        self.mutator.dataloader = self.dataloader
         for label, ID_group in self.ID_groups.items():
             self.mutator.crt_ID_group_label = label
             self.mutator.crt_ID_group = self.ID_groups[label]
@@ -196,7 +292,7 @@ class IDFewshot(BaseEngine):
         mutator,
         ckpt_ea,
         ckpt_weight,
-        test_loader,
+        dataloader,
         topk=-1,
         flag: str='vis', # 'keep_top_k' or 'vis'
         num_IDs: int=100
@@ -257,7 +353,7 @@ class IDFewshot(BaseEngine):
                 'proxy_acc': acc,
                 'real_acc': real_acc
             }
-            IDs = calc_IDs(supernet, test_loader)
+            IDs = calc_IDs(supernet, dataloader)
             ID_infos[model_idx]['IDs'] = IDs
             ID_infos[model_idx]['acc'] = acc
             ID_infos[model_idx]['ID'] = IDs.mean(0)
@@ -326,10 +422,10 @@ class IDFewshot(BaseEngine):
         return best_cluster, best_sim
 
 
-def calc_IDs(supernet, test_loader, num_batches=3):
+def calc_IDs(supernet, dataloader, num_batches=3):
     device = next(supernet.parameters()).device
     IDs = []
-    for batch_idx, batch in enumerate(test_loader):
+    for batch_idx, batch in enumerate(dataloader):
         id_batch = []
         if batch_idx+1 > num_batches:
             break

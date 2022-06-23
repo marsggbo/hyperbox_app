@@ -23,13 +23,18 @@ class PosthocNB201Engine(BaseEngine):
         search_space_path: str,
         num_subnets: int=100,
         metric_key: str='val/acc_epoch',
-        query_key: str='test_acc'
+        query_key: str='test_acc',
+        logpath: str=None,
     ):
         super().__init__(trainer, model, datamodule, cfg)
         self.metric_key = metric_key
         self.query_key = query_key
         self.num_subnets = int(num_subnets)
         self.search_space_path = search_space_path
+        if logpath is not None:
+            self.logpath = logpath
+        else:
+            self.logpath = os.path.join(os.getcwd(), 'evaltau_nb201.csv')
         if 'json' in search_space_path:
             with open(search_space_path, 'r') as f:
                 self.masks = json.load(f)
@@ -37,18 +42,6 @@ class PosthocNB201Engine(BaseEngine):
             self.masks = glob(f"{search_space_path}/*.json")
         self.idx = 0
         self.performance_history = {}
-
-    def reset_idx(self):
-        self.idx = 0
-
-    def parse_arch(self, pl_module):
-        if hasattr(pl_module, 'arch_encoding'):
-            arch = pl_module.arch_encoding
-        elif hasattr(pl_module.network, 'arch_encoding'):
-            arch = pl_module.network.arch_encoding
-        else:
-            raise NotImplementedError
-        return arch
 
     def convert_list2tensor(self, src):
         for key, val in src.items():
@@ -72,7 +65,6 @@ class PosthocNB201Engine(BaseEngine):
                 key = list(self.masks.keys())[self.idx]
                 mask = self.convert_list2tensor(self.masks[key])
             self.model.mutator.sample_by_mask(mask)
-            self.model.network.sync_mask_for_all_cells(mask)
             arch = self.model.network.arch_encoding
             metrics = self.trainer.validate(model=self.model, datamodule=self.datamodule, verbose=False)
             metrics = metrics[0][self.metric_key]
@@ -90,15 +82,13 @@ class PosthocNB201Engine(BaseEngine):
             reals.append(self.performance_history[arch]['real'])
         tau, p = kendalltau(proxies, reals)
         log.info(f"#valid_batches={self.trainer.limit_val_batches}")
-        log.info(f"Kendall's Tau: {tau}, p-value: {p}")
-        with open(
-            '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/engine/nb201_results.csv',
-            'a') as f:
-            gpus = self.cfg.trainer.gpus
-            mode = 'hete' if self.cfg.model.is_net_parallel else 'homo'
-            bs = self.trainer.limit_val_batches
-            num_nets = self.num_subnets
+        log.info(f"Kendall's Tau: {tau}, p-value: {p}")        
+        with open(self.logpath, 'a') as f:
             pw = self.cfg.pretrained_weight
-            # #GPUs, Hete/Homo, #EvalBatch, #nets, dataset, PretrainedWeights, Tau, P-value
-            f.write(f"\n{gpus}, {mode}, {bs}, {num_nets}, {dataset}, {pw}, {tau}, {p}")
+            num_nets = pw.split('net')[0].split('_')[-1]
+            interval = pw.split('batch')[0].split('_')[-1]
+            gpus = pw.split('gpunum')[1].split('_')[0]
+            bs = self.trainer.limit_val_batches
+            # NumNets, Interval, Tau, P-value, ckpt, GPU, BatchSize
+            f.write(f"\n{num_nets}, {interval}, {tau}, {p}, {pw}, {gpus}, {bs}")
         return {'tau': tau, 'p': p}
