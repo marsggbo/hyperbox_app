@@ -48,7 +48,7 @@ callbacks:
         save_top_k: 1 # save k best models (determined by above metric)
 engine:
     _target_: hyperbox_app.distributed.engine.fewshot_search.FewshotSearch
-    wamrup_epochs: [20,20,20,20]
+    wamrup_epochs: [20,40,60,80]
     finetune_epoch: 50
     split_criterion: ID
     split_method: 'spectral_cluster'
