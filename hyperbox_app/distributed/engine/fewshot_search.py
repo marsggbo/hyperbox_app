@@ -153,11 +153,17 @@ class FewshotSearch(BaseEngine):
                 results = trainer.callback_metrics
                 log.info(f"Fintune Done: [{idy}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
                 
-                ckpt_path = os.path.join(
-                    os.getcwd(), f'checkpoints/[{idy}]-th_subSupernet_latest.ckpt'
-                )
+                level = -1
+                flag = path.replace('mask.json', 'latest.ckpt')
+                ckpt_path = flag
                 trainer.save_checkpoint(f"{ckpt_path}")
                 log.info(f"Saved [{idy}]-th sub-Supernet checkpoint to {ckpt_path}")
+                # flag = f"level[{level}]-[{idx}-{idy}]-Edge[{best_edge_key}]-subSupernet"
+                # ckpt_path = os.path.join(
+                #     os.getcwd(), f'checkpoints/{flag}_latest_retrain.ckpt'
+                # )
+                # trainer.save_checkpoint(f"{ckpt_path}")
+                # log.info(f"Saved [{idy}]-th sub-Supernet checkpoint to {ckpt_path}")
         return {}
 
     def warmup(

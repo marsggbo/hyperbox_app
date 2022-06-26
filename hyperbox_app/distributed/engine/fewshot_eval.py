@@ -55,7 +55,7 @@ class FewshotEval(BaseEngine):
         self.search_space_to_eval = self.partition_search_space(masks=self.masks)
         self.idx = 0
         self.performance_history = {}
-        for i in range(len(self.search_space_to_eval)):
+        for i in self.search_space_to_eval:
             log.info(f"{i}-th search space: {len(self.search_space_to_eval[i])}")
 
     def is_subnet_in_supernet(self, subnet_mask, supernet_mask):

@@ -28,7 +28,7 @@ for split_criterion in split_criterions:
                 suffix = f"nb201_c10_{split_criterion}_{split_method}_sp_16splits" 
             else:
                 suffix = f"nb201_c10_{split_criterion}_{split_method}_fp_16splits"
-            others = "ipdb_debug=True logger.wandb.offline=True trainer.strategy=null"
+            others = "ipdb_debug=False logger.wandb.offline=True trainer.strategy=null trainer.limit_val_batches=0"
             if len(args) > 0:
                 others += f' {args[0]}'
             others += f' engine.split_criterion={split_criterion}'
