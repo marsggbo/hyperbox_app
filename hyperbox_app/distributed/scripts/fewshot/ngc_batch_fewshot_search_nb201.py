@@ -38,7 +38,7 @@ for split_criterion in split_criterions:
         for warmup_epochs in warmup_epochs_list:
             is_single_path = True
             gpu_id = i%4
-            num_splits = 2**len(warmup_epochs)
+            num_splits = 2**len(warmup_epochs.split(','))
             if is_single_path:
                 suffix = f"nb201_c10_{split_criterion}_{split_method}_sp_{num_splits}splits" 
             else:
