@@ -48,10 +48,13 @@ callbacks:
         save_top_k: 1 # save k best models (determined by above metric)
 engine:
     _target_: hyperbox_app.distributed.engine.fewshot_search.FewshotSearch
-    wamrup_epochs: [20,40,60,80]
+    # warmup_epochs: [1,2,3,4]
+    # finetune_epoch: 1
+    # repeat_num: 1
+    warmup_epochs: [20,40,60,80]
     finetune_epoch: 50
+    repeat_num: 50
     split_criterion: ID
     split_method: 'spectral_cluster'
     is_single_path: True
-    repeat_num: 100
 # pretrained_weight: /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum1_c10_16net_1batch/2022-04-28_01-39-13/checkpoints/last.ckpt
