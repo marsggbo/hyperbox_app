@@ -45,7 +45,7 @@ class FewshotSearch(BaseEngine):
         model,
         datamodule,
         cfg: DictConfig,
-        wamrup_epochs: Optional[Union[List[int], int]]=[20, 40],
+        warmup_epochs: Optional[Union[List[int], int]]=[20, 40],
         finetune_epoch: int=10,
         split_criterion: str='ID', # 'ID' or 'grad'
         split_method: str='spectral_cluster', # 'spectral_cluster' or 'mincut'
@@ -78,7 +78,7 @@ class FewshotSearch(BaseEngine):
                 ],
             ]
             # warmup and split the supernet
-            for level, warmup_epoch in enumerate(self.wamrup_epochs):
+            for level, warmup_epoch in enumerate(self.warmup_epochs):
                 supernet_settings = all_supernet_settings[level]
                 new_supernet_settings = []
 
