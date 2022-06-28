@@ -20,16 +20,16 @@ ln -s /mount/workspace/nasbench201.db ~/.hyperbox/nasbenchmark/
 '''
 os.system(pre_cmd)
 
-# split_criterions = ['grad']
-split_criterions = ['ID']
+split_criterions = ['grad']
+# split_criterions = ['ID']
 # split_criterions = ['grad', 'ID']
 warmup_epochs_list = [
     "[20,40]",
     "[20,40,60,80]"
 ]
 split_methods = ['mincut', 'spectral_cluster']
-# is_single_paths = [True, False]
-is_single_paths = [True]
+is_single_paths = [True, False]
+# is_single_paths = [True]
 
 i = 0
 for split_criterion in split_criterions:
