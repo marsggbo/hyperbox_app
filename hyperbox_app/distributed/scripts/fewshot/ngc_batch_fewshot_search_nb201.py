@@ -34,31 +34,31 @@ is_single_paths = [True, False]
 i = 0
 for split_criterion in split_criterions:
     for split_method in split_methods:
-        # for is_single_path in is_single_paths:
         for warmup_epochs in warmup_epochs_list:
-            is_single_path = True
-            gpu_id = i%4
-            num_splits = 2**len(warmup_epochs.split(','))
-            if is_single_path:
-                suffix = f"nb201_c10_{split_criterion}_{split_method}_sp_{num_splits}splits" 
-            else:
-                suffix = f"nb201_c10_{split_criterion}_{split_method}_fp_{num_splits}splits"
-            others = "ipdb_debug=False logger.wandb.offline=True trainer.strategy=null trainer.limit_val_batches=0"
-            if len(args) > 0:
-                others += f' {args[0]}'
-            others += f' engine.split_criterion={split_criterion}'
-            others += f' engine.split_method={split_method}'
-            others += f' engine.is_single_path={is_single_path}'
-            others += f' engine.warmup_epochs={warmup_epochs}'
-            if split_criterion == 'ID':
-                if not is_single_path:
-                    others += f" engine.repeat_num=5"
+            for is_single_path in is_single_paths:
+                # is_single_path = True
+                gpu_id = i%4
+                num_splits = 2**len(warmup_epochs.split(','))
+                if is_single_path:
+                    suffix = f"nb201_c10_{split_criterion}_{split_method}_sp_{num_splits}splits" 
                 else:
-                    others += f" engine.repeat_num=50"
-            cmd = f'''bash ./scripts/fewshot/fewshot_search_nb201.sh {gpu_id} {suffix} "{others}"  & sleep 10'''
-            # if i % 4 == 0 and i > 0:
-            if i == 7:
-                cmd = cmd.replace('&', '')
-            i += 1
-            os.system(cmd)
-            print(cmd)
+                    suffix = f"nb201_c10_{split_criterion}_{split_method}_fp_{num_splits}splits"
+                others = "ipdb_debug=False logger.wandb.offline=True trainer.strategy=null trainer.limit_val_batches=0"
+                if len(args) > 0:
+                    others += f' {args[0]}'
+                others += f' engine.split_criterion={split_criterion}'
+                others += f' engine.split_method={split_method}'
+                others += f' engine.is_single_path={is_single_path}'
+                others += f' engine.warmup_epochs={warmup_epochs}'
+                if split_criterion == 'ID':
+                    if not is_single_path:
+                        others += f" engine.repeat_num=5"
+                    else:
+                        others += f" engine.repeat_num=50"
+                cmd = f'''bash ./scripts/fewshot/fewshot_search_nb201.sh {gpu_id} {suffix} "{others}"  & sleep 10'''
+                # if i % 4 == 0 and i > 0:
+                if i == 7:
+                    cmd = cmd.replace('&', '')
+                i += 1
+                os.system(cmd)
+                print(cmd)
