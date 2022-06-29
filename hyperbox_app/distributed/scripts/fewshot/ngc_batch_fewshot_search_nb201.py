@@ -20,8 +20,8 @@ ln -s /mount/workspace/nasbench201.db ~/.hyperbox/nasbenchmark/
 '''
 os.system(pre_cmd)
 
-split_criterions = ['grad']
-# split_criterions = ['ID']
+# split_criterions = ['grad']
+split_criterions = ['ID']
 # split_criterions = ['grad', 'ID']
 warmup_epochs_list = [
     "[20,40]",
@@ -54,7 +54,7 @@ for split_criterion in split_criterions:
                     if not is_single_path:
                         others += f" engine.repeat_num=5"
                     else:
-                        others += f" engine.repeat_num=50"
+                        others += f" engine.repeat_num=30"
                 cmd = f'''bash ./scripts/fewshot/fewshot_search_nb201.sh {gpu_id} {suffix} "{others}"  & sleep 10'''
                 # if i % 4 == 0 and i > 0:
                 if i == 7:
