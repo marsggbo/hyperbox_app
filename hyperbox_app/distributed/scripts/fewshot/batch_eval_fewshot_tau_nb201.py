@@ -19,7 +19,7 @@ for idx, path in enumerate(paths[:]):
     gpu_id = i%4
     supernet_mask_path_pattern = f'{path}/*sub*.json'
     ckpts_path_pattern = f'{path}/*sub*.ckpt'
-    suffix = path.split('runs/')[1].split('/')[0]
+    suffix = path.split('runs/')[-1].replace('splits/', 'splits_').split('/')[0]
     valid_batches = 1.0
     others = "ipdb_debug=False logger.wandb.offline=True"
     others += f' engine.supernet_mask_path_pattern={supernet_mask_path_pattern}'
@@ -30,4 +30,5 @@ for idx, path in enumerate(paths[:]):
     if i % 8 == 0 and i > 0:
         cmd = cmd.replace('&', '')
     print(f"{cmd}")
-    # os.system(cmd)
+    os.system(cmd)
+print(f'{i} runs')
