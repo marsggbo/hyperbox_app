@@ -56,9 +56,9 @@ for split_criterion in split_criterions:
                 else:
                     others += f" engine.repeat_num=50"
             cmd = f'''bash ./scripts/fewshot/fewshot_search_nb201.sh {gpu_id} {suffix} "{others}"  & sleep 10'''
-            i += 1
             # if i % 4 == 0 and i > 0:
-            if i == 3:
+            if i == 7:
                 cmd = cmd.replace('&', '')
-            # os.system(cmd)
+            i += 1
+            os.system(cmd)
             print(cmd)
