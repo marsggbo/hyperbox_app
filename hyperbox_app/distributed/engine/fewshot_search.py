@@ -98,7 +98,7 @@ class FewshotSearch(BaseEngine):
                         # split current search space (supernet)
                         splitted_supernet_masks, best_infos, best_edge_key = self.split_supernet(
                             trainer, model, datamodule, config,
-                            supernet_mask, self.hparams.split_criterion, self.hparams
+                            supernet_mask, self.hparams
                         )
                         new_supernet_settings.append([trainer, model, deepcopy(splitted_supernet_masks), best_edge_key])
 
@@ -201,72 +201,11 @@ class FewshotSearch(BaseEngine):
 
     def split_supernet(
         self, trainer, model, datamodule, config,
-        supernet_mask: dict, split_criterion: str='ID', hparams: dict=None
+        supernet_mask: dict, hparams: dict=None
     ):
         '''
         Split the supernet into sub-supernets.
         '''
-        # if split_criterion == 'ID':
-        #     return self.split_supernet_by_ID(trainer, model, datamodule, config, supernet_mask, hparams)
-        # elif split_criterion == 'grad':
-        #     return self.split_supernet_by_grad(trainer, model, datamodule, config, supernet_mask, hparams)
-        return self.split_supernet_by_grad(trainer, model, datamodule, config, supernet_mask, hparams)
-
-    def split_supernet_by_ID(self, trainer, model, datamodule, config, supernet_mask: dict, hparams: dict):
-        base_mask = deepcopy(supernet_mask)
-        edge_keys = list(supernet_mask.keys())
-        mutator = model.mutator
-        infos = {}
-
-        # enumerate all edges in the supernet
-        for edge_key in edge_keys:
-            num_ops = len(base_mask[edge_key])
-            # enumerate all enabled operations of the current edge
-            for op_idx in range(num_ops):
-                if base_mask[edge_key][op_idx] == 1:
-                    crt_mask = deepcopy(base_mask)
-                    crt_mask[edge_key][op_idx] = 0
-                    crt_mask = {k: v.bool() for k, v in crt_mask.items()}
-                    mutator.sample_by_mask(crt_mask)
-                    IDs = calc_IDs(model.network, self.dataloader, 2)
-                    info = {
-                        'mask': crt_mask,
-                        'IDs': IDs,
-                        'ID': IDs.mean(0),
-                        'criterion': IDs.mean(0),
-                        'edge_key': edge_key,
-                        'op_idx': op_idx,
-                    }
-                    infos[(edge_key, op_idx)] = info
-        infos = infos
-
-        infos = self.load_pkl('/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/fewshot_search_ID_nb201/2022-06-15_04-11-44/level1_ID_infos.pkl')
-
-        # calc similarity of ID between all edges
-        log.info("Calc similarity...")
-        similarity = self.calc_similarity(infos, method='correcoef')
-
-        # cluster the edges based on the IDs
-        log.info("Split the supernet into clusters...")
-        cluster, cluster_sim_avg = self.gen_cluster(similarity, 4)
-        log.info(f"Cluster={cluster} with averaged similarity {cluster_sim_avg:4f}")
-        labels = cluster.labels_
-        u_labels = set(labels)
-
-        supernet_masks = []
-        for label in u_labels:
-            similar_supernet_masks = []
-            indices = np.where(labels == label)[0]
-            keys = list(infos.keys())
-            for idx in range(len(indices)):
-                key = keys[indices[idx]]
-                info = infos[key]
-                similar_supernet_masks.append(info['mask'])
-            supernet_masks.append(similar_supernet_masks)
-        return supernet_masks
-
-    def split_supernet_by_grad(
-        self, trainer, model, datamodule, config, supernet_mask: dict, hparams: dict):
         base_mask = deepcopy(supernet_mask)
         edge_keys = list(supernet_mask.keys())
         mutator = model.mutator
