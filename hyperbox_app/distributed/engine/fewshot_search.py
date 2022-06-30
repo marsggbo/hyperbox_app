@@ -47,6 +47,7 @@ class FewshotSearch(BaseEngine):
         cfg: DictConfig,
         warmup_epochs: Optional[Union[List[int], int]]=[20, 40],
         finetune_epoch: int=10,
+        load_from_parent: bool=False,
         split_criterion: str='ID', # 'ID' or 'grad'
         split_method: str='spectral_cluster', # 'spectral_cluster' or 'mincut'
         is_single_path: bool=False,
@@ -391,7 +392,9 @@ class FewshotSearch(BaseEngine):
         '''
         model_cfg = deepcopy(config.model)
         model = instantiate(model_cfg, _recursive_=False)
-        model.load_state_dict(parent_model.state_dict())
+        load_from_parent = hparams.get('load_from_parent', False)
+        if load_from_parent:
+            model.load_state_dict(parent_model.state_dict())
         # model = deepcopy(parent_model)
         mutator = model.mutator
         mutator.supernet_mask = deepcopy(supernet_mask)
