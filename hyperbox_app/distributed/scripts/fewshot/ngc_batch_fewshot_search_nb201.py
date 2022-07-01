@@ -21,9 +21,9 @@ ln -s /mount/workspace/nasbench201.db ~/.hyperbox/nasbenchmark/
 '''
 os.system(pre_cmd)
 
-split_criterions = ['grad']
+# split_criterions = ['grad']
 # split_criterions = ['ID']
-# split_criterions = ['grad', 'ID']
+split_criterions = ['grad', 'ID']
 # warmup_epochs_list = [
 #     "[20,40]",
 #     "[20,40,60,80]"
@@ -32,7 +32,8 @@ warmup_epochs_list = [
     "[50,100]",
     "[50,75,90,100]"
 ]
-split_methods = ['mincut', 'spectral_cluster']
+split_methods = ['mincut']
+# split_methods = ['mincut', 'spectral_cluster']
 is_single_paths = [True, False]
 load_from_parent = False
 # is_single_paths = [True]
@@ -44,6 +45,7 @@ except Exception as e:
     num_gpus = 1
     print(e)
 
+num_subnets = 5
 i = 0
 num_cmds = 0
 for split_criterion in split_criterions:
@@ -55,7 +57,7 @@ for split_criterion in split_criterions:
                 num_splits = 2**len(warmup_epochs.split(','))
                 is_sp = 'sp' if is_single_path else 'fp'
                 is_loadparent = 'loadparent' if load_from_parent else 'notloadparent'
-                suffix = f"nb201_c10_{split_criterion}_{split_method}_{is_sp}_{num_splits}splits_{is_loadparent}"
+                suffix = f"nb201_c10_{split_criterion}_{split_method}_{is_sp}_{num_splits}splits_{is_loadparent}_{num_subnets}nets"
                 others = "ipdb_debug=False logger.wandb.offline=True trainer.strategy=null trainer.limit_val_batches=0"
                 if len(args) > 0:
                     others += f' {args[0]}'
@@ -64,6 +66,7 @@ for split_criterion in split_criterions:
                 others += f' engine.is_single_path={is_single_path}'
                 others += f' engine.warmup_epochs={warmup_epochs}' 
                 others += f' ++engine.load_from_parent={load_from_parent}'
+                others += f" model.num_subnets={num_subnets}"
                 if split_criterion == 'ID':
                     if not is_single_path:
                         others += f" engine.repeat_num=5"
