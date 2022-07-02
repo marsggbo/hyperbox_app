@@ -118,16 +118,26 @@ class RandomModel(BaseModel):
         loss_epoch = self.trainer.callback_metrics['train/loss_epoch'].item()
         logger.info(f'Train epoch{self.trainer.current_epoch} acc={acc_epoch:.4f} loss={loss_epoch:.4f}')
 
-    def on_validation_epoch_start(self):
-        pass
+    def on_validation_start(self):
         if self.is_network_search:
             try:
                 # if not self.mutator._cache:
                 #     self.mutator.reset()
-                self.reset_running_statistics(subset_size=64, subset_batch_size=32)
+                self.reset_running_statistics(subset_size=256, subset_batch_size=64)
             except Exception as e:
                 print(e)
                 print('you should reset the mutator before validation in search mode.')
+
+    # def on_validation_epoch_start(self):
+    #     pass
+    #     if self.is_network_search:
+    #         try:
+    #             # if not self.mutator._cache:
+    #             #     self.mutator.reset()
+    #             self.reset_running_statistics(subset_size=64, subset_batch_size=32)
+    #         except Exception as e:
+    #             print(e)
+    #             print('you should reset the mutator before validation in search mode.')
 
     def validation_step(self, batch: Any, batch_idx: int):
         loss, preds, targets = self.step(batch)

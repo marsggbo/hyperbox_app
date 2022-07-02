@@ -9,7 +9,7 @@ defaults:
     - override /datamodule: cifar10_datamodule.yaml
     - override /callbacks: default.yaml
     - override /logger: wandb.yaml
-    - override /model/optimizer_cfg: sgd.yaml
+    - override /model/optimizer_cfg: adam.yaml
     - override /model/scheduler_cfg: CosineAnnealingLR.yaml
 
 # all parameters below will be merged with parameters from default configurations set above
@@ -29,9 +29,9 @@ datamodule:
     is_customized: False
 model:
     optimizer_cfg:
-      lr: 0.025
-      momentum: 0.9
-      nesterov: True
+      lr: 0.001
+    #   momentum: 0.9
+    #   nesterov: True
       weight_decay: 0.0005
     mutator_cfg:
         _target_: hyperbox_app.distributed.mutator.fewshot_mutator.FewshotMutator

@@ -340,6 +340,12 @@ class FewshotSearch(BaseEngine):
 
         trainer_cfg = deepcopy(config.trainer)
         trainer_cfg.max_epochs = hparams.finetune_epoch
+        if load_from_parent:
+            try:
+                parent_trainer.save_checkpoint('./temp.ckpt')
+                trainer_cfg.resume_from_checkpoint = './temp.ckpt'
+            except Exception as e:
+                pass
         callbacks = parent_trainer.callbacks
         trainer = instantiate(trainer_cfg, callbacks=callbacks,
             logger=parent_trainer.logger, _convert_="partial")
