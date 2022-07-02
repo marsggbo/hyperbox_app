@@ -66,7 +66,7 @@ for split_criterion in split_criterions:
                 others += f' engine.is_single_path={is_single_path}'
                 others += f' engine.warmup_epochs={warmup_epochs}' 
                 others += f' ++engine.load_from_parent={load_from_parent}'
-                others += f" model.num_subnets={num_subnets}"
+                others += f" ++model.num_subnets={num_subnets}"
                 if split_criterion == 'ID':
                     if not is_single_path:
                         others += f" engine.repeat_num=5"
