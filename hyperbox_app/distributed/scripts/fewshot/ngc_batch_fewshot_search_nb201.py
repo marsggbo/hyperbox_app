@@ -23,8 +23,8 @@ os.system(pre_cmd)
 
 # split_criterions = ['grad']
 # split_criterions = ['ID']
-# split_criterions = ['grad', 'grad']
-split_criterions = ['ID', 'ID']
+split_criterions = ['grad', 'grad']
+# split_criterions = ['ID', 'ID']
 # split_criterions = ['grad', 'ID']
 # warmup_epochs_list = [
 #     "[20,40]",
