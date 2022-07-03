@@ -23,7 +23,9 @@ os.system(pre_cmd)
 
 # split_criterions = ['grad']
 # split_criterions = ['ID']
-split_criterions = ['grad', 'ID']
+# split_criterions = ['grad', 'grad']
+split_criterions = ['ID', 'ID']
+# split_criterions = ['grad', 'ID']
 # warmup_epochs_list = [
 #     "[20,40]",
 #     "[20,40,60,80]"
@@ -35,7 +37,8 @@ warmup_epochs_list = [
 finetune_epoch = 100
 split_methods = ['mincut']
 # split_methods = ['mincut', 'spectral_cluster']
-is_single_paths = [False, True]
+is_single_paths = [True]
+# is_single_paths = [False, True]
 load_from_parents = [False, True]
 to_sample_similar = True
 # is_single_paths = [True]

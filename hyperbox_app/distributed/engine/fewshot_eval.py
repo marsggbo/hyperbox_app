@@ -138,7 +138,7 @@ class FewshotEval(BaseEngine):
         log.info(f"spearman: {spearman}, p-value: {p_sp}")
         with open(self.logpath, 'a') as f:
             f.write("tau, p-tau, spearman, p-spearman, #search_space, #valid_batches\n")
-            f.write(f"{tau}, {p_tau}, {spearman}, {p_sp} {len(self.search_space_to_eval)}, {self.trainer.limit_val_batches}\n")
+            f.write(f"{tau}, {p_tau}, {spearman}, {p_sp}, {len(self.search_space_to_eval)}, {self.trainer.limit_val_batches}\n")
             # pw = self.cfg.pretrained_weight
             # num_nets = pw.split('net')[0].split('_')[-1]
             # interval = pw.split('batch')[0].split('_')[-1]
