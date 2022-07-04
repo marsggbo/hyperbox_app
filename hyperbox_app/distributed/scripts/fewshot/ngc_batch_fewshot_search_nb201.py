@@ -23,8 +23,8 @@ os.system(pre_cmd)
 
 # split_criterions = ['grad']
 # split_criterions = ['ID']
-split_criterions = ['grad', 'grad']
-# split_criterions = ['ID', 'ID']
+# split_criterions = ['grad', 'grad']
+split_criterions = ['ID', 'ID']
 # split_criterions = ['grad', 'ID']
 # warmup_epochs_list = [
 #     "[20,40]",
@@ -82,7 +82,7 @@ for split_criterion in split_criterions:
                         if not is_single_path:
                             others += f" engine.repeat_num=5"
                         else:
-                            others += f" engine.repeat_num=30"
+                            others += f" engine.repeat_num=20"
                     cmd = f'''bash ./scripts/fewshot/fewshot_search_nb201.sh {gpu_id} {suffix} "{others}"  & sleep 10'''
                     
                     if i == num_gpus-1 or (i+1) % num_gpus == 0:
