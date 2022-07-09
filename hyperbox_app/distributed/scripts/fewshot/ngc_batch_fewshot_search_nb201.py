@@ -13,13 +13,13 @@ args = sys.argv[1:]
 # paths = glob(path_pattern)
 # print(len(paths), 'paths to evaluate')
 
-# pre_cmd = f'''
-# mkdir -p ~/datasets
-# mkdir -p ~/.hyperbox/nasbenchmark
-# ln -s /mount/cifar10 ~/datasets/
-# ln -s /mount/workspace/nasbench201.db ~/.hyperbox/nasbenchmark/
-# '''
-# os.system(pre_cmd)
+pre_cmd = f'''
+mkdir -p ~/datasets
+mkdir -p ~/.hyperbox/nasbenchmark
+ln -s /mount/cifar10 ~/datasets/
+ln -s /mount/workspace/nasbench201.db ~/.hyperbox/nasbenchmark/
+'''
+os.system(pre_cmd)
 
 # split_criterions = ['grad']
 # split_criterions = ['ID']
@@ -90,7 +90,7 @@ for split_criterion in split_criterions:
                     # if i == num_gpus-1 or (i % (num_gpus*2) == 0 and i>0):
                     #     cmd = cmd.replace('&', '')
                     i += 1
-                    # os.system(cmd)
+                    os.system(cmd)
                     print(cmd)
                     num_cmds += 1
 print(f"{num_gpus} gpus found")
