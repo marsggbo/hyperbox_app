@@ -37,7 +37,11 @@ warmup_epochs_list = [
 finetune_epoch = 100
 split_methods = ['mincut']
 # split_methods = ['mincut', 'spectral_cluster']
-is_single_paths = [True, False]
+# is_single_paths = [True, False]
+if len(args) == 1:
+    is_single_paths = [eval(x) for x in args[0].split(',')]
+else:
+    is_single_paths = [True, False]
 # is_single_paths = [False, True]
 load_from_parents = [False, True]
 to_sample_similar = True
