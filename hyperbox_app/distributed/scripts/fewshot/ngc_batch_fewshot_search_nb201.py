@@ -97,5 +97,6 @@ for split_criterion in split_criterions:
                     os.system(cmd)
                     print(cmd)
                     num_cmds += 1
+os.system(cmd)
 print(f"{num_gpus} gpus found")
 print(f"{num_cmds} commands to run")
