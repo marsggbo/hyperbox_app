@@ -8,7 +8,7 @@ from pytorch_lightning import LightningModule
 from torchmetrics.classification.accuracy import Accuracy
 
 from hyperbox.utils.logger import get_logger
-from .base_model import BaseModel
+from hyperbox.models.base_model import BaseModel
 
 logger = get_logger(__name__)
 

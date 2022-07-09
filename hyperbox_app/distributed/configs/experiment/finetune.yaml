@@ -5,7 +5,7 @@
 
 defaults:
     - override /trainer: default.yaml # choose trainer from 'configs/trainer/'
-    - override /model: classify_model.yaml
+    - override /model: finetune_model.yaml
     - override /datamodule: cifar10_datamodule.yaml
     - override /callbacks: default.yaml
     - override /logger: wandb.yaml
@@ -29,7 +29,7 @@ datamodule:
     batch_size: 128
     is_customized: False
 model:
-    _target: hyperbox_app.distributed.models.finetune_model.FinetuneModel
+    _target_: hyperbox_app.distributed.models.finetune_model.FinetuneModel
     optimizer_cfg:
       lr: 0.001
     #   momentum: 0.9
