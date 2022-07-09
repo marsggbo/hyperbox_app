@@ -72,8 +72,8 @@ for split_criterion in split_criterions:
                     if to_sample_similar:
                         suffix += '_samplesimilar'
                     others = "ipdb_debug=False logger.wandb.offline=True trainer.strategy=null trainer.limit_val_batches=0"
-                    if len(args) > 0:
-                        others += f' {args[0]}'
+                    # if len(args) > 0:
+                    #     others += f' {args[0]}'
                     others += f' engine.split_criterion={split_criterion}'
                     others += f' engine.split_method={split_method}'
                     others += f' engine.is_single_path={is_single_path}'
