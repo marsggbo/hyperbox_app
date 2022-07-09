@@ -49,6 +49,7 @@ class FewshotSearch(BaseEngine):
         finetune_epoch: int=10,
         load_from_parent: bool=False,
         split_criterion: str='ID', # 'ID' or 'grad'
+        ID_method: str='lid', # 'lid' or 'ess' or 'mle' or 'twonn'
         split_method: str='spectral_cluster', # 'spectral_cluster' or 'mincut'
         is_single_path: bool=False,
         repeat_num: int=1,
@@ -56,7 +57,7 @@ class FewshotSearch(BaseEngine):
     ):
         super().__init__(trainer, model, datamodule, cfg)
         datamodule_cfg = deepcopy(self.cfg.datamodule)
-        datamodule_cfg.batch_size = 16
+        datamodule_cfg.batch_size = 128
         datamodule = instantiate(datamodule_cfg)
         datamodule.setup()
         self.dataloader = datamodule.train_dataloader()
@@ -213,6 +214,7 @@ class FewshotSearch(BaseEngine):
         repeat_num = hparams.get('repeat_num', 1)
         split_criterion = hparams.get('split_criterion', 'grad')
         split_method = hparams.get('split_method', 'spectral_cluster')
+        ID_method = hparams.get('ID_method', 'lid')
 
         # best_value = -1e10 if split_method == 'spectral_cluster' else 1e10
         best_value = 0
@@ -259,7 +261,7 @@ class FewshotSearch(BaseEngine):
                             'op_idx': op_idx,
                         }
                     elif split_criterion == 'ID':
-                        IDs = calc_IDs(model.network, data, 2)
+                        IDs = calc_IDs(model.network, data, 2, ID_method)
                         # IDs = calc_IDs(model.network, self.dataloader, 2)
                         info = {
                             'mask': crt_mask,
@@ -462,8 +464,37 @@ def mincut(sim_avg, split_num): # note: this is not strictly mincut, but it's fi
                 best_edge_score = sim_avg.sum() - best_sim # sim_avg should be upper-triangular
     return best_edge_score, best_groups
 
+
+def apply_along_axis(function, axis, x):
+    return torch.stack([
+        function(x_i) for x_i in x
+    ], dim=axis)
+
+def lid_term_torch(X, batch, k=20):
+    eps = 1e-6
+    X = torch.tensor(X).float()
+    batch = torch.tensor(batch).float()
+    f = lambda v: - k / (torch.sum(torch.log(v / (v[-1]+eps)))+eps)
+    distances = torch.cdist(X, batch)
+    # print(distances)
+
+    # get the closest k neighbours
+    sort_indices = torch.argsort(distances, dim=1)[:, 1:k + 1]
+    # print(sort_indices)
+    m, n = sort_indices.shape
+    idx = np.ogrid[:m, :n]
+    idx[1] = sort_indices
+
+    # sorted matrix
+    distances_ = distances[tuple(idx)]
+    # print(distances_)
+    lids = apply_along_axis(f, axis=-1, x=distances_)
+    # print(lids)
+    return lids.mean()
+
+
 # def calc_IDs(supernet, dataloader, num_batches=3):
-def calc_IDs(supernet, data_batch, num_batches=3):
+def calc_IDs(supernet, data_batch, num_batches=3, ID_method='lid'):
     supernet = supernet.to(device)
     # device = next(supernet.parameters()).device
     IDs = []
@@ -481,19 +512,27 @@ def calc_IDs(supernet, data_batch, num_batches=3):
         features = supernet.features
         for idx, feat in enumerate(features):
             if isinstance(feat, torch.Tensor):
-                feat = feat.view(bs, -1).detach().cpu().numpy()
+                feat = feat.view(bs, -1).detach()
             else:
                 feat = feat.reshape(bs, -1)
             try:
-                feat = (feat - feat.min()) / (feat.max() - feat.min() + 1e-20)
-                # _id = twonn2(feat)
-                # _id = skdim.id.TwoNN().fit_transform(X=feat)
-                # _id = skdim.id.FisherS().fit_transform(X=feat)
-                _id = skdim.id.ESS().fit_transform(X=feat)
-                # _id = skdim.id.MLE().fit_transform(X=feat)
-                if _id is np.nan:
-                    set_trace()
-                    log.info(_id)
+                if ID_method == 'lid':
+                    _id = lid_term_torch(feat, feat).item()
+                else:
+                    feat = (feat - feat.min()) / (feat.max() - feat.min() + 1e-20)
+                    feat = feat.cpu().numpy()
+                    if ID_method == 'twonn':
+                        # _id = twonn2(feat)
+                        _id = skdim.id.TwoNN().fit_transform(X=feat)
+                    elif ID_method == 'fishers':
+                        _id = skdim.id.FisherS().fit_transform(X=feat)
+                    elif ID_method == 'ess':
+                        _id = skdim.id.ESS().fit_transform(X=feat)
+                    elif ID_method == 'mle':
+                        _id = skdim.id.MLE().fit_transform(X=feat)
+                    if _id is np.nan:
+                        set_trace()
+                        log.info(_id)
             except Exception as e:
                 set_trace()
                 log.info(idx, str(e))

@@ -41,6 +41,7 @@ is_single_paths = [True]
 # is_single_paths = [False, True]
 load_from_parents = [False, True]
 to_sample_similar = True
+ID_method = 'lid'
 # is_single_paths = [True]
 
 try:
@@ -74,6 +75,7 @@ for split_criterion in split_criterions:
                     others += f' engine.is_single_path={is_single_path}'
                     others += f' engine.warmup_epochs={warmup_epochs}' 
                     others += f' engine.finetune_epoch={finetune_epoch}'
+                    others += f' engine.ID_method={ID_method}'
                     others += f' ++engine.load_from_parent={load_from_parent}'
                     others += f" ++model.num_subnets={num_subnets}"
                     others += f" ++model.optimizer_cfg.lr={lr}"
