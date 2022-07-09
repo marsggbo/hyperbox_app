@@ -13,13 +13,13 @@ args = sys.argv[1:]
 # paths = glob(path_pattern)
 # print(len(paths), 'paths to evaluate')
 
-pre_cmd = f'''
-mkdir -p ~/datasets
-mkdir -p ~/.hyperbox/nasbenchmark
-ln -s /mount/cifar10 ~/datasets/
-ln -s /mount/workspace/nasbench201.db ~/.hyperbox/nasbenchmark/
-'''
-os.system(pre_cmd)
+# pre_cmd = f'''
+# mkdir -p ~/datasets
+# mkdir -p ~/.hyperbox/nasbenchmark
+# ln -s /mount/cifar10 ~/datasets/
+# ln -s /mount/workspace/nasbench201.db ~/.hyperbox/nasbenchmark/
+# '''
+# os.system(pre_cmd)
 
 # split_criterions = ['grad']
 # split_criterions = ['ID']
@@ -37,7 +37,7 @@ warmup_epochs_list = [
 finetune_epoch = 100
 split_methods = ['mincut']
 # split_methods = ['mincut', 'spectral_cluster']
-is_single_paths = [True]
+is_single_paths = [True, False]
 # is_single_paths = [False, True]
 load_from_parents = [False, True]
 to_sample_similar = True
@@ -87,10 +87,10 @@ for split_criterion in split_criterions:
                             others += f" engine.repeat_num=20"
                     cmd = f'''bash ./scripts/fewshot/fewshot_search_nb201.sh {gpu_id} {suffix} "{others}"  & sleep 10'''
                     
-                    if i == num_gpus-1 or (i+1) % num_gpus == 0:
-                        cmd = cmd.replace('&', '')
+                    # if i == num_gpus-1 or (i % (num_gpus*2) == 0 and i>0):
+                    #     cmd = cmd.replace('&', '')
                     i += 1
-                    os.system(cmd)
+                    # os.system(cmd)
                     print(cmd)
                     num_cmds += 1
 print(f"{num_gpus} gpus found")
