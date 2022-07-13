@@ -86,7 +86,7 @@ class NASBench201Network(BaseNASNetwork):
         bs = inputs.shape[0]
         for idx, cell in enumerate(self.cells):
             out = cell(out)
-            self.features.append(out.cpu().detach())
+            self.features.append(out.detach())
 
         out = self.lastact(out)
         out = self.global_pooling(out)
