@@ -6,13 +6,13 @@ import itertools
 
 from argparse import ArgumentParser
 
-# pre_cmd = f'''
-# mkdir -p ~/datasets
-# mkdir -p ~/.hyperbox/nasbenchmark
-# ln -s /mount/cifar10 ~/datasets/
-# ln -s /mount/workspace/nasbench201.db ~/.hyperbox/nasbenchmark/
-# '''
-# os.system(pre_cmd)
+pre_cmd = f'''
+mkdir -p ~/datasets
+mkdir -p ~/.hyperbox/nasbenchmark
+ln -s /mount/cifar10 ~/datasets/
+ln -s /mount/workspace/nasbench201.db ~/.hyperbox/nasbenchmark/
+'''
+os.system(pre_cmd)
 
 
 parser = ArgumentParser()
@@ -97,9 +97,9 @@ for opt in opts:
     if (i % 8 == 0 and i>0):
         cmd = cmd.replace('&', '')
     i += 1
-    # os.system(cmd)
+    os.system(cmd)
     print(cmd)
     num_cmds += 1
-# os.system(cmd)
+os.system(cmd)
 print(f"{num_gpus} gpus found")
 print(f"{num_cmds} commands to run")
