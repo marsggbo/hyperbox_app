@@ -12,6 +12,7 @@ import networkx as nx
 import numpy as np
 import skdim
 import torch
+from sklearn.mixture import GaussianMixture
 from hydra.utils import instantiate
 from hyperbox.engine.base_engine import BaseEngine
 from hyperbox.mutables.spaces import OperationSpace
@@ -251,6 +252,7 @@ class FewshotSearch(BaseEngine):
                     crt_mask = {k: v.bool() for k, v in crt_mask.items()}
                     mutator.sample_by_mask(crt_mask)
                     flag = (edge_key, op_idx)
+                    info = {}
                     if split_criterion == 'grad':
                         grads = calc_grads(model, data, edge_key, crt_mask).cpu().numpy()
                         info = {
@@ -271,7 +273,13 @@ class FewshotSearch(BaseEngine):
                             'edge_key': edge_key,
                             'op_idx': op_idx,
                         }
-                    infos[flag] = info
+                    if flag not in infos:
+                        infos[flag] = info
+                    else:
+                        criterion = infos[flag]['criterion']
+                        criterion += info['criterion']
+                        criterion /= 2
+                        infos[flag]['criterion'] = criterion
 
                 # calculate the similarity between all edges
                 if split_criterion == 'grad':
@@ -285,7 +293,25 @@ class FewshotSearch(BaseEngine):
             similarity = similarity_avg - 1
             log.info(f"{edge_key} similarity:\n {similarity}")
             
-            if split_method == 'spectral_cluster':
+            if split_method == 'GM':
+                criterions = np.stack([info['criterion'] for info in infos.values()])
+                gm = GaussianMixture(n_components=2, random_state=0).fit(criterions)
+                labels = np.array(gm.predict(criterions))
+                u_labels = np.unique(labels)
+                cut_value = 0.
+                for label in u_labels:
+                    mask = labels == label
+                    sim = np.nan_to_num(similarity)[mask][:, mask]
+                    cut_value += sim.mean()
+                cut_value /= len(u_labels)
+                partition = [np.where(labels==i)[0] for i in set(labels)]
+                if cut_value > best_value:
+                    best_value = cut_value
+                    best_edge_key = edge_key
+                    best_partition = partition
+                    best_infos = infos
+                    log.info(f"Edge {edge_key}: Best cluster={best_partition} with cut value {best_value:4f}")   
+            elif split_method == 'spectral_cluster':
                 log.info("Split the supernet into clusters...")
                 cluster, cluster_sim_avg = self.gen_cluster(similarity, 2)
                 log.info(f"Cluster={cluster} with averaged similarity {cluster_sim_avg:4f}")
