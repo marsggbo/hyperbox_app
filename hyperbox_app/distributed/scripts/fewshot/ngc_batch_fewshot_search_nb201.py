@@ -6,14 +6,6 @@ import itertools
 
 from argparse import ArgumentParser
 
-pre_cmd = f'''
-mkdir -p ~/datasets
-mkdir -p ~/.hyperbox/nasbenchmark
-ln -s /mount/cifar10 ~/datasets/
-ln -s /mount/workspace/nasbench201.db ~/.hyperbox/nasbenchmark/
-'''
-os.system(pre_cmd)
-
 
 parser = ArgumentParser()
 parser.add_argument("--split_criterion", nargs="+", type=str, default=["ID", "ID"])
@@ -23,9 +15,19 @@ parser.add_argument("--to_sample_similar", nargs="+", type=bool, default=[True])
 parser.add_argument("--ID_method", type=str, default='lid')
 parser.add_argument("--load_from_parent", nargs="+", type=bool, default=[True, False])
 parser.add_argument("--warmup_epochs", nargs="+", type=str, default=["[50,75,90,100]"])
+parser.add_argument("--debug", action='store_true')
 args = parser.parse_args()
 
 print(args)
+
+if not args.debug:
+    pre_cmd = f'''
+    mkdir -p ~/datasets
+    mkdir -p ~/.hyperbox/nasbenchmark
+    ln -s /mount/cifar10 ~/datasets/
+    ln -s /mount/workspace/nasbench201.db ~/.hyperbox/nasbenchmark/
+    '''
+    os.system(pre_cmd)
 
 options = vars(args)
 keys = []
@@ -66,6 +68,9 @@ for opt in opts:
     load_from_parent = opt['load_from_parent']
     warmup_epochs = opt['warmup_epochs']
     finetune_epoch = 100
+    if args.debug:
+        finetune_epoch = 1
+        warmup_epochs = "[1,2]"
 
     gpu_id = i%num_gpus
     num_splits = 2**len(warmup_epochs.split(','))
@@ -92,14 +97,20 @@ for opt in opts:
             others += f" engine.repeat_num=20"
         else:
             others += f" engine.repeat_num=40"
+    if args.debug:
+        others += " trainer.fast_dev_run=True"
     cmd = f'''bash ./scripts/fewshot/fewshot_search_nb201.sh {gpu_id} {suffix} "{others}"  & sleep 10'''
     
-    if (i % 8 == 0 and i>0):
+    if i == len(opts)-1:
         cmd = cmd.replace('&', '')
     i += 1
-    os.system(cmd)
+    if not args.debug:
+        os.system(cmd)
     print(cmd)
     num_cmds += 1
-os.system(cmd)
+
+if not args.debug:
+    os.system(cmd)
+assert num_cmds == len(opts), f"num_cmds ({num_cmds}) != #opts ({len(opts)})"
 print(f"{num_gpus} gpus found")
 print(f"{num_cmds} commands to run")
