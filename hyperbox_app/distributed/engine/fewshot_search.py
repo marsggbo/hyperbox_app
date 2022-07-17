@@ -8,10 +8,12 @@ from copy import deepcopy
 from glob import glob
 from typing import List, Optional, Union
 
+import hydra
 import networkx as nx
 import numpy as np
 import skdim
 import torch
+import torch.multiprocessing as mp
 from sklearn.mixture import GaussianMixture
 from hydra.utils import instantiate
 from hyperbox.engine.base_engine import BaseEngine
@@ -143,30 +145,37 @@ class FewshotSearch(BaseEngine):
             supernet_masks_path = glob(self.supernet_masks_path)
             supernet_masks = [load_json(path) for path in supernet_masks_path]
             
-            for idy, path in enumerate(supernet_masks_path):
-            # for idy, supernet_mask in enumerate(supernet_masks):
-                ckpt_path = path.replace('mask.json', 'latest.ckpt')
-                if os.path.exists(ckpt_path):
-                    continue
-                supernet_mask = load_json(path)
-                log.info(f"Fintune [{idy}]-th sub-supernet with mask {supernet_mask}")
-                trainer, model = self.finetune(
-                    trainer, model, datamodule, config,
-                    self.finetune_epoch, supernet_mask, self.hparams)
-                results = trainer.callback_metrics
-                log.info(f"Fintune Done: [{idy}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
+            processes = []
+            mp.set_start_method('spawn')
+            model.share_memory()
+            num_gpus = torch.cuda.device_count() * 2
+            num_processes = len(supernet_masks_path)
+            rank_id_list = list(range(num_processes))
+            list_of_groups = zip(*(iter(rank_id_list),) * num_gpus)
+            for group in list_of_groups:
+                # for local_rank, rank in enumerate(group):
+                for rank in group:
+                    mask_path = supernet_masks_path[rank]
+                    ckpt_path = mask_path.replace('mask.json', 'latest.ckpt')
+                    # if os.path.exists(ckpt_path):
+                    #     continue
+                    supernet_mask = load_json(mask_path)
+                    log.info(f"Fintune [{rank}]-th sub-supernet with mask {supernet_mask}")
+                    load_from_parent = self.hparams.get('load_from_parent', False)
+                    load_from_parent = False
+                    parent_ckpt_path = f'./temp_{rank}.ckpt'
+                    finetune_epoch = self.hparams.get('finetune_epoch', 20)
+                    p = mp.Process(target=finetune_mp, args=(
+                        config, rank, mask_path, load_from_parent,
+                        supernet_mask, finetune_epoch, parent_ckpt_path
+                        )
+                    )
+                    p.start()
+                    processes.append(p)
+
+                for p in processes:
+                    p.join()
                 
-                level = -1
-                flag = path.replace('mask.json', 'latest.ckpt')
-                ckpt_path = flag
-                trainer.save_checkpoint(f"{ckpt_path}")
-                log.info(f"Saved [{idy}]-th sub-Supernet checkpoint to {ckpt_path}")
-                # flag = f"level[{level}]-[{idx}-{idy}]-Edge[{best_edge_key}]-subSupernet"
-                # ckpt_path = os.path.join(
-                #     os.getcwd(), f'checkpoints/{flag}_latest_retrain.ckpt'
-                # )
-                # trainer.save_checkpoint(f"{ckpt_path}")
-                # log.info(f"Saved [{idy}]-th sub-Supernet checkpoint to {ckpt_path}")
         return {}
 
     def warmup(
@@ -470,6 +479,62 @@ class FewshotSearch(BaseEngine):
 #                 best_groups = [group1, group2]
 #                 best_edge_score = dist_avg.sum() - best_dist # dist_avg should be upper-triangular
 #     return best_edge_score, best_groups
+
+def init_callbacks(config):
+    callbacks = []
+    if "callbacks" in config:
+        for _, cb_conf in config["callbacks"].items():
+            if "_target_" in cb_conf:
+                log.info(f"Instantiating callback <{cb_conf._target_}>")
+                callbacks.append(instantiate(cb_conf))
+    return callbacks
+
+def init_logger(config):
+    loggers = []
+    if "logger" in config:
+        for _, lg_conf in config["logger"].items():
+            if "_target_" in lg_conf:
+                log.info(f"Instantiating logger <{lg_conf._target_}>")
+                loggers.append(instantiate(lg_conf))
+    return loggers
+
+def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
+    supernet_mask: dict, finetune_epoch: int, parent_ckpt_path: str,):
+    log.info(f"rank={rank} mask_path={mask_path}")
+    pid = os.getpid()
+    num_gpus = torch.cuda.device_count()
+    local_rank = rank % num_gpus
+    log.info(f'start finetune in process {rank} with local_rank {local_rank} global_rank {rank}')
+    # log.info(f'start finetune in process {pid}, global rank {rank}')
+    datamodule_cfg = config['datamodule']
+    datamodule_cfg.num_workers = 2
+    datamodule = instantiate(config["datamodule"])
+
+    model_cfg = deepcopy(config.model)
+    model = instantiate(model_cfg, _recursive_=False)
+
+    mutator = model.mutator
+    mutator.supernet_mask = deepcopy(supernet_mask)
+
+    trainer_cfg = deepcopy(config.trainer)
+    trainer_cfg.gpus = [local_rank]
+    trainer_cfg.max_epochs = 1
+    if load_from_parent and parent_ckpt_path:
+        trainer_cfg.resume_from_checkpoint = parent_ckpt_path
+    
+    callbacks = init_callbacks(config)
+    logger = init_logger(config)
+    trainer = instantiate(trainer_cfg, callbacks=callbacks, logger=logger, _convert_="partial")
+    trainer.fit(model, datamodule)
+    results = trainer.callback_metrics
+    log.info(f"pid={pid} Fintune Done: [{rank}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
+    
+    level = -1
+    flag = mask_path.replace('mask.json', 'latest.ckpt')
+    ckpt_path = flag
+    trainer.save_checkpoint(f"{ckpt_path}")
+    log.info(f"pid={pid} Saved [{rank}]-th sub-Supernet checkpoint to {ckpt_path}")
+    return trainer, model
 
 
 def mincut(sim_avg, split_num): # note: this is not strictly mincut, but it's fine for 201
