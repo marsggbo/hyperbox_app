@@ -79,7 +79,7 @@ class FewshotSearch(BaseEngine):
             supernet_mask = {m.key: torch.ones_like(m.mask) for m in self.mutator.mutables}
             all_supernet_settings = [
                 [
-                    [trainer, model, supernet_mask, None]
+                    [trainer, model, [supernet_mask], None],                    
                 ],
             ]
             # warmup and split the supernet
@@ -125,21 +125,35 @@ class FewshotSearch(BaseEngine):
                     save_arch_to_json(supernet_mask, mask_path)
 
             # finetune all supernets
+            try:
+                mp.set_start_method('spawn', force=True)
+                log.info('Start spawning all supernets')
+            except Exception as e:
+                log.info('Already spawned')
+                raise e
             for idx, supernet_setting in enumerate(all_supernet_settings[level]):
                 parent_trainer, parent_model, supernet_masks, best_edge_key = supernet_setting
-                for idy, supernet_mask in enumerate(supernet_masks):
-                    flag = f"level[{level}]-[{idx}-{idy}]-Edge[{best_edge_key}]-subSupernet"
+                processes = []
+                for rank, supernet_mask in enumerate(supernet_masks):
+                    flag = f"level[{level}]-[{idx}-{rank}]-Edge[{best_edge_key}]-subSupernet"
                     log.info(f"Fintune {flag} with mask {supernet_mask}")
-                    trainer, model = self.finetune(
-                        parent_trainer, parent_model, datamodule, config,
-                        self.finetune_epoch, supernet_mask, self.hparams)
-                    results = trainer.callback_metrics
-
-                    ckpt_path = os.path.join(
-                        os.getcwd(), f'checkpoints/{flag}_latest.ckpt'
+                    
+                    load_from_parent = self.hparams.get('load_from_parent', False)
+                    parent_ckpt_path = f'./temp_{rank}.ckpt'
+                    if load_from_parent:
+                        parent_trainer.save_checkpoint(parent_ckpt_path)
+                    finetune_epoch = self.hparams.get('finetune_epoch', 20)
+                    p = mp.Process(target=finetune_mp, args=(
+                        config, rank, None, load_from_parent,
+                        supernet_mask, finetune_epoch, parent_ckpt_path, flag
+                        )
                     )
-                    trainer.save_checkpoint(f"{ckpt_path}")
-                    log.info(f"Saved {flag} checkpoint to {ckpt_path}")
+                    p.start()
+                    processes.append(p)
+                for p in processes:
+                    p.join()
+                log.info(f"Finetune level-{idx} finished\n")
+                log.info(f"="*20)
         else:
             # load supernet masks
             supernet_masks_path = glob(self.supernet_masks_path)
@@ -499,8 +513,9 @@ def init_logger(config):
     return loggers
 
 def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
-    supernet_mask: dict, finetune_epoch: int, parent_ckpt_path: str,):
-    log.info(f"rank={rank} mask_path={mask_path}")
+    supernet_mask: dict, finetune_epoch: int, parent_ckpt_path: str, flag: str=None):
+    if mask_path is not None:
+        log.info(f"rank={rank} mask_path={mask_path}")
     pid = os.getpid()
     num_gpus = torch.cuda.device_count()
     local_rank = rank % num_gpus
@@ -530,8 +545,11 @@ def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
     log.info(f"pid={pid} Fintune Done: [{rank}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
     
     level = -1
-    flag = mask_path.replace('mask.json', 'latest.ckpt')
-    ckpt_path = flag
+    if mask_path is not None:
+        flag = mask_path.replace('mask.json', 'latest.ckpt')
+        ckpt_path = flag
+    else:
+        ckpt_path = os.path.join(os.getcwd(), f'checkpoints/{flag}_latest.ckpt')
     trainer.save_checkpoint(f"{ckpt_path}")
     log.info(f"pid={pid} Saved [{rank}]-th sub-Supernet checkpoint to {ckpt_path}")
     return trainer, model

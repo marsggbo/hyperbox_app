@@ -68,7 +68,7 @@ class FewshotMutator(RandomMutator):
             # 2. mutable's mask should be not all ones
             #    e.g., [1,0,1] indicates the second operation is disabled,
             #    so we should sample only the first or third operation.
-            candidate_indices = torch.where(op_encoding==0)[0]
+            candidate_indices = torch.where(op_encoding==0)[0].cpu()
             if supernet_op_encoding is not None:
                 candidate_indices2 = torch.where(supernet_op_encoding==1)[0]
                 candidate_indices = torch.tensor([i for i in candidate_indices if i in candidate_indices2])
