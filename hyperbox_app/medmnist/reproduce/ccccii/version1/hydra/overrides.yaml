@@ -1,0 +1,14 @@
+- experiment=finetune_ccccii
+- logger.wandb.name=covid19_finetune_ccccii_gpu1
+- +datamodule.use_weighted_sampler=False
+- trainer.gpus=1
+- trainer.accelerator=gpu
+- trainer.max_epochs=100
+- callbacks.model_checkpoint.save_top_k=2
+- model/loss_cfg=cross_entropy_labelsmooth
+- model/network_cfg=dambv3_covid19
+- +model.network_cfg.first_stride=1
+- model.network_cfg.stride_stages=[2,2,2,2,2,1]
+- model.network_cfg.mask=/home/comp/18481086/code/hyperbox_app/logs/runs/searchMBV2_gdas_iran_gpu1/2022-01-30_13-26-47/mask_json/mask_epoch_15.json
+- +model.network_cfg.input_channel=16
+- +model.network_cfg.ignore_keys=[invert,gauNoise]

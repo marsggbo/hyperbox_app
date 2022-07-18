@@ -1,0 +1,16 @@
+- experiment=ID_fewshot_search_nb201.yaml
+- logger.wandb.name=ID_fewshot_search_nb201_c10
+- trainer.accelerator=gpu
+- trainer.strategy=ddp
+- trainer.gpus=1
+- datamodule=cifar10_datamodule
+- datamodule.batch_size=128
+- datamodule.is_customized=False
+- model/optimizer_cfg=sgd
+- model.optimizer_cfg.lr=0.01
+- +model.is_net_parallel=True
+- callbacks.model_checkpoint.save_top_k=2
+- pretrained_weight=/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nb201_gpunum1_c10_16net_1batch/2022-04-28_01-39-13/checkpoints/last.ckpt
+- engine.ID_groups_path=/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/engine/precomputed_IDs_nb201.pkl
+- engine.precompute_IDs=True
+- ipdb_debug=True

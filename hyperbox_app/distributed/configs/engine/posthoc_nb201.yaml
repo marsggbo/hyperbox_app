@@ -1,0 +1,4 @@
+_target_: hyperbox_app.distributed.engine.posthoc_nb201.PosthocNB201Engine
+search_space_path: /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/temp_space
+metric_key: 'val/acc_epoch'
+query_key: 'test_acc'

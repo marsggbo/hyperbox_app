@@ -1,0 +1,2992 @@
+{
+    "0": {
+        "acc": 93.12666320800781,
+        "arch": "22212220",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "1": {
+        "acc": 93.12666320800781,
+        "arch": "22212202",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "2": {
+        "acc": 93.1066665649414,
+        "arch": "22222221",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "3": {
+        "acc": 93.07999928792317,
+        "arch": "22222200",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "4": {
+        "acc": 93.07999928792317,
+        "arch": "22211222",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "5": {
+        "acc": 93.05999501546223,
+        "arch": "21222200",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "6": {
+        "acc": 93.0566635131836,
+        "arch": "22222112",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "7": {
+        "acc": 93.05333201090495,
+        "arch": "22221222",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "8": {
+        "acc": 93.04666646321614,
+        "arch": "22212212",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "9": {
+        "acc": 93.02333068847656,
+        "arch": "22221212",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "10": {
+        "acc": 93.00999704996745,
+        "arch": "22222202",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "11": {
+        "acc": 93.00999704996745,
+        "arch": "22222220",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "12": {
+        "acc": 92.97666422526042,
+        "arch": "22222120",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "13": {
+        "acc": 92.97666422526042,
+        "arch": "22222102",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "14": {
+        "acc": 92.97333272298177,
+        "arch": "22221202",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "15": {
+        "acc": 92.97333272298177,
+        "arch": "22221220",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "16": {
+        "acc": 92.97333017985027,
+        "arch": "22202121",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                true,
+                false,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "17": {
+        "acc": 92.97333017985027,
+        "arch": "22220121",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                true,
+                false,
+                false
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "18": {
+        "acc": 92.96999867757161,
+        "arch": "22212221",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "19": {
+        "acc": 92.95999654134114,
+        "arch": "21222222",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "20": {
+        "acc": 92.95333099365234,
+        "arch": "22222222",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "21": {
+        "acc": 92.94666544596355,
+        "arch": "22221221",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "22": {
+        "acc": 92.94333140055339,
+        "arch": "12222100",
+        "mask": {
+            "stage0_0": [
+                false,
+                true,
+                false
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "23": {
+        "acc": 92.94332885742188,
+        "arch": "22212200",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "24": {
+        "acc": 92.93333180745442,
+        "arch": "22212222",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "25": {
+        "acc": 92.92333221435547,
+        "arch": "12222222",
+        "mask": {
+            "stage0_0": [
+                false,
+                true,
+                false
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "26": {
+        "acc": 92.91999816894531,
+        "arch": "22212121",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "27": {
+        "acc": 92.90999857584636,
+        "arch": "22222121",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "28": {
+        "acc": 92.9066645304362,
+        "arch": "22222110",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "29": {
+        "acc": 92.9066645304362,
+        "arch": "22222101",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "30": {
+        "acc": 92.89999898274739,
+        "arch": "22202220",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                true,
+                false,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "31": {
+        "acc": 92.89999898274739,
+        "arch": "22220202",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                true,
+                false,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "32": {
+        "acc": 92.89999898274739,
+        "arch": "22220220",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                true,
+                false,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "33": {
+        "acc": 92.89999898274739,
+        "arch": "22202202",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                true,
+                false,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "34": {
+        "acc": 92.89999898274739,
+        "arch": "22211122",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "35": {
+        "acc": 92.89999643961589,
+        "arch": "22221122",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "36": {
+        "acc": 92.89333089192708,
+        "arch": "21222211",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "37": {
+        "acc": 92.88999938964844,
+        "arch": "22222201",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "38": {
+        "acc": 92.88999938964844,
+        "arch": "22222210",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "39": {
+        "acc": 92.88999684651692,
+        "arch": "22122221",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                true,
+                false
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "40": {
+        "acc": 92.88333129882812,
+        "arch": "22222212",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "41": {
+        "acc": 92.88332875569661,
+        "arch": "22221211",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "42": {
+        "acc": 92.87000020345052,
+        "arch": "22221120",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "43": {
+        "acc": 92.87000020345052,
+        "arch": "22221102",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "44": {
+        "acc": 92.86999766031902,
+        "arch": "22221200",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "45": {
+        "acc": 92.8699951171875,
+        "arch": "22122201",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                true,
+                false
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "46": {
+        "acc": 92.8699951171875,
+        "arch": "22122210",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                true,
+                false
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "47": {
+        "acc": 92.86666615804036,
+        "arch": "21222210",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "48": {
+        "acc": 92.86666615804036,
+        "arch": "21222201",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "49": {
+        "acc": 92.85999806722005,
+        "arch": "21211212",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "50": {
+        "acc": 92.85999806722005,
+        "arch": "21211222",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "51": {
+        "acc": 92.85666402180989,
+        "arch": "22222211",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "52": {
+        "acc": 92.85332997639973,
+        "arch": "22212101",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "53": {
+        "acc": 92.85332997639973,
+        "arch": "22212110",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "54": {
+        "acc": 92.84666188557942,
+        "arch": "21222121",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "55": {
+        "acc": 92.83999633789062,
+        "arch": "12222200",
+        "mask": {
+            "stage0_0": [
+                false,
+                true,
+                false
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "56": {
+        "acc": 92.83999633789062,
+        "arch": "22212122",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "57": {
+        "acc": 92.83333079020183,
+        "arch": "22212102",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "58": {
+        "acc": 92.83333079020183,
+        "arch": "22212120",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "59": {
+        "acc": 92.83332824707031,
+        "arch": "22211200",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "60": {
+        "acc": 92.82999674479167,
+        "arch": "22221121",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                true,
+                false
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "61": {
+        "acc": 92.82666269938152,
+        "arch": "21221200",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                true,
+                false,
+                false
+            ],
+            "stage2_2": [
+                true,
+                false,
+                false
+            ]
+        }
+    },
+    "62": {
+        "acc": 92.8199971516927,
+        "arch": "21222221",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_2": [
+                false,
+                false,
+                true
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                true,
+                false
+            ]
+        }
+    },
+    "63": {
+        "acc": 92.81666310628255,
+        "arch": "22111222",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                true,
+                false
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                false,
+                true
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    },
+    "64": {
+        "acc": 92.81666310628255,
+        "arch": "22211212",
+        "mask": {
+            "stage0_0": [
+                false,
+                false,
+                true
+            ],
+            "stage0_1": [
+                false,
+                false,
+                true
+            ],
+            "stage1_0": [
+                false,
+                false,
+                true
+            ],
+            "stage1_1": [
+                false,
+                true,
+                false
+            ],
+            "stage1_2": [
+                false,
+                true,
+                false
+            ],
+            "stage2_0": [
+                false,
+                false,
+                true
+            ],
+            "stage2_1": [
+                false,
+                true,
+                false
+            ],
+            "stage2_2": [
+                false,
+                false,
+                true
+            ]
+        }
+    }
+}

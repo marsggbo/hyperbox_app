@@ -1,0 +1,5 @@
+- model.network_cfg.mask=/home/xihe/xinhe/hyperbox_app/outputs/2022-02-15/04-16-10/mask_epoch_39.json
+- pretrained_weight='/home/xihe/xinhe/hyperbox_app/outputs/2022-02-15/04-16-10/checkpoints/epoch=55_val/auc=0.7282_val/acc=0.8459.ckpt'
+- logger.wandb.offline=False
+- only_test=True
+- logger.wandb.offline=False

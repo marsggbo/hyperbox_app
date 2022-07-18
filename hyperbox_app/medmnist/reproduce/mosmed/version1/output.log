@@ -1,0 +1,14 @@
+
+[2022-02-15 20:59:36,381][pytorch_lightning.accelerators.gpu][INFO] - LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1,2,3]
+[36m[2022-02-15 21:00:35,928[39m] [[32mINFO[39m] [/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/models/finetune_model.py:314] - Test classification report:
+                   pre       rec       spe        f1       geo       iba       sup
+        0.0   0.696970  0.605263  0.921569  0.647887  0.746854  0.540148        76
+        1.0   0.886792  0.921569  0.605263  0.903846  0.746854  0.575435       255
+avg / total   0.843208  0.848943  0.677889  0.845076  0.746854  0.567333       331
+[36m[2022-02-15 21:00:35,932[39m] [[32mINFO[39m] [/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/models/finetune_model.py:318] - Test epoch0 auc=0.8185 acc=0.8489 loss=0.5395
+[36m[2022-02-15 21:00:37,338[39m] [[32mINFO[39m] [/home/xihe/xinhe/hyperbox/hyperbox/train.py:129] - Finalizing!
+--------------------------------------------------------------------------------
+DATALOADER:0 TEST RESULTS
+{'test/acc': 0.8489425778388977, 'test/loss': 0.5394877195358276}
+--------------------------------------------------------------------------------
+[{'test/loss': 0.5394877195358276, 'test/acc': 0.8489425778388977}]

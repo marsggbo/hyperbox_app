@@ -1,0 +1,287 @@
+{
+    "affine": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+    ],
+    "boxblur": [
+        true,
+        false,
+        false,
+        false,
+        false
+    ],
+    "bright_contrast": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+    ],
+    "dflip": [
+        false,
+        false,
+        true
+    ],
+    "erase": [
+        false,
+        false,
+        false,
+        true,
+        false
+    ],
+    "gauNoise": [
+        true,
+        false,
+        false
+    ],
+    "hflip": [
+        true,
+        false,
+        false
+    ],
+    "s0_c0": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+    ],
+    "s0_c1": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+    ],
+    "s0_c2": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+    ],
+    "s0_c3": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+    ],
+    "s1_c0": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+    ],
+    "s1_c1": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+    ],
+    "s1_c2": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+    ],
+    "s1_c3": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+    ],
+    "s2_c0": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+    ],
+    "s2_c1": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+    ],
+    "s2_c2": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+    ],
+    "s2_c3": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+    ],
+    "s2_calib": [
+        false,
+        true
+    ],
+    "s3_c0": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+    ],
+    "s3_c1": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+    ],
+    "s3_c2": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+    ],
+    "s3_c3": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+    ],
+    "s3_calib": [
+        false,
+        true
+    ],
+    "s4_c0": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+    ],
+    "s4_c1": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+    ],
+    "s4_c2": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+    ],
+    "s4_c3": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+    ],
+    "s4_calib": [
+        true,
+        false
+    ],
+    "s5_c0": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+    ],
+    "s5_calib": [
+        false,
+        true
+    ],
+    "vflip": [
+        true,
+        false,
+        false
+    ]
+}

@@ -1,0 +1,203 @@
+trainer:
+  _target_: pytorch_lightning.Trainer
+  enable_checkpointing: true
+  default_root_dir: null
+  num_nodes: 1
+  num_processes: 1
+  gpus: 1
+  auto_select_gpus: false
+  tpu_cores: null
+  ipus: null
+  log_gpu_memory: null
+  enable_progress_bar: false
+  overfit_batches: 0.0
+  track_grad_norm: -1
+  check_val_every_n_epoch: 1
+  fast_dev_run: false
+  accumulate_grad_batches: null
+  max_epochs: 100
+  min_epochs: 1
+  max_steps: -1
+  min_steps: null
+  max_time: null
+  limit_train_batches: 1.0
+  limit_val_batches: 1.0
+  limit_test_batches: 1.0
+  limit_predict_batches: 1.0
+  val_check_interval: 1.0
+  flush_logs_every_n_steps: null
+  log_every_n_steps: 50
+  accelerator: gpu
+  strategy: null
+  devices: null
+  sync_batchnorm: false
+  precision: 32
+  enable_model_summary: true
+  weights_save_path: null
+  num_sanity_val_steps: 2
+  resume_from_checkpoint: null
+  profiler: null
+  benchmark: false
+  deterministic: false
+  reload_dataloaders_every_n_epochs: 0
+  auto_lr_find: false
+  replace_sampler_ddp: true
+  detect_anomaly: false
+  auto_scale_batch_size: false
+  plugins: null
+  amp_backend: native
+  amp_level: null
+  move_metrics_to_cpu: false
+  multiple_trainloader_mode: max_size_cycle
+model:
+  network_cfg:
+    _target_: hyperbox_app.medmnist.networks.mbnet_v3.DAMobile3DNet
+    in_channels: 1
+    width_stages:
+    - 32
+    - 64
+    - 128
+    - 256
+    - 512
+    - 1024
+    n_cell_stages:
+    - 4
+    - 4
+    - 4
+    - 4
+    - 4
+    - 1
+    stride_stages:
+    - 2
+    - 2
+    - 2
+    - 2
+    - 2
+    - 1
+    width_mult: 1
+    num_classes: 3
+    dropout_rate: 0
+    bn_param:
+    - 0.1
+    - 0.001
+    rotate_degree: 30
+    crop_size:
+    - - 8
+      - 128
+      - 128
+    - - 12
+      - 128
+      - 128
+    - - 16
+      - 128
+      - 128
+    - - 24
+      - 128
+      - 128
+    - - 32
+      - 128
+      - 128
+    affine_degree:
+    - - 1.0
+      - 1.0
+      - 15.0
+    - - 1.0
+      - 1.0
+      - 30.0
+    affine_scale:
+    - - 0.8
+      - 1
+    - - 1.1
+      - 1.6
+    affine_shears:
+    - 0
+    - 0
+    mean: 0.5
+    std: 0.5
+    mask: /home/comp/18481086/code/hyperbox_app/logs/runs/searchMBV2_gdas_iran_gpu1/2022-01-30_13-26-47/mask_json/mask_epoch_15.json
+    first_stride: 1
+    input_channel: 16
+    ignore_keys:
+    - invert
+    - gauNoise
+  mutator_cfg:
+    _target_: hyperbox.mutator.random_mutator.RandomMutator
+  optimizer_cfg:
+    _target_: torch.optim.Adam
+    lr: 0.001
+    weight_decay: 0.0005
+  metric_cfg:
+    _target_: torchmetrics.classification.accuracy.Accuracy
+  loss_cfg:
+    _target_: hyperbox.losses.ce_labelsmooth_loss.CrossEntropyLabelSmooth
+    label_smoothing: 0.1
+  scheduler_cfg:
+    _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+    T_max: 250
+    eta_min: 0.0001
+    last_epoch: -1
+  _target_: hyperbox_app.medmnist.models.finetune_model.FinetuneModel
+datamodule:
+  _target_: hyperbox_app.medmnist.datamodules.CTDatamodule
+  root_dir: /home/datasets/CCCCI_cleaned/dataset_cleaned/
+  data_list_train: /home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/ccccii/ct_train.json
+  data_list_val: /home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/ccccii/ct_test.json
+  data_list_test: /home/comp/18481086/code/hyperbox_app/hyperbox_app/medmnist/datamodules/ccccii/ct_test.json
+  is_color: false
+  is_3d: true
+  img_size:
+  - 160
+  - 160
+  center_size:
+  - 128
+  - 128
+  batch_size: 16
+  slice_num: 32
+  seed: 6666
+  is_customized: false
+  num_workers: 8
+  shuffle: true
+  pin_memory: true
+  drop_last: false
+  use_weighted_sampler: false
+callbacks:
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: val/auc
+    save_top_k: 2
+    save_last: true
+    mode: max
+    verbose: false
+    dirpath: checkpoints/
+    filename: '{epoch:02d}_{val/auc:.4f}_{val/acc:.4f}'
+  early_stopping:
+    _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: val/acc
+    patience: 1000
+    mode: max
+    min_delta: 0
+    check_on_train_epoch_end: false
+    strict: false
+logger:
+  wandb:
+    _target_: pytorch_lightning.loggers.wandb.WandbLogger
+    project: medmnist
+    name: covid19_finetune_ccccii_gpu1
+    save_dir: .
+    offline: true
+    id: null
+    log_model: false
+    prefix: ''
+    job_type: train
+    group: ''
+    tags: []
+seed: 12345
+work_dir: ${hydra:runtime.cwd}
+data_dir: ${work_dir}/data/
+debug: false
+print_config: true
+ignore_warnings: true
+test_after_training: true
+only_test: false
+pretrained_weight: null
+ipdb_debug: false
