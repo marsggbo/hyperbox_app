@@ -131,29 +131,47 @@ class FewshotSearch(BaseEngine):
             except Exception as e:
                 log.info('Already spawned')
                 raise e
+            group_size = torch.cuda.device_count() * 2
+            num_processes = 0
             for idx, supernet_setting in enumerate(all_supernet_settings[level]):
                 parent_trainer, parent_model, supernet_masks, best_edge_key = supernet_setting
-                processes = []
+                for rank, supernet_mask in enumerate(supernet_masks):
+                    num_processes += 1
+            num_unprocessed = num_processes
+            processes = []
+            parent_ckpt_paths = []
+            global_rank = 0
+            for idx, supernet_setting in enumerate(all_supernet_settings[level]):
+                parent_trainer, parent_model, supernet_masks, best_edge_key = supernet_setting
                 for rank, supernet_mask in enumerate(supernet_masks):
                     flag = f"level[{level}]-[{idx}-{rank}]-Edge[{best_edge_key}]-subSupernet"
                     log.info(f"Fintune {flag} with mask {supernet_mask}")
                     
                     load_from_parent = self.hparams.get('load_from_parent', False)
-                    parent_ckpt_path = f'./temp_{rank}.ckpt'
+                    parent_ckpt_path = f'{os.getcwd()}/temp_{idx}_{rank}.ckpt'
+                    parent_ckpt_paths.append(parent_ckpt_path)
                     if load_from_parent:
                         parent_trainer.save_checkpoint(parent_ckpt_path)
                     finetune_epoch = self.hparams.get('finetune_epoch', 20)
                     p = mp.Process(target=finetune_mp, args=(
-                        config, rank, None, load_from_parent,
+                        config, global_rank, None, load_from_parent,
                         supernet_mask, finetune_epoch, parent_ckpt_path, flag
                         )
                     )
                     p.start()
                     processes.append(p)
-                for p in processes:
-                    p.join()
-                log.info(f"Finetune level-{idx} finished\n")
-                log.info(f"="*20)
+                    num_unprocessed -= 1
+                    global_rank += 1
+                
+                if len(processes) >= group_size or num_unprocessed <= 0:
+                    for p in processes:
+                        p.join()
+                    log.info(f"Finetune level-{idx}: {len(processes)}  finished. \n\n")
+                    log.info(f"="*20)
+                    processes = []
+                    if load_from_parent:
+                        for parent_ckpt_path in parent_ckpt_paths:
+                            os.remove(parent_ckpt_path)
         else:
             # load supernet masks
             supernet_masks_path = glob(self.supernet_masks_path)
@@ -162,10 +180,10 @@ class FewshotSearch(BaseEngine):
             processes = []
             mp.set_start_method('spawn')
             model.share_memory()
-            num_gpus = torch.cuda.device_count() * 2
+            group_size = torch.cuda.device_count() * 2
             num_processes = len(supernet_masks_path)
             rank_id_list = list(range(num_processes))
-            list_of_groups = zip(*(iter(rank_id_list),) * num_gpus)
+            list_of_groups = zip(*(iter(rank_id_list),) * group_size)
             for group in list_of_groups:
                 # for local_rank, rank in enumerate(group):
                 for rank in group:
@@ -514,13 +532,14 @@ def init_logger(config):
 
 def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
     supernet_mask: dict, finetune_epoch: int, parent_ckpt_path: str, flag: str=None):
+    log_mp = get_logger(f"finetune_mp_{rank}", is_rank_zero=False)
     if mask_path is not None:
-        log.info(f"rank={rank} mask_path={mask_path}")
+        log_mp.info(f"rank={rank} mask_path={mask_path}")
     pid = os.getpid()
     num_gpus = torch.cuda.device_count()
     local_rank = rank % num_gpus
-    log.info(f'start finetune in process {rank} with local_rank {local_rank} global_rank {rank}')
-    # log.info(f'start finetune in process {pid}, global rank {rank}')
+    log_mp.info(f'start finetune in process {pid}, local_rank {local_rank} global_rank {rank}')
+    # log_mp.info(f'start finetune in process {pid}, global rank {rank}')
     datamodule_cfg = config['datamodule']
     datamodule_cfg.num_workers = 2
     datamodule = instantiate(config["datamodule"])
@@ -539,10 +558,11 @@ def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
     
     callbacks = init_callbacks(config)
     logger = init_logger(config)
-    trainer = instantiate(trainer_cfg, callbacks=callbacks, logger=logger, _convert_="partial")
+    # trainer = instantiate(trainer_cfg, callbacks=callbacks, logger=logger, _convert_="partial")
+    trainer = instantiate(trainer_cfg, callbacks=callbacks, logger=[], _convert_="partial")
     trainer.fit(model, datamodule)
     results = trainer.callback_metrics
-    log.info(f"pid={pid} Fintune Done: [{rank}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
+    log_mp.info(f"pid={pid} Fintune Done: [{rank}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
     
     level = -1
     if mask_path is not None:
@@ -551,7 +571,7 @@ def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
     else:
         ckpt_path = os.path.join(os.getcwd(), f'checkpoints/{flag}_latest.ckpt')
     trainer.save_checkpoint(f"{ckpt_path}")
-    log.info(f"pid={pid} Saved [{rank}]-th sub-Supernet checkpoint to {ckpt_path}")
+    log_mp.info(f"pid={pid} Saved [{rank}]-th sub-Supernet checkpoint to {ckpt_path}")
     return trainer, model
 
 
