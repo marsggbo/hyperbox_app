@@ -9,12 +9,13 @@ name=fewshot_search_${suffix}
 echo $name
 
 # nb201
-CUDA_VISIBLE_DEVICES=$gpu python -m hyperbox.run \
+# CUDA_VISIBLE_DEVICES=$gpu 
+python -m hyperbox.run \
 hydra.searchpath=[pkg://hyperbox_app.distributed.configs] \
 experiment=fewshot_search_nb201.yaml \
 hydra.job.name=$name \
 logger.wandb.name=$name \
-trainer.gpus=$gpuNum \
+trainer.gpus=$gpu \
 +model.is_net_parallel=True \
 $others
 

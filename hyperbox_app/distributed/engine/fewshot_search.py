@@ -54,6 +54,7 @@ class FewshotSearch(BaseEngine):
         split_criterion: str='ID', # 'ID' or 'grad'
         ID_method: str='lid', # 'lid' or 'ess' or 'mle' or 'twonn'
         split_method: str='spectral_cluster', # 'spectral_cluster' or 'mincut'
+        similarity_method: str='cosine', # 'corre' or 'cosine'
         is_single_path: bool=False,
         repeat_num: int=1,
         supernet_masks_path: str=None,
@@ -131,41 +132,68 @@ class FewshotSearch(BaseEngine):
             except Exception as e:
                 log.info('Already spawned')
                 raise e
+            group_size = torch.cuda.device_count() * 2
+            num_processes = 0
             for idx, supernet_setting in enumerate(all_supernet_settings[level]):
                 parent_trainer, parent_model, supernet_masks, best_edge_key = supernet_setting
-                processes = []
+                for rank, supernet_mask in enumerate(supernet_masks):
+                    num_processes += 1
+            num_unprocessed = num_processes
+            processes = []
+            parent_ckpt_paths = []
+            global_rank = 0
+            for idx, supernet_setting in enumerate(all_supernet_settings[level]):
+                parent_trainer, parent_model, supernet_masks, best_edge_key = supernet_setting
                 for rank, supernet_mask in enumerate(supernet_masks):
                     flag = f"level[{level}]-[{idx}-{rank}]-Edge[{best_edge_key}]-subSupernet"
                     log.info(f"Fintune {flag} with mask {supernet_mask}")
                     
                     load_from_parent = self.hparams.get('load_from_parent', False)
-                    parent_ckpt_path = f'./temp_{rank}.ckpt'
+                    parent_ckpt_path = f'{os.getcwd()}/temp_{idx}_{rank}.ckpt'
+                    parent_ckpt_paths.append(parent_ckpt_path)
                     if load_from_parent:
                         parent_trainer.save_checkpoint(parent_ckpt_path)
                     finetune_epoch = self.hparams.get('finetune_epoch', 20)
                     p = mp.Process(target=finetune_mp, args=(
-                        config, rank, None, load_from_parent,
+                        config, global_rank, None, load_from_parent,
                         supernet_mask, finetune_epoch, parent_ckpt_path, flag
                         )
                     )
                     p.start()
                     processes.append(p)
-                for p in processes:
-                    p.join()
-                log.info(f"Finetune level-{idx} finished\n")
-                log.info(f"="*20)
+                    num_unprocessed -= 1
+                    global_rank += 1
+                
+                if len(processes) >= group_size or num_unprocessed <= 0:
+                    for p in processes:
+                        p.join()
+                    log.info(f"Finetune level-{idx}: {len(processes)}  finished. \n\n")
+                    log.info(f"="*20)
+                    processes = []
+            if load_from_parent:
+                try:
+                    for parent_ckpt_path in parent_ckpt_paths:
+                        os.remove(parent_ckpt_path)
+                except Exception as e:
+                    log.info(f"{e}")
         else:
             # load supernet masks
             supernet_masks_path = glob(self.supernet_masks_path)
             supernet_masks = [load_json(path) for path in supernet_masks_path]
             
             processes = []
-            mp.set_start_method('spawn')
+            # finetune all supernets
+            try:
+                mp.set_start_method('spawn', force=True)
+                log.info('Start spawning all supernets')
+            except Exception as e:
+                log.info('Already spawned')
+                raise e
             model.share_memory()
-            num_gpus = torch.cuda.device_count() * 2
+            group_size = torch.cuda.device_count() * 2
             num_processes = len(supernet_masks_path)
             rank_id_list = list(range(num_processes))
-            list_of_groups = zip(*(iter(rank_id_list),) * num_gpus)
+            list_of_groups = zip(*(iter(rank_id_list),) * group_size)
             for group in list_of_groups:
                 # for local_rank, rank in enumerate(group):
                 for rank in group:
@@ -239,6 +267,7 @@ class FewshotSearch(BaseEngine):
         split_criterion = hparams.get('split_criterion', 'grad')
         split_method = hparams.get('split_method', 'spectral_cluster')
         ID_method = hparams.get('ID_method', 'lid')
+        similarity_method = hparams.get('similarity_method', 'cosine')
 
         # best_value = -1e10 if split_method == 'spectral_cluster' else 1e10
         best_value = 0
@@ -306,15 +335,22 @@ class FewshotSearch(BaseEngine):
 
                 # calculate the similarity between all edges
                 if split_criterion == 'grad':
-                    similarity = self.calc_similarity(infos, method='cosine') + 1
+                    similarity = self.calc_similarity(infos, method=similarity_method)
                 elif split_criterion == 'ID':
-                    similarity = self.calc_similarity(infos, method='correcoef')
-                    similarity = np.nan_to_num(similarity) + 1
+                    # similarity = self.calc_similarity(infos, method='correcoef')
+                    similarity = self.calc_similarity(infos, method=similarity_method)
+                similarity = np.nan_to_num(similarity) + 1
                 # log.info(f"edge_key={edge_key} similarity={similarity}")
                 similarity_avg += similarity
             similarity_avg /= repeat_num
             similarity = similarity_avg - 1
             log.info(f"{edge_key} similarity:\n {similarity}")
+            try:
+                name = f"{trainer.current_epoch}_{edge_key}_similarity"
+                x_labels = y_labels = list(range(len(similarity)))
+                wandb.log({name: wandb.plot.Heatmap(x_labels, y_labels, similarity)})
+            except Exception as e:
+                log.error(e)
             
             if split_method == 'GM':
                 criterions = np.stack([info['criterion'] for info in infos.values()])
@@ -415,7 +451,7 @@ class FewshotSearch(BaseEngine):
         '''
         criterions = [info['criterion'] for info in infos.values()]
         if isinstance(criterions[0], torch.Tensor):
-            criterions = torch.stack(criterions)
+            criterions = torch.stack(criterions).numpy()
         else:
             criterions = np.vstack(criterions)
 
@@ -431,6 +467,10 @@ class FewshotSearch(BaseEngine):
                     )
             tril_indices = np.tril_indices(num, -1)
             similarity[tril_indices] = similarity.T[tril_indices]
+        elif method == 'mse':
+            criterions = torch.tensor(criterions)
+            distance = torch.cdist(criterions, criterions, p=2).numpy()
+            similarity = 1 / (distance + 1 + 1e-6)
         return similarity
 
     def gen_cluster(self, similarity: np.array, n_clusters: int=None):
@@ -514,13 +554,14 @@ def init_logger(config):
 
 def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
     supernet_mask: dict, finetune_epoch: int, parent_ckpt_path: str, flag: str=None):
+    log_mp = get_logger(f"finetune_mp_{rank}", is_rank_zero=False)
     if mask_path is not None:
-        log.info(f"rank={rank} mask_path={mask_path}")
+        log_mp.info(f"rank={rank} mask_path={mask_path}")
     pid = os.getpid()
     num_gpus = torch.cuda.device_count()
     local_rank = rank % num_gpus
-    log.info(f'start finetune in process {rank} with local_rank {local_rank} global_rank {rank}')
-    # log.info(f'start finetune in process {pid}, global rank {rank}')
+    log_mp.info(f'start finetune in process {pid}, local_rank {local_rank} global_rank {rank}')
+    # log_mp.info(f'start finetune in process {pid}, global rank {rank}')
     datamodule_cfg = config['datamodule']
     datamodule_cfg.num_workers = 2
     datamodule = instantiate(config["datamodule"])
@@ -533,16 +574,19 @@ def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
 
     trainer_cfg = deepcopy(config.trainer)
     trainer_cfg.gpus = [local_rank]
-    trainer_cfg.max_epochs = 1
+    trainer_cfg.max_epochs = finetune_epoch
     if load_from_parent and parent_ckpt_path:
         trainer_cfg.resume_from_checkpoint = parent_ckpt_path
+        ckpt_epoch = torch.load(parent_ckpt_path, map_location='cpu')['epoch']
+        trainer_cfg.max_epochs = finetune_epoch + ckpt_epoch
     
     callbacks = init_callbacks(config)
     logger = init_logger(config)
-    trainer = instantiate(trainer_cfg, callbacks=callbacks, logger=logger, _convert_="partial")
+    # trainer = instantiate(trainer_cfg, callbacks=callbacks, logger=logger, _convert_="partial")
+    trainer = instantiate(trainer_cfg, callbacks=callbacks, logger=[], _convert_="partial")
     trainer.fit(model, datamodule)
     results = trainer.callback_metrics
-    log.info(f"pid={pid} Fintune Done: [{rank}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
+    log_mp.info(f"pid={pid} Fintune Done: [{rank}]-th sub-supernet with mask {supernet_mask} \nresults: {results}")
     
     level = -1
     if mask_path is not None:
@@ -551,7 +595,7 @@ def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
     else:
         ckpt_path = os.path.join(os.getcwd(), f'checkpoints/{flag}_latest.ckpt')
     trainer.save_checkpoint(f"{ckpt_path}")
-    log.info(f"pid={pid} Saved [{rank}]-th sub-Supernet checkpoint to {ckpt_path}")
+    log_mp.info(f"pid={pid} Saved [{rank}]-th sub-Supernet checkpoint to {ckpt_path}")
     return trainer, model
 
 
