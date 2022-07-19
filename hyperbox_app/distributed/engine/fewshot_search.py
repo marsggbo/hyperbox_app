@@ -54,6 +54,7 @@ class FewshotSearch(BaseEngine):
         split_criterion: str='ID', # 'ID' or 'grad'
         ID_method: str='lid', # 'lid' or 'ess' or 'mle' or 'twonn'
         split_method: str='spectral_cluster', # 'spectral_cluster' or 'mincut'
+        similarity_method: str='cosine', # 'corre' or 'cosine'
         is_single_path: bool=False,
         repeat_num: int=1,
         supernet_masks_path: str=None,
@@ -169,16 +170,25 @@ class FewshotSearch(BaseEngine):
                     log.info(f"Finetune level-{idx}: {len(processes)}  finished. \n\n")
                     log.info(f"="*20)
                     processes = []
-                    if load_from_parent:
-                        for parent_ckpt_path in parent_ckpt_paths:
-                            os.remove(parent_ckpt_path)
+            if load_from_parent:
+                try:
+                    for parent_ckpt_path in parent_ckpt_paths:
+                        os.remove(parent_ckpt_path)
+                except Exception as e:
+                    log.info(f"{e}")
         else:
             # load supernet masks
             supernet_masks_path = glob(self.supernet_masks_path)
             supernet_masks = [load_json(path) for path in supernet_masks_path]
             
             processes = []
-            mp.set_start_method('spawn')
+            # finetune all supernets
+            try:
+                mp.set_start_method('spawn', force=True)
+                log.info('Start spawning all supernets')
+            except Exception as e:
+                log.info('Already spawned')
+                raise e
             model.share_memory()
             group_size = torch.cuda.device_count() * 2
             num_processes = len(supernet_masks_path)
@@ -257,6 +267,7 @@ class FewshotSearch(BaseEngine):
         split_criterion = hparams.get('split_criterion', 'grad')
         split_method = hparams.get('split_method', 'spectral_cluster')
         ID_method = hparams.get('ID_method', 'lid')
+        similarity_method = hparams.get('similarity_method', 'cosine')
 
         # best_value = -1e10 if split_method == 'spectral_cluster' else 1e10
         best_value = 0
@@ -324,15 +335,22 @@ class FewshotSearch(BaseEngine):
 
                 # calculate the similarity between all edges
                 if split_criterion == 'grad':
-                    similarity = self.calc_similarity(infos, method='cosine') + 1
+                    similarity = self.calc_similarity(infos, method=similarity_method)
                 elif split_criterion == 'ID':
-                    similarity = self.calc_similarity(infos, method='correcoef')
-                    similarity = np.nan_to_num(similarity) + 1
+                    # similarity = self.calc_similarity(infos, method='correcoef')
+                    similarity = self.calc_similarity(infos, method=similarity_method)
+                similarity = np.nan_to_num(similarity) + 1
                 # log.info(f"edge_key={edge_key} similarity={similarity}")
                 similarity_avg += similarity
             similarity_avg /= repeat_num
             similarity = similarity_avg - 1
             log.info(f"{edge_key} similarity:\n {similarity}")
+            try:
+                name = f"{trainer.current_epoch}_{edge_key}_similarity"
+                x_labels = y_labels = list(range(len(similarity)))
+                wandb.log({name: wandb.plot.Heatmap(x_labels, y_labels, similarity)})
+            except Exception as e:
+                log.error(e)
             
             if split_method == 'GM':
                 criterions = np.stack([info['criterion'] for info in infos.values()])
@@ -433,7 +451,7 @@ class FewshotSearch(BaseEngine):
         '''
         criterions = [info['criterion'] for info in infos.values()]
         if isinstance(criterions[0], torch.Tensor):
-            criterions = torch.stack(criterions)
+            criterions = torch.stack(criterions).numpy()
         else:
             criterions = np.vstack(criterions)
 
@@ -449,6 +467,10 @@ class FewshotSearch(BaseEngine):
                     )
             tril_indices = np.tril_indices(num, -1)
             similarity[tril_indices] = similarity.T[tril_indices]
+        elif method == 'mse':
+            criterions = torch.tensor(criterions)
+            distance = torch.cdist(criterions, criterions, p=2).numpy()
+            similarity = 1 / (distance + 1 + 1e-6)
         return similarity
 
     def gen_cluster(self, similarity: np.array, n_clusters: int=None):
@@ -552,9 +574,11 @@ def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
 
     trainer_cfg = deepcopy(config.trainer)
     trainer_cfg.gpus = [local_rank]
-    trainer_cfg.max_epochs = 1
+    trainer_cfg.max_epochs = finetune_epoch
     if load_from_parent and parent_ckpt_path:
         trainer_cfg.resume_from_checkpoint = parent_ckpt_path
+        ckpt_epoch = torch.load(parent_ckpt_path, map_location='cpu')['epoch']
+        trainer_cfg.max_epochs = finetune_epoch + ckpt_epoch
     
     callbacks = init_callbacks(config)
     logger = init_logger(config)
