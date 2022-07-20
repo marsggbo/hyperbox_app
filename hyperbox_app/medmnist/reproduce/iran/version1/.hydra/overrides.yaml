@@ -1,4 +1,0 @@
-- only_test=True
-- model.network_cfg.mask=/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/reproduce/iran/version0/mask_epoch_45.json
-- pretrained_weight='/home/xihe/xinhe/hyperbox_app/hyperbox_app/medmnist/reproduce/iran/version0/auc98.14_acc97.58.ckpt'
-- logger.wandb.offline=False
