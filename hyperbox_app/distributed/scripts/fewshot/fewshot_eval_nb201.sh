@@ -15,6 +15,7 @@ CUDA_VISIBLE_DEVICES=$gpu python -m hyperbox.run \
 hydra.searchpath=[file:///home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/configs] \
 trainer.limit_val_batches=${VB} \
 hydra.job.name=$name \
+++hydra.job.chdir=True \
 logger.wandb.name=$name \
 engine.supernet_mask_path_pattern=/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/fewshot_search_nb201_c10_grad_spectral_cluster_sp/2022-06-19_04-27-59/checkpoints/*json \
 engine.search_space_path=/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/networks/nasbench201/top1percent_models.json \
