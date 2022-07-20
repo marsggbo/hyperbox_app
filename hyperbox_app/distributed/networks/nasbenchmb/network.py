@@ -129,10 +129,9 @@ class NASBenchMBNet(BaseNASNetwork):
     def forward(self, x):
         self.features = []
         x = self.stem(x)
-        self.features.append(x.cpu().detach().numpy())
         for i, layer in enumerate(self.layers):
             x = layer(x)
-            self.features.append(x.cpu().detach().numpy())
+            self.features.append(x.detach())
         x = self.out(x)
         out = self.classifier(x.view(x.size(0), -1))
         return out

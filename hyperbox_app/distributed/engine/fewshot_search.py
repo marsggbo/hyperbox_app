@@ -12,6 +12,7 @@ import hydra
 import networkx as nx
 import numpy as np
 import skdim
+import wandb
 import torch
 import torch.multiprocessing as mp
 from sklearn.mixture import GaussianMixture
@@ -348,7 +349,7 @@ class FewshotSearch(BaseEngine):
             try:
                 name = f"{trainer.current_epoch}_{edge_key}_similarity"
                 x_labels = y_labels = list(range(len(similarity)))
-                wandb.log({name: wandb.plot.Heatmap(x_labels, y_labels, similarity)})
+                wandb.log({name: wandb.plots.HeatMap(x_labels, y_labels, similarity)})
             except Exception as e:
                 log.error(e)
             

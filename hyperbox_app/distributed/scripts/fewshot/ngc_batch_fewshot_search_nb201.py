@@ -12,10 +12,11 @@ parser.add_argument("--split-method", nargs="+", type=str, default=["mincut"])
 parser.add_argument("--similarity-method", nargs="+", type=str, default=["cosine"])
 parser.add_argument("--split-criterion", nargs="+", type=str, default=["ID", "ID"])
 parser.add_argument("--is-single-path", nargs="+", type=int, default=[1, 1])
-parser.add_argument("--to-sample-similar", nargs="+", type=int, default=[1])
+parser.add_argument("--to-sample-similar", nargs="+", type=int, default=[0])
 parser.add_argument("--load-from-parent", nargs="+", type=int, default=[1, 0])
 parser.add_argument("--ID-method", type=str, default='lid')
 parser.add_argument("--warmup-epochs", nargs="+", type=str, default=["[50,75,90,100]"])
+parser.add_argument("--finetune-epoch", type=int, default=50)
 parser.add_argument("--debug", action='store_true')
 parser.add_argument("--supernet-masks-path", type=str, default=None)
 parser.add_argument("--pt", action='store_true', help="print only")
@@ -74,10 +75,11 @@ for opt in opts:
     is_single_path = opt['is_single_path']
     to_sample_similar = opt['to_sample_similar']
     supernet_masks_path = opt['supernet_masks_path']
+    similarity_method = opt['similarity_method']
     ID_method = opt['ID_method']
     load_from_parent = opt['load_from_parent']
     warmup_epochs = opt['warmup_epochs']
-    finetune_epoch = 100
+    finetune_epoch = opt['finetune_epoch']
     if args.debug:
         finetune_epoch = 1
         warmup_epochs = "[1,2]"
@@ -86,7 +88,8 @@ for opt in opts:
     num_splits = 2**len(warmup_epochs.split(','))
     is_sp = 'sp' if is_single_path else 'fp'
     is_loadparent = 'loadparent' if load_from_parent else 'notloadparent'
-    finetune_epoch = 50 if load_from_parent else 100
+    if load_from_parent:
+        finetune_epoch /= 2
     if supernet_masks_path is None:
         supernet_masks_path = 'null'
         suffix = f"nb201_c10_{split_criterion}_{split_method}_{is_sp}_{num_splits}splits_{is_loadparent}_{num_subnets}nets_sgdlr{lr}"
@@ -101,6 +104,7 @@ for opt in opts:
     others += f' engine.is_single_path={is_single_path}'
     others += f' engine.warmup_epochs={warmup_epochs}' 
     others += f' engine.finetune_epoch={finetune_epoch}'
+    others += f' ++engine.similarity_method={similarity_method}'
     others += f' ++engine.ID_method={ID_method}'
     others += f' ++engine.load_from_parent={load_from_parent}'
     others += f' ++engine.supernet_masks_path={supernet_masks_path}'
@@ -129,3 +133,4 @@ if not args.pt:
 assert num_cmds == len(opts), f"num_cmds ({num_cmds}) != #opts ({len(opts)})"
 print(f"{num_gpus} gpus found")
 print(f"{num_cmds} commands to run")
+print(options)
