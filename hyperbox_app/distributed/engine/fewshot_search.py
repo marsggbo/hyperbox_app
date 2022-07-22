@@ -69,6 +69,10 @@ class FewshotSearch(BaseEngine):
         self.mutator = self.model.mutator
         self.supernet_masks_path = supernet_masks_path # e.g., /path/to/*json
 
+        network_name = cfg.model.network_cfg._target_.split('.')[-1]
+        project = f"{network_name}_{split_criterion}_{split_method}_{similarity_method}"
+        wandb.init(project=project)
+
     def run(self):
         trainer = self.trainer
         model = self.model
@@ -133,7 +137,7 @@ class FewshotSearch(BaseEngine):
             except Exception as e:
                 log.info('Already spawned')
                 raise e
-            group_size = torch.cuda.device_count() * 2
+            group_size = torch.cuda.device_count()
             num_processes = 0
             for idx, supernet_setting in enumerate(all_supernet_settings[level]):
                 parent_trainer, parent_model, supernet_masks, best_edge_key = supernet_setting
@@ -191,7 +195,7 @@ class FewshotSearch(BaseEngine):
                 log.info('Already spawned')
                 raise e
             model.share_memory()
-            group_size = torch.cuda.device_count() * 2
+            group_size = torch.cuda.device_count()
             num_processes = len(supernet_masks_path)
             rank_id_list = list(range(num_processes))
             list_of_groups = zip(*(iter(rank_id_list),) * group_size)
@@ -269,6 +273,11 @@ class FewshotSearch(BaseEngine):
         split_method = hparams.get('split_method', 'spectral_cluster')
         ID_method = hparams.get('ID_method', 'lid')
         similarity_method = hparams.get('similarity_method', 'cosine')
+
+        # Todo: implement the following methods
+        if split_criterion=='random':
+            return self.split_supernet_random(
+                trainer, model, datamodule, config, supernet_mask, hparams)
 
         # best_value = -1e10 if split_method == 'spectral_cluster' else 1e10
         best_value = 0
@@ -410,6 +419,13 @@ class FewshotSearch(BaseEngine):
                 crt_mask[best_edge_key][indices[idx]] = 1
             supernet_masks.append(crt_mask)
         return supernet_masks, best_infos, best_edge_key
+
+    # Todo: implement the following methods
+    def split_supernet_random(
+        self, trainer, model, datamodule, config,
+        supernet_mask: dict, hparams: dict=None
+    ):
+        pass
 
     def finetune(
         self,
