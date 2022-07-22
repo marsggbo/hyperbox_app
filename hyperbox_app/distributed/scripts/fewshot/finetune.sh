@@ -15,6 +15,6 @@ hydra.searchpath=[pkg://hyperbox_app.distributed.configs] \
 experiment=finetune.yaml \
 hydra.job.name=$name \
 logger.wandb.name=$name \
-trainer.gpus=$gpuNum \
+trainer.gpus=$gpu \
 model.network_cfg.mask=$mask \
 $others

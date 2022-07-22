@@ -20,6 +20,7 @@ parser.add_argument("--finetune_epoch", type=int, default=50)
 parser.add_argument("--debug", action='store_true')
 parser.add_argument("--supernet_masks_path", type=str, default=None)
 parser.add_argument("--network_cfg", type=str, default='nb201') # mbv3, nbmb, spos
+parser.add_argument("--datamodule", type=str, default='cifar10_datamodule') # cifar100_datamodule
 parser.add_argument("--other_cmds", type=str, default=None)
 parser.add_argument("--pt", action='store_true', help="print only")
 args = parser.parse_args()
@@ -83,7 +84,9 @@ for opt in opts:
     warmup_epochs = opt['warmup_epochs']
     finetune_epoch = opt['finetune_epoch']
     network_cfg = opt['network_cfg']
+    datamodule = opt['datamodule']
     other_cmds = opt['other_cmds']
+    datamodule_map = {'cifar10_datamodule': 'c10', 'cifar100_datamodule': 'c100'}
     if args.debug:
         finetune_epoch = 1
         warmup_epochs = "[1,2]"
@@ -96,7 +99,8 @@ for opt in opts:
         finetune_epoch //= 2
     if supernet_masks_path is None:
         supernet_masks_path = 'null'
-        suffix = f"{network_cfg}_c10_{split_criterion}_{split_method}_{is_sp}_{num_splits}splits_{is_loadparent}_{num_subnets}nets_sgdlr{lr}"
+        dataset = datamodule_map[datamodule]
+        suffix = f"{network_cfg}_{dataset}_{split_criterion}_{split_method}_{is_sp}_{num_splits}splits_{is_loadparent}_{num_subnets}nets_sgdlr{lr}"
     else:
         suffix = 'finetune_' + supernet_masks_path.split('/runs/')[-1].split('/')[0]
     if to_sample_similar:
@@ -115,16 +119,20 @@ for opt in opts:
     others += f" ++model.num_subnets={num_subnets}"
     others += f" ++model.optimizer_cfg.lr={lr}"
     others += f" model/network_cfg={network_cfg}"
+    others += f" datamodule={datamodule}"
     others += f" ++model.mutator_cfg.to_sample_similar={to_sample_similar}"
     if other_cmds is not None:
         others += f" {other_cmds}"
-    if split_criterion == 'ID':
-        if not is_single_path:
-            others += f" engine.repeat_num=50"
-        else:
-            others += f" engine.repeat_num=150"
+    if not is_single_path:
+        repeat_num = 50
+    else:
+        repeat_num = 150
     if args.debug:
+        repeat_num = 1
         others += " trainer.fast_dev_run=True"
+    if split_criterion == 'grad':
+        repeat_num = 100
+    others += f" engine.repeat_num={repeat_num}"
     cmd = f'''bash ./scripts/fewshot/fewshot_search_nb201.sh [{gpu_id}] {suffix} "{others}"  & sleep 10'''
     
     if i == len(opts)-1:
