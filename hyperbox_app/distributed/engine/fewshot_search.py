@@ -71,6 +71,9 @@ class FewshotSearch(BaseEngine):
 
         network_name = cfg.model.network_cfg._target_.split('.')[-1]
         project = f"{network_name}_{split_criterion}_{split_method}_{similarity_method}"
+        offline = cfg.logger.wandb.get('offline', False)
+        if offline:
+            os.environ["WANDB_MODE"] = "offline"
         wandb.init(project=project)
 
     def run(self):
