@@ -5,6 +5,7 @@ from glob import glob
 
 import numpy as np
 import torch
+import torch.multiprocessing as mp
 from hydra.utils import instantiate
 from hyperbox.engine.base_engine import BaseEngine
 from hyperbox.utils.logger import get_logger
@@ -100,13 +101,6 @@ class FewshotEval(BaseEngine):
         for space_idx in self.search_space_to_eval:
             path = self.ckpts_path[space_idx]
             # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_1net_1batch/2022-05-17_00-14-09/checkpoints/last.ckpt'
-            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_1net_1batch/2022-04-27_09-41-26/checkpoints/last.ckpt'
-            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_5net_1batch/2022-04-27_12-28-35/checkpoints/last.ckpt'
-            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_8net_1batch/2022-04-27_23-57-53/checkpoints/last.ckpt'
-            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_16net_1batch/2022-04-28_05-43-05/checkpoints/last.ckpt'
-            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_32net_1batch/2022-04-28_06-04-10/checkpoints/last.ckpt'
-            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_origin_fairnas_5net_1batch/2022-04-28_06-04-29/checkpoints/last.ckpt'
-            # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/search_nbmbnet_gpunum1_12net_1batch/2022-05-12_02-38-38/checkpoints/last.ckpt'
             self.model.network.load_from_ckpt(path)
             num = len(self.search_space_to_eval[space_idx])
             for i in range(num):
@@ -118,7 +112,13 @@ class FewshotEval(BaseEngine):
                 if arch not in self.performance_history:
                     self.performance_history[arch] = {'proxy': 0, 'real': 0, 'mask': mask}
                 self.performance_history[arch]['proxy'] = metrics
-                real = self.model.network.query_by_key()
+                datamodule = self.datamodule.__class__.__name__
+                dataset = 'cifar10'
+                if datamodule.lower() == 'cifar10datamodule':
+                    dataset = 'cifar10'
+                elif datamodule.lower() == 'cifar100datamodule':
+                    dataset = 'cifar100'
+                real = self.model.network.query_by_key(dataset=dataset)
                 self.performance_history[arch]['real'] = real
                 log.info(f"{self.idx}-{arch}: {metrics} {real}")
                 self.idx += 1
