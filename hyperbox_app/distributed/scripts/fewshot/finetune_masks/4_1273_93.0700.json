@@ -1,0 +1,44 @@
+{
+    "0_1": [
+        false,
+        false,
+        true,
+        false,
+        false
+    ],
+    "0_2": [
+        false,
+        false,
+        false,
+        false,
+        true
+    ],
+    "0_3": [
+        false,
+        false,
+        false,
+        false,
+        true
+    ],
+    "1_2": [
+        false,
+        true,
+        false,
+        false,
+        false
+    ],
+    "1_3": [
+        false,
+        false,
+        false,
+        true,
+        false
+    ],
+    "2_3": [
+        false,
+        false,
+        false,
+        true,
+        false
+    ]
+}

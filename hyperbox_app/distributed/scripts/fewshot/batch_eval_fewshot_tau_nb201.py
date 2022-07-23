@@ -25,7 +25,7 @@ for idx, path in enumerate(paths[:]):
     others += f' engine.supernet_mask_path_pattern={supernet_mask_path_pattern}'
     others += f' engine.ckpts_path_pattern={ckpts_path_pattern}'
     if 'c100_' in path:
-        others += ' model.network_cfg.num_classes=100'
+        others += ' ++model.network_cfg.num_classes=100'
     cmd = f'''bash ./scripts/fewshot/fewshot_eval_nb201.sh {gpu_id} {valid_batches} {suffix} "{others}"  & sleep 10'''
     # cmd = template.format(cfg_path, gpu_id, valid_batches, suffix, ckpt, others)
     i += 1
