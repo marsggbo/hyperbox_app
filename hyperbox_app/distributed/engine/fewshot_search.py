@@ -28,7 +28,7 @@ from hyperbox_app.distributed.networks.nasbench201.nasbench201 import \
 from hyperbox_app.distributed.networks.nasbenchmb import NASBenchMBNet
 from hyperbox_app.distributed.utils.twonn import twonn1, twonn2
 from ipdb import set_trace
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, OmegaConf, ListConfig
 from pytorch_lightning.callbacks import Callback
 from scipy.stats import kendalltau
 from skdim.id import ESS
@@ -112,7 +112,7 @@ class FewshotSearch(BaseEngine):
                         # split current search space (supernet)
                         splitted_supernet_masks, best_infos, best_edge_key = self.split_supernet(
                             trainer, model, datamodule, config,
-                            supernet_mask, self.hparams
+                            supernet_mask, level, self.hparams
                         )
                         new_supernet_settings.append([trainer, model, deepcopy(splitted_supernet_masks), best_edge_key])
 
@@ -263,7 +263,7 @@ class FewshotSearch(BaseEngine):
 
     def split_supernet(
         self, trainer, model, datamodule, config,
-        supernet_mask: dict, hparams: dict=None
+        supernet_mask: dict, level, hparams: dict=None
     ):
         '''
         Split the supernet into sub-supernets.
@@ -276,13 +276,15 @@ class FewshotSearch(BaseEngine):
         split_criterion = hparams.get('split_criterion', 'grad')
         split_method = hparams.get('split_method', 'spectral_cluster')
         split_num = hparams.get('split_num', 2)
+        if isinstance(split_num, (list, ListConfig)):
+            split_num = split_num[level]
         ID_method = hparams.get('ID_method', 'lid')
         similarity_method = hparams.get('similarity_method', 'cosine')
 
         # Todo: implement the following methods
         if split_criterion=='random':
             return self.split_supernet_random(
-                trainer, model, datamodule, config, supernet_mask, hparams)
+                trainer, model, datamodule, config, supernet_mask, level, hparams)
 
         # best_value = -1e10 if split_method == 'spectral_cluster' else 1e10
         best_value = 0
@@ -431,7 +433,7 @@ class FewshotSearch(BaseEngine):
     # Todo: implement the following methods
     def split_supernet_random(
         self, trainer, model, datamodule, config,
-        supernet_mask: dict, hparams: dict=None
+        supernet_mask: dict, level, hparams: dict=None
     ):
         edge_keys = list(supernet_mask.keys())
         best_edge_key = random.choice(edge_keys)
@@ -439,6 +441,8 @@ class FewshotSearch(BaseEngine):
         base_mask = deepcopy(supernet_mask)
         supernet_masks = []
         split_num = hparams.get('split_num', 2)
+        if isinstance(split_num, (list, ListConfig)):
+            split_num = split_num[level]
         partition = list(range(len(base_mask[best_edge_key])))
         num_partition = len(partition)
         random.shuffle(partition)
@@ -645,7 +649,7 @@ def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
 
 
 def mincut(sim_avg, split_num): # note: this is not strictly mincut, but it's fine for 201
-    assert split_num == 2, 'always split into 2 groups for 201 (when using gradient to split)'
+    # assert split_num == 2, 'always split into 2 groups for 201 (when using gradient to split)'
     assert isinstance(sim_avg, np.ndarray)
     sim_avg = sim_avg - np.tril(sim_avg)
     best_sim, best_groups, best_edge_score = -1*float('inf'), [], 0
