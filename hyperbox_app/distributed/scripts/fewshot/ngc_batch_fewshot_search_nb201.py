@@ -1,19 +1,20 @@
-from glob import glob
+import itertools
 import os
 import sys
-import torch
-import itertools
-
 from argparse import ArgumentParser
+from glob import glob
 
+import numpy as np
+import torch
 
 parser = ArgumentParser()
 parser.add_argument("--split_method", nargs="+", type=str, default=["mincut"])
 parser.add_argument("--similarity_method", nargs="+", type=str, default=["cosine"])
 parser.add_argument("--split_criterion", nargs="+", type=str, default=["ID", "ID"])
-parser.add_argument("--is_single_path", nargs="+", type=int, default=[1, 1])
+parser.add_argument("--split_num", type=str, default="[2]")
+parser.add_argument("--is_single_path", nargs="+", type=int, default=[0, 0])
 parser.add_argument("--to_sample_similar", nargs="+", type=int, default=[0])
-parser.add_argument("--load_from_parent", nargs="+", type=int, default=[1, 0])
+parser.add_argument("--load_from_parent", nargs="+", type=int, default=[1])
 parser.add_argument("--ID_method", type=str, default='lid')
 parser.add_argument("--warmup_epochs", nargs="+", type=str, default=["[50,75,90,100]"])
 parser.add_argument("--finetune_epoch", type=int, default=50)
@@ -75,6 +76,7 @@ for opt in opts:
 
     split_criterion = opt['split_criterion']
     split_method = opt['split_method']
+    split_num = opt['split_num']
     is_single_path = opt['is_single_path']
     to_sample_similar = opt['to_sample_similar']
     supernet_masks_path = opt['supernet_masks_path']
@@ -92,7 +94,12 @@ for opt in opts:
         warmup_epochs = "[1,2]"
 
     gpu_id = i%num_gpus
-    num_splits = 2**len(warmup_epochs.split(','))
+
+    if len(eval(split_num)) == 1:
+        base_val = eval(split_num)[0]
+        num_splits = base_val**len(warmup_epochs.split(','))
+    else:
+        num_splits = np.prod(eval(split_num))
     is_sp = 'sp' if is_single_path else 'fp'
     is_loadparent = 'loadparent' if load_from_parent else 'notloadparent'
     if load_from_parent:
@@ -109,6 +116,7 @@ for opt in opts:
     others = "ipdb_debug=False logger.wandb.offline=True trainer.strategy=null trainer.limit_val_batches=0"
     others += f' engine.split_criterion={split_criterion}'
     others += f' engine.split_method={split_method}'
+    others += f' ++engine.split_num={split_num}'
     others += f' engine.is_single_path={is_single_path}'
     others += f' engine.warmup_epochs={warmup_epochs}' 
     others += f' engine.finetune_epoch={finetune_epoch}'
@@ -130,6 +138,7 @@ for opt in opts:
     if args.debug:
         repeat_num = 1
         others += " trainer.fast_dev_run=True"
+        suffixe = 'debug_' + suffix
     if split_criterion == 'grad':
         repeat_num = 100
     others += f" engine.repeat_num={repeat_num}"
