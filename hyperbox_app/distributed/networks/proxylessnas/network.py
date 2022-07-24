@@ -86,13 +86,17 @@ class ProxylessNAS(BaseNASNetwork):
         self.set_bn_param(momentum=bn_param[0], eps=bn_param[1])
 
     def forward(self, x):
+        self.features = []
         x = self.first_conv(x)
         for block in self.blocks:
             x = block(x)
+            self.features.append(x.detach())
         x = self.feature_mix_layer(x)
+        self.features.append(x.detach())
         x = self.global_avg_pooling(x)
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
+        self.features.append(x.detach())
         return x
 
     def set_bn_param(self, momentum, eps):

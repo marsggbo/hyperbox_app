@@ -43,7 +43,7 @@ class MobileInvertedResidualBlock(nn.Module):
         # TODO: unify idx format
         if not isinstance(idx, int):
             idx = torch.nonzero(idx == 1)
-        if self.op_candidates_list[idx].is_zero_layer():
+        if len(idx)==1 and self.op_candidates_list[idx].is_zero_layer():
             res = x
         elif self.shortcut is None:
             res = out
