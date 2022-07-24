@@ -53,6 +53,7 @@ class FewshotSearch(BaseEngine):
         finetune_epoch: int=10,
         load_from_parent: bool=False,
         split_criterion: str='ID', # 'ID' or 'grad'
+        split_num: int=2,
         ID_method: str='lid', # 'lid' or 'ess' or 'mle' or 'twonn'
         split_method: str='spectral_cluster', # 'spectral_cluster' or 'mincut'
         similarity_method: str='cosine', # 'corre' or 'cosine'
@@ -274,6 +275,7 @@ class FewshotSearch(BaseEngine):
         repeat_num = hparams.get('repeat_num', 1)
         split_criterion = hparams.get('split_criterion', 'grad')
         split_method = hparams.get('split_method', 'spectral_cluster')
+        split_num = hparams.get('split_num', 2)
         ID_method = hparams.get('ID_method', 'lid')
         similarity_method = hparams.get('similarity_method', 'cosine')
 
@@ -290,6 +292,9 @@ class FewshotSearch(BaseEngine):
         # enumerate all edges in the supernet
         for edge_key in edge_keys:
             if not base_mask[edge_key].all():
+                # if an edge has already been split, skip it
+                # [1,1,1,1,1] indicates that the edge has not been split
+                # [1,0,1,0,0] indicates that the edge has been split
                 continue
             num_ops = len(base_mask[edge_key])
             # enumerate all enabled operations of the current edge
@@ -367,7 +372,7 @@ class FewshotSearch(BaseEngine):
             
             if split_method == 'GM':
                 criterions = np.stack([info['criterion'] for info in infos.values()])
-                gm = GaussianMixture(n_components=2, random_state=0).fit(criterions)
+                gm = GaussianMixture(n_components=split_num, random_state=0).fit(criterions)
                 labels = np.array(gm.predict(criterions))
                 u_labels = np.unique(labels)
                 cut_value = 0.
@@ -385,7 +390,7 @@ class FewshotSearch(BaseEngine):
                     log.info(f"Edge {edge_key}: Best cluster={best_partition} with cut value {best_value:4f}")   
             elif split_method == 'spectral_cluster':
                 log.info("Split the supernet into clusters...")
-                cluster, cluster_sim_avg = self.gen_cluster(similarity, 2)
+                cluster, cluster_sim_avg = self.gen_cluster(similarity, split_num)
                 log.info(f"Cluster={cluster} with averaged similarity {cluster_sim_avg:4f}")
 
                 if cluster_sim_avg > best_value:
@@ -396,7 +401,7 @@ class FewshotSearch(BaseEngine):
                     best_infos = infos
                     log.info(f"Edge {edge_key}: Best cluster={best_partition} with averaged similarity {best_value:4f}")
             elif split_method == 'mincut':
-                cut_value, partition = mincut(similarity, 2)
+                cut_value, partition = mincut(similarity, split_num)
                 if cut_value > best_value:
                     best_value = cut_value
                     best_edge_key = edge_key
@@ -428,7 +433,27 @@ class FewshotSearch(BaseEngine):
         self, trainer, model, datamodule, config,
         supernet_mask: dict, hparams: dict=None
     ):
-        pass
+        edge_keys = list(supernet_mask.keys())
+        best_edge_key = random.choice(edge_keys)
+
+        base_mask = deepcopy(supernet_mask)
+        supernet_masks = []
+        split_num = hparams.get('split_num', 2)
+        partition = list(range(len(base_mask[best_edge_key])))
+        num_partition = len(partition)
+        random.shuffle(partition)
+
+        split_indices = np.random.choice(list(range(1,num_partition-1)), split_num-1, replace=False)
+        split_indices = sorted(split_indices)
+        best_partition = [partition[i:j] for i, j in zip([0]+split_indices, split_indices+[None])]
+
+        for indices in best_partition:
+            crt_mask = deepcopy(base_mask)
+            crt_mask[best_edge_key] = torch.zeros_like(base_mask[best_edge_key])
+            for idx in range(len(indices)):
+                crt_mask[best_edge_key][indices[idx]] = 1
+            supernet_masks.append(crt_mask)
+        return supernet_masks, None, best_edge_key
 
     def finetune(
         self,
