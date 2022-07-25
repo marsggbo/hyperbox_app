@@ -223,9 +223,12 @@ class EvolutionMutator(RandomMutator):
         log.debug('random_num = {}'.format(len(self.candidates)))
 
     def is_subnet_in_supernet(self, subnet_mask, supernet_mask):
-        enc_supernet = torch.vstack([v.bool() for v in supernet_mask.values()])
-        enc_subnet = torch.vstack([v.bool() for v in subnet_mask.values()])
-        return (torch.bitwise_or(enc_supernet, enc_subnet)==enc_supernet).all()
+        for key in subnet_mask.keys():
+            sub_val = subnet_mask[key].bool()
+            sup_val = supernet_mask[key].bool()
+            if not (torch.bitwise_or(sub_val, sup_val)==sup_val).all():
+                return False
+        return True
 
     def is_legal(self, arch: dict):
         '''
