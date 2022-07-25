@@ -41,7 +41,7 @@ for idx, expPath in enumerate(expPaths):
     OmegaConf.save(cfg, tmp_cfg_path+'/config.yaml')
 
     gpu_id = idx % num_gpus
-    suffix = expPath.split('runs/')[-1].split('/2022-')[0]
+    suffix = expPath.split('runs/')[-1].replace('/2022', '_2022')
     lvb = 1.0 # trainer.limit_val_batches
     others = ' logger.wandb.offline=True'
     others = f' ++engine.supernet_mask_path_pattern={expPath}/check*/*mask.json'
