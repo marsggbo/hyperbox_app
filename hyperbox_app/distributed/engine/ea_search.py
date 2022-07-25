@@ -28,7 +28,10 @@ def query_api(self, arch):
             if self.is_subnet_in_supernet(arch, supernet_mask):
                 ckpt_path = self.supernet_mask_paths[i].replace('mask.json', 'latest.ckpt')
                 self.model.load_from_ckpt(ckpt_path)
-    real = self.model.query_by_key(self.query_key)
+    if hasattr(self.model, 'query_by_key'):
+        real = self.model.query_by_key(self.query_key)
+    else:
+        real = -1
     proxy = self.__dict__['trainer'].validate(
         model=self.__dict__['pl_model'], datamodule=self.__dict__['datamodule'], verbose=False)[0][self.metric_key]
     encoding = self.arch2encoding(arch)
