@@ -60,6 +60,7 @@ class FewshotSearch(BaseEngine):
         is_single_path: bool=False,
         repeat_num: int=1,
         supernet_masks_path: str=None,
+        global_pool_path: str=None,
     ):
         super().__init__(trainer, model, datamodule, cfg)
         datamodule_cfg = deepcopy(self.cfg.datamodule)
@@ -69,6 +70,7 @@ class FewshotSearch(BaseEngine):
         self.dataloader = datamodule.train_dataloader()
         self.mutator = self.model.mutator
         self.supernet_masks_path = supernet_masks_path # e.g., /path/to/*json
+        self.global_pool_path = global_pool_path # e.g., /path/to/*pt
 
         network_name = cfg.model.network_cfg._target_.split('.')[-1]
         project = f"{network_name}_{split_criterion}_{split_method}_{similarity_method}"
@@ -83,7 +85,28 @@ class FewshotSearch(BaseEngine):
         datamodule = self.datamodule
         config = self.cfg
 
-        if self.supernet_masks_path is None:
+        if self.global_pool_path is not None:
+            global_pools = torch.load(self.global_pool_path)
+            labels = np.array([v['label'] for v in global_pools.values()])
+            processes = []
+            # finetune all supernets
+            try:
+                mp.set_start_method('spawn', force=True)
+                log.info('Start spawning all supernets')
+            except Exception as e:
+                log.info('Already spawned')
+                raise e
+            for rank, label in enumerate(set(labels)):
+                indices = np.where(labels == label)[0]
+                mask_pool = [global_pools[str(i)]['mask'] for i in indices]
+                finetune_epoch = self.hparams.get('finetune_epoch', 20)
+                p = mp.Process(target=finetune_mp_from_pool, args=(config, rank, mask_pool, finetune_epoch))
+                p.start()
+                processes.append(p)
+            for p in processes:
+                p.join()
+            log.info('Finished finetuning all supernets of the pool')
+        elif self.supernet_masks_path is None:
             # split search space
             split_mask_history = {}
             supernet_mask = {m.key: torch.ones_like(m.mask) for m in self.mutator.mutables}
@@ -815,3 +838,55 @@ def get_splitted_grads(model, mutator, split_edge_key, crt_mask):
         params += list(model.classifier.parameters())
     param_grads = [p.grad for p in params if p.grad is not None]
     return param_grads
+
+
+def sample_func_from_pool(self):
+    assert hasattr(self, 'mask_pool'), 'No mask_pool found'
+    result = random.choice(self.mask_pool)
+    for key in result:
+        result[key] = torch.tensor(result[key]).bool()
+    return result
+
+
+def finetune_mp_from_pool(config, rank: int, mask_pool: dict, finetune_epoch: int,
+        load_from_parent: bool=False, parent_ckpt_path: str=None, flag: str=None):
+    log_mp = get_logger(f"finetune_mp_{rank}", is_rank_zero=False)
+    pid = os.getpid()
+    num_gpus = torch.cuda.device_count()
+    local_rank = rank % num_gpus
+    log_mp.info(f'start finetune in process {pid}, local_rank {local_rank} global_rank {rank}')
+    log_mp.info(f'pool size={len(mask_pool)}')
+    # log_mp.info(f'start finetune in process {pid}, global rank {rank}')
+    datamodule_cfg = config['datamodule']
+    datamodule_cfg.num_workers = 2
+    datamodule = instantiate(config["datamodule"])
+
+    model_cfg = deepcopy(config.model)
+    model = instantiate(model_cfg, _recursive_=False)
+
+    mutator = model.mutator
+    mutator.mask_pool = deepcopy(mask_pool)
+    mutator.sample_func = types.MethodType(sample_func_from_pool, mutator)
+
+    trainer_cfg = deepcopy(config.trainer)
+    trainer_cfg.gpus = [local_rank]
+    trainer_cfg.max_epochs = finetune_epoch
+    if load_from_parent and parent_ckpt_path:
+        trainer_cfg.resume_from_checkpoint = parent_ckpt_path
+        ckpt_epoch = torch.load(parent_ckpt_path, map_location='cpu')['epoch']
+        trainer_cfg.max_epochs = finetune_epoch + ckpt_epoch
+    
+    callbacks = init_callbacks(config)
+    logger = init_logger(config)
+    # trainer = instantiate(trainer_cfg, callbacks=callbacks, logger=logger, _convert_="partial")
+    trainer = instantiate(trainer_cfg, callbacks=callbacks, logger=[], _convert_="partial")
+    trainer.fit(model, datamodule)
+    results = trainer.callback_metrics
+    log_mp.info(f"pid={pid} Fintune Done: [{rank}]-th sub-supernet \nresults: {results}")
+    
+    flag = f'global_cluster_rank[{rank}]'
+    ckpt_path = os.path.join(os.getcwd(), f'checkpoints/{flag}_latest.ckpt')
+    trainer.save_checkpoint(f"{ckpt_path}")
+    log_mp.info(f"pid={pid} Saved [{rank}]-th sub-Supernet checkpoint to {ckpt_path}")
+    return trainer, model
+

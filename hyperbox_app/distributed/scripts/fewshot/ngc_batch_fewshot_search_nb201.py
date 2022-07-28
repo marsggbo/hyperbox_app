@@ -7,6 +7,8 @@ from glob import glob
 import numpy as np
 import torch
 
+global_pool_path_ = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/networks/nasbench201/all_mask_IDs_dbscan.pt'
+
 parser = ArgumentParser()
 parser.add_argument("--split_method", nargs="+", type=str, default=["mincut"])
 parser.add_argument("--similarity_method", nargs="+", type=str, default=["cosine"])
@@ -15,6 +17,7 @@ parser.add_argument("--split_num", type=str, default="[2]")
 parser.add_argument("--is_single_path", nargs="+", type=int, default=[0, 0])
 parser.add_argument("--to_sample_similar", nargs="+", type=int, default=[0])
 parser.add_argument("--load_from_parent", nargs="+", type=int, default=[1])
+parser.add_argument("--global_pool_path", type=str, default=None)
 parser.add_argument("--ID_method", type=str, default='lid')
 parser.add_argument("--warmup_epochs", nargs="+", type=str, default=["[50,75,90,100]"])
 parser.add_argument("--finetune_epoch", type=int, default=50)
@@ -83,6 +86,7 @@ for opt in opts:
     similarity_method = opt['similarity_method']
     ID_method = opt['ID_method']
     load_from_parent = opt['load_from_parent']
+    global_pool_path = opt['global_pool_path']
     warmup_epochs = opt['warmup_epochs']
     finetune_epoch = opt['finetune_epoch']
     network_cfg = opt['network_cfg']
@@ -101,9 +105,11 @@ for opt in opts:
     is_loadparent = 'loadparent' if load_from_parent else 'notloadparent'
     if load_from_parent:
         finetune_epoch //= 2
-    if supernet_masks_path is None:
+    dataset = datamodule_map[datamodule]
+    if global_pool_path:
+        suffix = f"{network_cfg}_{dataset}_global_cluster_sgdlr{lr}"
+    elif supernet_masks_path is None:
         supernet_masks_path = 'null'
-        dataset = datamodule_map[datamodule]
         suffix = f"{network_cfg}_{dataset}_{split_criterion}_{split_method}_{is_sp}_{num_splits}splits_{is_loadparent}_{num_subnets}nets_sgdlr{lr}"
     else:
         suffix = 'finetune_' + supernet_masks_path.split('/runs/')[-1].split('/')[0]
@@ -129,6 +135,7 @@ for opt in opts:
     others += f' engine.split_criterion={split_criterion}'
     others += f' engine.split_method={split_method}'
     others += f' ++engine.split_num={split_num}'
+    others += f' ++engine.global_pool_path={global_pool_path}'
     others += f' engine.is_single_path={is_single_path}'
     others += f' engine.warmup_epochs={warmup_epochs}' 
     others += f' engine.finetune_epoch={finetune_epoch}'
