@@ -151,13 +151,13 @@ class FewshotSearch(BaseEngine):
             processes = []
             parent_ckpt_paths = []
             global_rank = 0
+            load_from_parent = self.hparams.get('load_from_parent', False)
             for idx, supernet_setting in enumerate(all_supernet_settings[level]):
                 parent_trainer, parent_model, supernet_masks, best_edge_key = supernet_setting
                 for rank, supernet_mask in enumerate(supernet_masks):
                     flag = f"level[{level}]-[{idx}-{rank}]-Edge[{best_edge_key}]-subSupernet"
                     log.info(f"Fintune {flag} with mask {supernet_mask}")
                     
-                    load_from_parent = self.hparams.get('load_from_parent', False)
                     parent_ckpt_path = f'{os.getcwd()}/temp_{idx}_{rank}.ckpt'
                     parent_ckpt_paths.append(parent_ckpt_path)
                     if load_from_parent:
@@ -277,7 +277,10 @@ class FewshotSearch(BaseEngine):
         split_method = hparams.get('split_method', 'spectral_cluster')
         split_num = hparams.get('split_num', 2)
         if isinstance(split_num, (list, ListConfig)):
-            split_num = split_num[level]
+            if len(split_num) == 1:
+                split_num = split_num[0]
+            else:
+                split_num = split_num[level]
         ID_method = hparams.get('ID_method', 'lid')
         similarity_method = hparams.get('similarity_method', 'cosine')
 
@@ -439,10 +442,16 @@ class FewshotSearch(BaseEngine):
         best_edge_key = random.choice(edge_keys)
 
         base_mask = deepcopy(supernet_mask)
+        while not base_mask[best_edge_key].all():
+            log.info(f"{best_edge_key} has been split. select another edge...")
+            best_edge_key = random.choice(edge_keys)
         supernet_masks = []
         split_num = hparams.get('split_num', 2)
         if isinstance(split_num, (list, ListConfig)):
-            split_num = split_num[level]
+            if len(split_num) == 1:
+                split_num = split_num[0]
+            else:
+                split_num = split_num[level]
         partition = list(range(len(base_mask[best_edge_key])))
         num_partition = len(partition)
         random.shuffle(partition)
@@ -651,20 +660,44 @@ def finetune_mp(config, rank: int, mask_path: str, load_from_parent: bool,
 def mincut(sim_avg, split_num): # note: this is not strictly mincut, but it's fine for 201
     # assert split_num == 2, 'always split into 2 groups for 201 (when using gradient to split)'
     assert isinstance(sim_avg, np.ndarray)
-    sim_avg = sim_avg - np.tril(sim_avg)
-    best_sim, best_groups, best_edge_score = -1*float('inf'), [], 0
-    for opid1 in range(sim_avg.shape[0]):
-        for opid2 in range(opid1 + 1, sim_avg.shape[0]):
-            group1 = np.array([opid1, opid2]) # always 2
-            group2 = np.setdiff1d(np.array(list(range(sim_avg.shape[0]))), group1)
-            sim = sim_avg[group1[0], group1[1]] + sim_avg[group2[0], group2[1]]
-            if group2.shape[0] > 2:
-                sim += sim_avg[group2[0], group2[2]] + sim_avg[group2[1], group2[2]]
-            if sim > best_sim:
-                best_sim = sim
-                best_groups = [group1, group2]
-                best_edge_score = sim_avg.sum() - best_sim # sim_avg should be upper-triangular
-    return best_edge_score, best_groups
+    if split_num==2:
+        sim_avg = sim_avg - np.tril(sim_avg)
+        best_sim, best_groups, best_edge_score = -1*float('inf'), [], 0
+        for opid1 in range(sim_avg.shape[0]):
+            for opid2 in range(opid1 + 1, sim_avg.shape[0]):
+                group1 = np.array([opid1, opid2]) # always 2
+                group2 = np.setdiff1d(np.array(list(range(sim_avg.shape[0]))), group1)
+                sim = sim_avg[group1[0], group1[1]] + sim_avg[group2[0], group2[1]]
+                if group2.shape[0] > 2:
+                    sim += sim_avg[group2[0], group2[2]] + sim_avg[group2[1], group2[2]]
+                if sim > best_sim:
+                    best_sim = sim
+                    best_groups = [group1, group2]
+                    best_edge_score = sim_avg.sum() - best_sim # sim_avg should be upper-triangular
+        return best_edge_score, best_groups
+    # Todo: implement mincut for 3 groups
+    elif split_num==3:
+        vertex = [i for i in range(sim_avg.shape[0])]
+        best_sim, best_groups, best_edge_score = -1*float('inf'), [], 0
+        sim = 0
+        for p in itertools.permutations(vertex):
+            p_list = list(p)
+            for i in range(1, len(vertex) // 2 + 1):
+                for j in range(i+2, len(vertex)-1):
+                    for edge in itertools.combinations(vertex, 2):
+                        if (edge[0] in p_list[0:i+1] and edge[1] in p_list[0:i+1]) or \
+                                (edge[0] in p_list[i+1:j+1] and edge[1] in p_list[i+1:j+1]) or \
+                                (edge[0] in p_list[j+1:] and edge[1] in p_list[j+1:]):
+                            group1 = np.array(p_list[0:i+1])
+                            group2 = np.array(p_list[i+1:j+1])
+                            group3 = np.array(p_list[j+1:])
+                            sim += sim_avg[edge[0], edge[1]]
+                    if sim > best_sim:
+                        best_sim = sim
+                        sim = 0
+                        best_groups = [group1, group2, group3]
+                        best_edge_score = sim_avg.sum() - best_sim # the smaller the better
+        return best_edge_score, best_groups
 
 
 def apply_along_axis(function, axis, x):

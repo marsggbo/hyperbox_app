@@ -102,7 +102,10 @@ class FewshotEval(BaseEngine):
         self.performance_history = {}
 
         for space_idx in self.search_space_to_eval:
-            path = self.ckpts_path[space_idx]
+            if len(self.ckpts_path) == 1:
+                path = self.ckpts_path[0]
+            else:
+                path = self.ckpts_path[space_idx]
             # path = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/logs/runs/normal_search_nb201/search_nb201_gpunum1_c10_1net_1batch/2022-05-17_00-14-09/checkpoints/last.ckpt'
             self.model.network.load_from_ckpt(path)
             num = len(self.search_space_to_eval[space_idx])

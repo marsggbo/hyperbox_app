@@ -89,9 +89,6 @@ for opt in opts:
     datamodule = opt['datamodule']
     other_cmds = opt['other_cmds']
     datamodule_map = {'cifar10_datamodule': 'c10', 'cifar100_datamodule': 'c100'}
-    if args.debug:
-        finetune_epoch = 1
-        warmup_epochs = "[1,2]"
 
     gpu_id = i%num_gpus
 
@@ -114,6 +111,21 @@ for opt in opts:
         suffix += '_samplesimilar'
 
     others = "ipdb_debug=False logger.wandb.offline=True trainer.strategy=null trainer.limit_val_batches=0"
+    if not is_single_path:
+        repeat_num = 50
+    else:
+        repeat_num = 150
+    if split_criterion == 'grad':
+        repeat_num = 100
+
+    if args.debug:
+        finetune_epoch = 1
+        warmup_epochs = "[1,2]"
+        repeat_num = 1
+        others += " trainer.fast_dev_run=True"
+        suffix = 'debug_' + suffix
+
+    others += f" engine.repeat_num={repeat_num}"
     others += f' engine.split_criterion={split_criterion}'
     others += f' engine.split_method={split_method}'
     others += f' ++engine.split_num={split_num}'
@@ -128,20 +140,10 @@ for opt in opts:
     others += f" ++model.optimizer_cfg.lr={lr}"
     others += f" model/network_cfg={network_cfg}"
     others += f" datamodule={datamodule}"
+    others += f" seed={i}"
     others += f" ++model.mutator_cfg.to_sample_similar={to_sample_similar}"
     if other_cmds is not None:
         others += f" {other_cmds}"
-    if not is_single_path:
-        repeat_num = 50
-    else:
-        repeat_num = 150
-    if args.debug:
-        repeat_num = 1
-        others += " trainer.fast_dev_run=True"
-        suffixe = 'debug_' + suffix
-    if split_criterion == 'grad':
-        repeat_num = 100
-    others += f" engine.repeat_num={repeat_num}"
     cmd = f'''bash ./scripts/fewshot/fewshot_search_nb201.sh [{gpu_id}] {suffix} "{others}"  & sleep 10'''
     
     if i == len(opts)-1:

@@ -46,10 +46,11 @@ for idx, expPath in enumerate(expPaths):
     others = ' logger.wandb.offline=True'
     others = f' ++engine.supernet_mask_path_pattern={expPath}/check*/*mask.json'
 
-    others += args.others
+    others += f" {args.others}"
 
     if args.debug:
         others += ' ipdb_debug=True trainer.fast_dev_run=True'
+        suffix = 'debug_' + suffix
 
     template = f'''
     bash scripts/fewshot/ea_search.sh [{gpu_id}] {suffix} {lvb} {tmp_cfg_path}  \
