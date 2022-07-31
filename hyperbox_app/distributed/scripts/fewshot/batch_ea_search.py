@@ -53,8 +53,8 @@ for idx, expPath in enumerate(expPaths):
         suffix = 'debug_' + suffix
 
     template = f'''
-    bash scripts/fewshot/ea_search.sh [{gpu_id}] {suffix} {lvb} {tmp_cfg_path}  \
-    "{others}" &
+    bash scripts/fewshot/ea_search.sh [{gpu_id}] {suffix} {lvb} {tmp_cfg_path} "{others}" &
+    sleep 6
     '''
     if (idx+1) % (num_gpus*2) == 0:
         template = template.replace('&', '')

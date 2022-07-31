@@ -7,7 +7,7 @@ supernet_mask_path_pattern = ''
 search_space_path = "/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/networks/nasbench201/top1percent_models.json"
 parser = ArgumentParser()
 parser.add_argument("--ckpts_path_pattern", type=str)
-parser.add_argument("--supernet_mask_path_pattern", type=str)
+parser.add_argument("--supernet_mask_path_pattern", type=str, help='/path/to/exp/check*')
 parser.add_argument("--search_space_path", type=str, default=search_space_path)
 parser.add_argument("--other_cmds", type=str, default='')
 parser.add_argument("--pt", action='store_true', help="print only")

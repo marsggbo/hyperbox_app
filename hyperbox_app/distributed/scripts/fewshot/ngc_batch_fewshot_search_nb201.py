@@ -135,6 +135,8 @@ for opt in opts:
     others += f' engine.split_criterion={split_criterion}'
     others += f' engine.split_method={split_method}'
     others += f' ++engine.split_num={split_num}'
+    if global_pool_path is None:
+        global_pool_path = 'null'
     others += f' ++engine.global_pool_path={global_pool_path}'
     others += f' engine.is_single_path={is_single_path}'
     others += f' engine.warmup_epochs={warmup_epochs}' 
