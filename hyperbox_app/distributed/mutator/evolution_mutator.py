@@ -185,8 +185,8 @@ class EvolutionMutator(RandomMutator):
 
             self.epoch += 1
 
-        if self.to_save_checkpoint:
-            self.save_checkpoint()
+            if self.to_save_checkpoint:
+                self.save_checkpoint()
         if self.to_plot_pareto:
             objx = np.array([cand['size'] for cand in self.vis_dict.values() if 'is_filtered' not in cand])
             objy = np.array([cand['performance'] for cand in self.vis_dict.values() if 'is_filtered' not in cand])
