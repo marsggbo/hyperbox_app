@@ -8,6 +8,7 @@ from pytorch_lightning import LightningModule
 from torchmetrics.classification.accuracy import Accuracy
 
 from hyperbox.utils.logger import get_logger
+from hyperbox.utils.utils import load_json
 from hyperbox.models.base_model import BaseModel
 
 logger = get_logger(__name__)
@@ -36,6 +37,7 @@ class FinetuneModel(BaseModel):
         loss_cfg: Optional[Union[DictConfig, dict]] = None,
         metric_cfg: Optional[Union[DictConfig, dict]] = None,
         scheduler_cfg: Optional[Union[DictConfig, dict]] = None,
+        mask: str=None,
         **kwargs
     ):
         r'''Random NAS model
@@ -48,6 +50,9 @@ class FinetuneModel(BaseModel):
         '''
         super().__init__(network_cfg, None, optimizer_cfg,
                          loss_cfg, metric_cfg, scheduler_cfg, **kwargs)
+        if mask is not None:
+            mask = load_json(mask)
+            self.mutator.sample_by_mask(mask)
 
     def forward(self, x: torch.Tensor):
         return self.network(x)

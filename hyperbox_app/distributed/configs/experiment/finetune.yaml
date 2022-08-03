@@ -22,7 +22,7 @@ seed: 666
 
 trainer:
     min_epochs: 1
-    max_epochs: 300
+    max_epochs: 600
     accelerator: gpu
     strategy: ddp
     progress_bar_refresh_rate: 0
