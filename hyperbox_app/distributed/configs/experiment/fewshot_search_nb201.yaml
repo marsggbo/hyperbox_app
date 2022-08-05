@@ -24,7 +24,6 @@ trainer:
     max_epochs: 100
     accelerator: gpu
     strategy: ddp
-    progress_bar_refresh_rate: 0
 datamodule:
     batch_size: 64
     is_customized: False

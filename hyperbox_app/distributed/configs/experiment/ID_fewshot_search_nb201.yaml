@@ -20,7 +20,6 @@ seed: 666
 trainer:
     min_epochs: 1
     max_epochs: 100
-    progress_bar_refresh_rate: 0
 model:
     mutator_cfg:
         _target_: hyperbox_app.distributed.mutator.ID_fewshot_mutator.IDFewshotMutator
