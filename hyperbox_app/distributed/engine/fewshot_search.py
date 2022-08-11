@@ -75,9 +75,9 @@ class FewshotSearch(BaseEngine):
         network_name = cfg.model.network_cfg._target_.split('.')[-1]
         project = f"{network_name}_{split_criterion}_{split_method}_{similarity_method}"
         offline = cfg.logger.wandb.get('offline', False)
-        if offline:
-            os.environ["WANDB_MODE"] = "offline"
-        wandb.init(project=project)
+        # if offline:
+        #     os.environ["WANDB_MODE"] = "offline"
+        # wandb.init(project=project)
 
     def run(self):
         trainer = self.trainer
@@ -391,12 +391,12 @@ class FewshotSearch(BaseEngine):
             similarity_avg /= repeat_num
             similarity = similarity_avg - 1
             log.info(f"{edge_key} similarity:\n {similarity}")
-            try:
-                name = f"{trainer.current_epoch}_{edge_key}_similarity"
-                x_labels = y_labels = list(range(len(similarity)))
-                wandb.log({name: wandb.plots.HeatMap(x_labels, y_labels, similarity)})
-            except Exception as e:
-                log.error(e)
+            # try:
+            #     name = f"{trainer.current_epoch}_{edge_key}_similarity"
+            #     x_labels = y_labels = list(range(len(similarity)))
+            #     wandb.log({name: wandb.plots.HeatMap(x_labels, y_labels, similarity)})
+            # except Exception as e:
+            #     log.error(e)
             
             if split_method == 'GM':
                 criterions = np.stack([info['criterion'] for info in infos.values()])
