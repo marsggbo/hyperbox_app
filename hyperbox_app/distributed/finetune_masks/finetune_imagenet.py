@@ -18,6 +18,7 @@ from torch.optim.lr_scheduler import StepLR
 import torch.multiprocessing as mp
 import torch.utils.data
 import torch.utils.data.distributed
+from torchvision import transforms as T
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
@@ -277,14 +278,27 @@ def main_worker(gpu, ngpus_per_node, args):
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
     log.info('=> loading data files')
+    train_ops = [
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip()
+    ]
+    if args.arch == 'ofa':
+        policy = T.AutoAugmentPolicy.IMAGENET
+        augmenter = T.AutoAugment(policy)
+        train_ops.append(augmenter)
+        log.info('=> using AutoAugment')
+    else:
+        train_ops.append(ColorJitter(brightness=32. / 255., saturation=0.5))
+        log.info('=> using ColorJitter')
+    train_ops.extend([
+        transforms.ToTensor(),
+        normalize
+    ])
+        
     train_dataset = datasets.ImageFolder(
         traindir,
-        transforms.Compose([
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            normalize,
-        ]))
+        transforms.Compose(train_ops)
+    )
 
     val_dataset = datasets.ImageFolder(
         valdir,
