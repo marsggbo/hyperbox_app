@@ -114,10 +114,17 @@ class FinetuneModel(BaseModel):
         logger.info(f'Test epoch{self.trainer.current_epoch} acc={acc:.4f} loss={loss:.4f}')
 
     def on_fit_start(self):
-        mflops, size = self.arch_size((2,3,64,64), convert=True)
-        logger.info(f"[rank {self.rank}] current model({self.arch}): {mflops:.4f} MFLOPs, {size:.4f} MB.")
+        try:
+            mflops, size = self.arch_size((2,3,64,64), convert=True)
+            logger.info(f"[rank {self.rank}] current model({self.arch}): {mflops:.4f} MFLOPs, {size:.4f} MB.")
+        except Exception as e:
+            logger.info(f"{e}")
 
     def on_fit_end(self):
-        mflops, size = self.arch_size((2,3,64,64), convert=True)
-        logger.info(f"[rank {self.rank}] current model({self.arch}): {mflops:.4f} MFLOPs, {size:.4f} MB.")
+        try:
+            mflops, size = self.arch_size((2,3,64,64), convert=True)
+            logger.info(f"[rank {self.rank}] current model({self.arch}): {mflops:.4f} MFLOPs, {size:.4f} MB.")
+        except Exception as e:
+            logger.info(f"{e}")
+
         
