@@ -44,10 +44,12 @@ arch2cfg = lambda name: os.path.join(hx_net_path, f'model/network_cfg/{name}.yam
 arch_maps = {name: arch2cfg(name) for name in model_names}
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
-parser.add_argument('--data', metavar='DIR', default='/home/xihe/datasets/imagenet2012',
+parser.add_argument('--data', metavar='DIR', default='/home/comp/18481086/datasets/imagenet2012',
                     help='path to dataset (default: imagenet)')
 parser.add_argument('--mask', type=str, default='')
 parser.add_argument('--suffix', type=str, default='')
+parser.add_argument('--weights', type=str, default='')
+parser.add_argument('--img_size', type=int, default=224)
 parser.add_argument('--ofa_dek', type=str, default='4,6,7', help='OFA depth, expansion and kernel size')
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                     choices=model_names,
@@ -72,7 +74,7 @@ parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
 parser.add_argument('--wd', '--weight-decay', default=1e-4, type=float,
                     metavar='W', help='weight decay (default: 1e-4)',
                     dest='weight_decay')
-parser.add_argument('-p', '--print-freq', default=50, type=int,
+parser.add_argument('-p', '--print-freq', default=200, type=int,
                     metavar='N', help='print frequency (default: 50)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
@@ -144,7 +146,8 @@ def main():
 
 def main_worker(gpu, ngpus_per_node, args):
     global best_acc1
-    args.gpu = gpu
+    args.gpu = gpu    
+    log = get_logger(os.path.join(args.log_dir, f'log{args.rank}.txt'), is_rank_zero=False)
 
     if args.gpu is not None:
         print("Use GPU: {} for training".format(args.gpu))
@@ -169,26 +172,56 @@ def main_worker(gpu, ngpus_per_node, args):
     model_cfg = OmegaConf.load(model_cfg)
     model_cfg.num_classes = 1000
     if args.arch == 'ofa':
-        model_cfg.pretrained_weights = '/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/networks/ofa/hyperbox_OFA_MBV3_k357_d234_e46_w1.pth'
+        model_cfg.pretrained_weights = '/home/comp/18481086/code/hyperbox_app/hyperbox_app/distributed/networks/ofa/hyperbox_OFA_MBV3_k357_d234_e346_w1.pth'
+        model_cfg.pretrained_weights = '/home/comp/18481086/code/hyperbox_app/hyperbox_app/distributed/networks/ofa/hyperbox_OFA_MBV3_k357_d234_e346_w1.2.pth'
+        model_cfg.width_mult=1.2
+        model_cfg.first_stride=2
+        model_cfg.expand_ratio_list = [3,4,6]
         supernet = instantiate(model_cfg)
-        depth, expand_ratio, kernel_size = [int(x) for x in args.ofa_dek.split(',')]
-        mask = supernet.gen_mask(depth=depth, expand_ratio=expand_ratio, kernel_size=kernel_size)
-        # mask = supernet.gen_mask(depth=4, expand_ratio=6, kernel_size=7)
-        tmp_mask_path = os.path.join(args.log_dir, 'mask.json')
-        save_arch_to_json(mask, tmp_mask_path)
+        
+        ## random generate
+        # rm = RandomMutator(supernet)
+        # rm.reset()
+        # mask = rm._cach
+        
+        # # manual define
+        # depth, expand_ratio, kernel_size = [int(x) for x in args.ofa_dek.split(',')]
+        # mask = supernet.gen_mask(depth=depth, expand_ratio=expand_ratio, kernel_size=kernel_size)
+        # tmp_mask_path = os.path.join(args.log_dir, 'mask.json')
+        # if not os.path.exists(tmp_mask_path):
+        #     save_arch_to_json(mask, tmp_mask_path)
+        tmp_mask_path = args.mask
+        
         subnet_cfg = deepcopy(model_cfg)
         subnet_cfg.pretrained_weights = None
         subnet_cfg.mask = tmp_mask_path
         model = instantiate(subnet_cfg)
         model.load_from_supernet(supernet.state_dict())
     else:
-        model_cfg.mask = args.mask
-        model = instantiate(model_cfg)
+        if args.weights:
+            weights = torch.load(args.weights, map_location='cpu')
+            model_cfg.width_mult=1.4
+            model_cfg.width_stages=[30,40,80,96,182,320]
+            supernet = instantiate(model_cfg)
+            # supernet.load_state_dict(weights)
+            
+            model_cfg.mask = args.mask
+            model = instantiate(model_cfg)
+            # model.load_from_supernet(supernet.state_dict())
+            model.load_state_dict(weights)
+            # mask = load_json(args.mask)
+            # model = supernet.build_subnet(mask, True)
+            log.info(f'building a model with the pretrained weights')
+        else:
+            model_cfg.mask = args.mask
+            model = instantiate(model_cfg)
+            log.info('model built')
+    (flops, size) = model.arch_size((4,3,224,224))
+    log.info(f"flops: {flops} MFLOPS \nsize: {size} MB")
     # mask = load_json(args.mask)
     # mutator = RandomMutator(model)
     # mutator.sample_by_mask(mask)
-    
-    log = get_logger(os.path.join(args.log_dir, f'log{args.rank}.txt'), is_rank_zero=False)
+
 
     if not torch.cuda.is_available():
         log.info('using CPU, this will be slow')
@@ -279,7 +312,7 @@ def main_worker(gpu, ngpus_per_node, args):
                                      std=[0.229, 0.224, 0.225])
     log.info('=> loading data files')
     train_ops = [
-            transforms.RandomResizedCrop(224),
+            transforms.RandomResizedCrop(args.img_size),
             transforms.RandomHorizontalFlip()
     ]
     if args.arch == 'ofa':
@@ -288,7 +321,7 @@ def main_worker(gpu, ngpus_per_node, args):
         train_ops.append(augmenter)
         log.info('=> using AutoAugment')
     else:
-        train_ops.append(ColorJitter(brightness=32. / 255., saturation=0.5))
+        train_ops.append(transforms.ColorJitter(brightness=32. / 255., saturation=0.5))
         log.info('=> using ColorJitter')
     train_ops.extend([
         transforms.ToTensor(),
@@ -304,7 +337,7 @@ def main_worker(gpu, ngpus_per_node, args):
         valdir,
         transforms.Compose([
             transforms.Resize(256),
-            transforms.CenterCrop(224),
+            transforms.CenterCrop(args.img_size),
             transforms.ToTensor(),
             normalize,
         ]))
@@ -467,6 +500,7 @@ def validate(val_loader, model, criterion, args):
         run_validate(aux_val_loader, len(val_loader))
 
     progress.display_summary()
+    print(model.module.arch_size((1,3,224,224), convert=False))
 
     return top1.avg
 
@@ -574,8 +608,9 @@ if __name__ == '__main__':
     main()
     
 # python finetune_masks/finetune_imagenet.py \
+# --data /home/xihe/datasets/imagenet2012  \
 # --dist-url 'tcp://127.0.0.1:8888' --dist-backend 'nccl' --multiprocessing-distributed \
-# --world-size 1 --rank 0 --data /home/xihe/datasets/imagenet2012 --epochs 200 \
+# --world-size 1 --rank 0--epochs 200 \
 #  -a proxylessnas \
 # --mask /home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/finetune_masks/proxyless_masks/ID/v1/0_0.6813.json 
 
