@@ -92,7 +92,7 @@ for opt in opts:
     network_cfg = opt['network_cfg']
     datamodule = opt['datamodule']
     other_cmds = opt['other_cmds']
-    datamodule_map = {'cifar10_datamodule': 'c10', 'cifar100_datamodule': 'c100'}
+    datamodule_map = {'cifar10_datamodule': 'c10', 'cifar100_datamodule': 'c100', 'imagenet_datamodule': 'imagenet'}
 
     gpu_id = i%num_gpus
 
@@ -105,7 +105,7 @@ for opt in opts:
     is_loadparent = 'loadparent' if load_from_parent else 'notloadparent'
     if load_from_parent:
         finetune_epoch //= 2
-    dataset = datamodule_map[datamodule]
+    dataset = datamodule_map.get(datamodule, datamodule)
     if global_pool_path:
         suffix = f"{network_cfg}_{dataset}_global_cluster_sgdlr{lr}"
     elif supernet_masks_path is None:
@@ -116,7 +116,7 @@ for opt in opts:
     if to_sample_similar:
         suffix += '_samplesimilar'
 
-    others = "ipdb_debug=False logger.wandb.offline=True trainer.strategy=null trainer.limit_val_batches=0"
+    others = "ipdb_debug=False logger.wandb.offline=True ++trainer.strategy=null ++trainer.limit_val_batches=0"
     if not is_single_path:
         repeat_num = 50
     else:
@@ -128,7 +128,7 @@ for opt in opts:
         finetune_epoch = 1
         warmup_epochs = "[1,2]"
         repeat_num = 1
-        others += " trainer.fast_dev_run=True"
+        others += " ++trainer.fast_dev_run=True"
         suffix = 'debug_' + suffix
 
     others += f" engine.repeat_num={repeat_num}"
@@ -153,7 +153,10 @@ for opt in opts:
     others += f" ++model.mutator_cfg.to_sample_similar={to_sample_similar}"
     if other_cmds is not None:
         others += f" {other_cmds}"
-    cmd = f'''bash ./scripts/fewshot/fewshot_search_nb201.sh [{gpu_id}] {suffix} "{others}"  & sleep 10'''
+    cmd = f'''python -m hyperbox.run hydra.searchpath=[pkg://hyperbox_app.distributed.configs] experiment=fewshot_search_nb201.yaml \
+        hydra.job.name={suffix} task_name={suffix} logger.wandb.name={suffix} ++trainer.gpus=[{gpu_id}] +model.is_net_parallel=True {others}    
+    '''
+    # cmd = f'''bash ./scripts/fewshot/fewshot_search_nb201.sh [{gpu_id}] {suffix} "{others}"  & sleep 10'''
     
     if i == len(opts)-1:
         cmd = cmd.replace('&', '')

@@ -113,6 +113,10 @@ class EvolutionMutator(RandomMutator):
         self.keep_top_k = {self.selection_num: [], self.topk: []}
         self.epoch = 0
         self.candidates = []
+        if 'OFA' in self.model.__class__.__name__:
+            self.ofa_ss = self.model.build_search_space(self)
+            self.ofa_keys = list(self.ofa_ss.keys())
+            self.global_count = 0
 
     def save_checkpoint(self):
         if not os.path.exists(self.log_dir):
@@ -215,7 +219,13 @@ class EvolutionMutator(RandomMutator):
     def get_random(self, num):
         log.info('random select ........')
         while len(self.candidates) < num:
-            arch = self.sample_search() # type: dict
+            # arch = self.sample_search() # type: dict
+            if 'OFA' in self.model.__class__.__name__:
+                arch = self.ofa_ss[self.ofa_keys[self.global_count]]
+                self.sample_by_mask(arch)
+                self.global_count += 1
+            else:
+                arch = self.sample_search() # type: dict
             if not self.is_legal(arch):
                 continue
             self.candidates.append(self.get_cand_by_arch(arch))

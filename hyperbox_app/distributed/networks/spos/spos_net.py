@@ -69,7 +69,7 @@ class ShuffleNASNetV2(BaseNASNetwork):
             nn.ReLU(inplace=True),
         )
         self.globalpool = nn.AdaptiveAvgPool2d(1)
-        self.dropout = nn.Dropout(0.1)
+        # self.dropout = nn.Dropout(0.5)
         self.classifier = nn.Sequential(
             nn.Linear(self.stage_out_channels[-1], num_classes, bias=False))
         self._initialize_weights()
@@ -87,7 +87,7 @@ class ShuffleNASNetV2(BaseNASNetwork):
 
         x = self.globalpool(x)
 
-        x = self.dropout(x)
+        # x = self.dropout(x)
         x = x.contiguous().view(-1, self.stage_out_channels[-1])
         x = self.classifier(x)
         self.features.append(x.detach())

@@ -48,7 +48,7 @@ class EASearchEngine(BaseEngine):
         model,
         datamodule,
         cfg: DictConfig,
-        supernet_mask_path_pattern: str,
+        supernet_mask_path_pattern: str=None,
         sample_iterations: int=1000,
         metric_key: str='val/acc_epoch',
         query_key: str='test_acc'
@@ -59,12 +59,13 @@ class EASearchEngine(BaseEngine):
         self.metric_key = metric_key
         self.query_key = query_key
         self.sample_iterations = sample_iterations
-        self.supernet_mask_paths = glob(supernet_mask_path_pattern)
-        self.supernet_masks = []
-        for path in self.supernet_mask_paths:
-            self.supernet_masks.append(load_json(path))
-        self.mutator.supernet_mask_paths = self.supernet_mask_paths
-        self.mutator.supernet_masks = self.supernet_masks
+        if supernet_mask_path_pattern is not None:
+            self.supernet_mask_paths = glob(supernet_mask_path_pattern)
+            self.supernet_masks = []
+            for path in self.supernet_mask_paths:
+                self.supernet_masks.append(load_json(path))
+            self.mutator.supernet_mask_paths = self.supernet_mask_paths
+            self.mutator.supernet_masks = self.supernet_masks
         self.performance_history = {}
 
     def reset_idx(self):
