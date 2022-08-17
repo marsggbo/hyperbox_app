@@ -10,7 +10,6 @@ name=ea_search_${suffix}
 
 echo $name
 
-# cfgPath=/home/xihe/xinhe/hyperbox_app/hyperbox_app/distributed/temp_space/nb201/cfg_c10_ea_new
 
 # nb201
 # CUDA_VISIBLE_DEVICES=$gpu 

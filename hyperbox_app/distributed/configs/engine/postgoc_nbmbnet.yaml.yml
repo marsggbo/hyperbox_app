@@ -1,5 +1,0 @@
-_target_: hyperbox_app.distributed.engine.posthoc_nbmbnet.PosthocNBMBNetEngine
-search_space_path: /home/xihe/xinhe/hyperbox/hyperbox/networks/nasbench_mbnet/nasbench_mbnet_cifar10.json
-metric_key: 'mean_acc'
-query_key: 'mean_acc'
-query_file_path: '/home/xihe/xinhe/hyperbox/hyperbox/networks/nasbench_mbnet/nasbench_mbnet_cifar10.json'
