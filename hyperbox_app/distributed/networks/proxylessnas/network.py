@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import math
 
+from copy import deepcopy
 from hyperbox_app.distributed.networks.proxylessnas import ops, putils
 from hyperbox.mutables.spaces import OperationSpace
 from hyperbox.networks.base_nas_network import BaseNASNetwork
@@ -31,6 +32,7 @@ class ProxylessNAS(BaseNASNetwork):
 
         input_channel = putils.make_divisible(32 * width_mult, 8)
         first_cell_width = putils.make_divisible(16 * width_mult, 8)
+        width_stages = deepcopy(width_stages)
         for i in range(len(width_stages)):
             width_stages[i] = putils.make_divisible(width_stages[i] * width_mult, 8)
         # first conv
