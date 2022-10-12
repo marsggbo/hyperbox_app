@@ -115,8 +115,11 @@ class OFAMobileNetV3(BaseNASNetwork):
         self.runtime_depth = []
         for idx, block_group in enumerate(self.block_group_info):
             self.runtime_depth.append(
-                spaces.ValueSpace(list(range(1, len(block_group)+1)), key=f"depth{idx+1}", mask=self.mask)
+                spaces.ValueSpace(depth_list, key=f"depth{idx+1}", mask=self.mask)
             )
+            # self.runtime_depth.append(
+            #     spaces.ValueSpace(list(range(1, len(block_group)+1)), key=f"depth{idx+1}", mask=self.mask)
+            # )
         self.runtime_depth = nn.Sequential(*self.runtime_depth)
 
         if pretrained_weights is not None:
@@ -191,7 +194,7 @@ class OFAMobileNetV3(BaseNASNetwork):
                 elif 'er' in m.key:
                     mask_item = (torch.tensor(self.expand_ratio_list) - expand_ratio)==0
                 elif 'depth' in m.key:
-                    mask_item = (torch.arange(1, max(self.depth_list)+1) - depth)==0
+                    mask_item = (torch.tensor(self.depth_list) - depth)==0
                 assert mask_item.shape==m.mask.shape,\
                     f"{mask_item.shape} failed to match the original shape {m.mask.shape} of {m.key}"
                 mask[m.key] = mask_item
@@ -230,6 +233,24 @@ class OFAMobileNetV3(BaseNASNetwork):
                     mask[key] = (torch.arange(1, max(depth_list)+1)-depths[layer_id])==0
             masks[str(c)] = mask
         return masks
+
+    def gen_random_arch(self, mutator=None):
+        if mutator is not None:
+            mutator.reset()
+            mask = mutator._cache
+        else:
+            mask = {}
+            for m in self.modules():
+                if isinstance(m, spaces.Mutable):
+                    key = m.key
+                    idx = torch.randint(0, len(m), (1,))[0]
+                    n_classes = torch.tensor(len(m))
+                    val = torch.nn.functional.one_hot(idx, n_classes).bool()
+                    mask[key] = val
+        for key in mask:
+            if '_subMB' in key:
+                mask[key].data = mask[key.split('_subMB')[0]].data
+        return mask
 
 
 if __name__ == '__main__':
