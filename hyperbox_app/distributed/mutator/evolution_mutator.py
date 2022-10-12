@@ -221,7 +221,7 @@ class EvolutionMutator(RandomMutator):
         while len(self.candidates) < num:
             # arch = self.sample_search() # type: dict
             if 'OFA' in self.model.__class__.__name__:
-                arch = self.ofa_ss[self.ofa_keys[self.global_count]]
+                arch = self.model.gen_random_arch()
                 self.sample_by_mask(arch)
                 self.global_count += 1
             else:
