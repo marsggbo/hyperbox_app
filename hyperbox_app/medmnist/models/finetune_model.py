@@ -99,7 +99,10 @@ class FinetuneModel(BaseModel):
         return network(x, self.to_aug)
 
     def step(self, batch: Any):
-        x, y = batch
+        if isinstance(batch, dict):
+            x, y = batch['train']
+        else:
+            x, y = batch
         if self.use_mixup and self.criterion.training:
             x, y = self.random_mixup(x, y)
         logits = self.forward(x)
@@ -138,7 +141,10 @@ class FinetuneModel(BaseModel):
         else:
             self.to_aug = False
             self.criterion.training = True
-        trn_X, trn_y = batch
+        if isinstance(batch, dict):
+            (trn_X, trn_y) = batch['train']
+        else:
+            trn_X, trn_y = batch
         self.y_true_trn = torch.cat((self.y_true_trn, trn_y), 0)
         loss, preds, targets = self.step(batch)
         if hasattr(self.network, 'aug_imgs') \
@@ -220,7 +226,10 @@ class FinetuneModel(BaseModel):
         self.network.train()
         self.to_aug = False
         with torch.no_grad():
-            x, targets = batch
+            if isinstance(batch, dict):
+                (x, targets) = batch['val']
+            else:
+                x, targets = batch
             eval_net = self.net_ema if hasattr(self, 'net_ema') else self.network
             preds = self.forward(x, network=eval_net)
             if len(preds.shape) == 3:
@@ -287,7 +296,10 @@ class FinetuneModel(BaseModel):
     def test_step(self, batch: Any, batch_idx: int):
         self.to_aug = False
         with torch.no_grad():
-            x, targets = batch
+            if isinstance(batch, dict):
+                (x, targets) = batch['val']
+            else:
+                x, targets = batch
             preds = self.forward(x)
             if len(preds.shape) == 3:
                 loss = 0.

@@ -42,10 +42,10 @@ def DAOperation3D(
     erase_scale=[(0.02, 0.1), (0.1, 0.2)], erase_ratio=[(0.3, 3.3)],
 ):
     ops = {}
-    ops['dflip'] = prob_list_gen(RandomDepthicalFlip3D, probs=[0, 0.5, 0.9], same_on_batch=False)
-    ops['hflip'] = prob_list_gen(RandomHorizontalFlip3D, probs=[0, 0.5, 0.9], same_on_batch=False)
-    ops['vflip'] = prob_list_gen(RandomVerticalFlip3D, probs=[0, 0.5, 0.9], same_on_batch=False)
-    # ops['equal'] = prob_list_gen(RandomEqualize3D, probs=[0, 0.5, 0.9], same_on_batch=False)
+    ops['dflip'] = prob_list_gen(RandomDepthicalFlip3D, probs=[0, 0.5, 0.8], same_on_batch=False)
+    ops['hflip'] = prob_list_gen(RandomHorizontalFlip3D, probs=[0, 0.5, 0.8], same_on_batch=False)
+    ops['vflip'] = prob_list_gen(RandomVerticalFlip3D, probs=[0, 0.5, 0.8], same_on_batch=False)
+    # ops['equal'] = prob_list_gen(RandomEqualize3D, probs=[0, 0.5, 0.8], same_on_batch=False)
 
     # # rotate
     # ops['rotate'] = [nn.Identity()]
@@ -69,11 +69,11 @@ def DAOperation3D(
         # scale, similar to zoom in/out
         affine_scale = [affine_scale]
     for ad_ in affine_degree:
-        if not isinstance(ad_, tuple):
-            ad_ = tuple(ad_)
+        # if not isinstance(ad_, tuple):
+        #     ad_ = tuple(ad_,)
         for ash_ in affine_shears:
             for asc_ in affine_scale:
-                affine = prob_list_gen(RandomAffine3D, probs=[0.5, 0.9], same_on_batch=False, degrees=ad_, scale=asc_, shears=ash_) 
+                affine = prob_list_gen(RandomAffine3D, probs=[0.5, 0.8], same_on_batch=False, degrees=ad_, scale=asc_, shears=ash_) 
                 ops['affine'] += affine
 
     # random crop
@@ -107,30 +107,30 @@ def DAOperation3D(
     for brightness_ in brightness:
         for contrast_ in contrast:
             ops['bright_contrast'] += prob_list_gen(
-                BrightContrast3d, probs=[0.5, 0.9], brightness=brightness_, contrast=contrast_)
+                BrightContrast3d, probs=[0.5, 0.8], brightness=brightness_, contrast=contrast_)
 
     # blur
     boxblur = [nn.Identity()]
     for ks in blur_ks:
-        boxblur += prob_list_gen(RandomBoxBlur3d, probs=[0.5, 0.9], kernel_size=ks)
+        boxblur += prob_list_gen(RandomBoxBlur3d, probs=[0.5, 0.8], kernel_size=ks)
     ops['boxblur'] = boxblur
 
     # color invert
     invert = [nn.Identity()]
     for val in invert_val:
-        invert += prob_list_gen(RandomInvert3d, probs=[0.5, 0.9], max_val=val)
+        invert += prob_list_gen(RandomInvert3d, probs=[0.5, 0.8], max_val=val)
     ops['invert'] = invert
 
     # add gaussian noise
     gauNoise = [nn.Identity()]
-    gauNoise += prob_list_gen(RandomGaussianNoise3d, probs=[0.5, 0.9], mean=noise_mean, std=noise_mean)
+    gauNoise += prob_list_gen(RandomGaussianNoise3d, probs=[0.5, 0.8], mean=noise_mean, std=noise_mean)
     ops['gauNoise'] = gauNoise
 
     # random cutout
     erase = [nn.Identity()]
     for scale in [(0.02, 0.1), (0.1, 0.2)]:
         for ratio in [(0.3, 3.3)]:
-            erase += prob_list_gen(RandomErasing3d, probs=[0.5, 0.9], scale=scale, ratio=ratio)
+            erase += prob_list_gen(RandomErasing3d, probs=[0.5, 0.8], scale=scale, ratio=ratio)
     ops['erase'] = erase
 
     return ops
@@ -178,9 +178,9 @@ class DataAugmentation(BaseNASNetwork):
         self.std = std
         self.count = 0
 
-    def sub_forward(self, x: torch.Tensor, aug=True):
+    def sub_forward(self, x: torch.Tensor, aug=True, log_images=False):
         if aug:
-            if self.count < 10:
+            if self.count < 10 and log_images:
                 depth = x.shape[2]
                 index = depth//2
                 for i in range(5):
@@ -188,15 +188,15 @@ class DataAugmentation(BaseNASNetwork):
                     wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
             for idx, trans in enumerate(self.transforms):
                 x = trans(x) # BxCXDxHxW
-            if self.count < 10:
+            if self.count < 10 and log_images:
                 aug_op = trans.value.__class__.__name__
                 for i in range(5):
                     filename = f"aug{self.count}_slice{index+i}"
                     wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
-            self.count += 1
+                self.count += 1
             if self.mean is not None:
-                x = (x-self.mean)/self.std
-                if self.count < 10:
+                if self.count < 10 and log_images:
+                    x = (x-self.mean)/self.std
                     for i in range(5):
                         filename = f"aug{self.count}_slice{index+i}_norm"
                         wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
@@ -205,12 +205,12 @@ class DataAugmentation(BaseNASNetwork):
         else:
             if self.mean is not None:
                 x = (x-self.mean)/self.std
-            if self.count < 10:
+            if self.count < 10 and log_images:
                 depth = x.shape[2]
                 index = depth//2
                 for i in range(5):
                     filename = f"noaug{self.count}_slice{index+i}"
-                    wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
+                    # wandb.log({filename: wandb.Image(x[0,0,index+i,...].cpu().detach().numpy())})
                 self.count += 1
         return x
 

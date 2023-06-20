@@ -1,0 +1,23 @@
+_target_: hyperbox_app.medmnist.networks.mbnet_fixedAug.DAMobile3DNetFixedAug
+in_channels: 1
+width_stages: [24,40,80,96,192,320]
+n_cell_stages: [4,4,4,4,4,1]
+stride_stages: [1,1,2,1,2,2]
+width_mult: 1
+first_stride: 1
+num_classes: 3
+dropout_rate: 0
+bn_param: [0.1,1e-5]
+rotate_degree: 30
+# search
+crop_size:
+  - [28,28,28]
+affine_degree: [10,30]
+affine_scale:
+  - [0.8,1]
+  - [1.1,1.6]
+affine_shears: [10,20]
+mean: 0.5
+std: 0.5
+mask: null
+aug_mask: null
