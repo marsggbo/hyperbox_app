@@ -3,7 +3,7 @@ import torch
 from sklearn.metrics import roc_auc_score
 
 
-def getAUC(y_true, y_score, task):
+def getAUC(y_true, y_score, task=None):
     '''AUC metric.
     :param y_true: the ground truth labels, shape: (n_samples, n_labels) or (n_samples,) if n_labels==1
     :param y_score: the predicted score of each class,
@@ -26,11 +26,18 @@ def getAUC(y_true, y_score, task):
             assert y_score.ndim == 1
         ret = roc_auc_score(y_true, y_score)
     else:
-        auc = 0
-        for i in range(y_score.shape[1]):
-            y_true_binary = (y_true == i).astype(float)
-            y_score_binary = y_score[:, i]
-            auc += roc_auc_score(y_true_binary, y_score_binary)
-        ret = auc / y_score.shape[1]
+        num_classes = y_score.shape[1]
+        roc_auc = 0.0
+
+        for i in range(num_classes):
+            roc_auc += roc_auc_score((y_true == i).astype(int), y_score[:, i])
+
+        ret = roc_auc / num_classes
+        # auc = 0
+        # for i in range(y_score.shape[1]):
+        #     y_true_binary = (y_true == i).astype(float)
+        #     y_score_binary = y_score[:, i]
+        #     auc += roc_auc_score(y_true_binary, y_score_binary)
+        # ret = auc / y_score.shape[1]
 
     return ret

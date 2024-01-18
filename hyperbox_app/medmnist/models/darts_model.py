@@ -6,16 +6,20 @@ import hydra
 import numpy as np
 import torch
 import torch.nn as nn
-import medmnist
+try:
+    import medmnist
+except Exception as e:
+    print('Please install `medmnist` package.')
+    medmnist = None
 from omegaconf import DictConfig
-from kornia.augmentation import RandomMixUp
+# from kornia.augmentation import RandomMixUp
 
 from hyperbox.utils.logger import get_logger
 from hyperbox.models.base_model import BaseModel
 from hyperbox_app.medmnist.utils import getAUC
 from hyperbox_app.medmnist.losses import MixupLoss, MutualLoss
 
-logger = get_logger(__name__, rank_zero=True)
+logger = get_logger(__name__)
 
 
 class DARTSModel(BaseModel):
@@ -35,7 +39,7 @@ class DARTSModel(BaseModel):
         is_net_parallel: bool = False,
         **kwargs
     ):
-        if kwargs.get('datamodule_cfg', None) is not None:
+        if kwargs.get('datamodule_cfg', None) is not None and medmnist is not None:
             self.datamodule_cfg = kwargs.get('datamodule_cfg')
             info = medmnist.INFO[self.datamodule_cfg.data_flag]
             self.c_in = info['n_channels']
@@ -53,15 +57,17 @@ class DARTSModel(BaseModel):
         self.is_net_parallel = is_net_parallel
         self.is_sync = is_sync
         self.use_mixup = use_mixup
-        self.random_mixup = RandomMixUp()
+        # self.random_mixup = RandomMixUp()
 
     def on_fit_start(self):
         # self.logger.experiment[0].watch(self.network, log='all', log_freq=100)
         self.sample_search()
-        self.dataset_info = self.trainer.datamodule.data_train.info
-        self.task = self.dataset_info['task']
-        if self.task == 'multi-label, binary-class':
-            self.criterion = nn.BCEWithLogitsLoss()
+        # self.dataset_info = self.trainer.datamodule.data_train.info
+        # self.task = self.dataset_info['task']
+        self.task = None
+        # self.task = 'multi-label, binary-class'
+        # if self.task == 'multi-label, binary-class':
+        #     self.criterion = nn.BCEWithLogitsLoss()
         if self.use_mixup:
             self.criterion = MixupLoss(self.criterion)
         # data_flag = self.trainer.datamodule.data_flag
@@ -152,14 +158,15 @@ class DARTSModel(BaseModel):
             y = y.to(torch.float32)
         else:
             y = y.squeeze().long()
-        if self.use_mixup and self.criterion.training:
-            if len(X.shape) == 5 and X.shape[1]==1:
-                X = X.squeeze(1)
-                is_squeeze = True
-            X, y = self.random_mixup(X, y)
-            if is_squeeze:
-                X = X.unsqueeze(1)
-        output = self.network(X, to_aug=to_aug)
+        # if self.use_mixup and self.criterion.training:
+        #     if len(X.shape) == 5 and X.shape[1]==1:
+        #         X = X.squeeze(1)
+        #         is_squeeze = True
+        #     X, y = self.random_mixup(X, y)
+        #     if is_squeeze:
+        #         X = X.unsqueeze(1)
+        output = self.network(X)
+        # output = self.network(X, to_aug=to_aug)
         if isinstance(output, tuple):
             output, aux_output = output
             aux_loss = self.criterion(aux_output, y)

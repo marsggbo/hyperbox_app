@@ -1,0 +1,3 @@
+_target_: hyperbox_app.medmnist.networks.vit.ViT_B
+image_size: [448, 608]
+num_classes: 7

@@ -1,0 +1,5 @@
+_target_: hyperbox_app.medmnist.datamodules.ham10000_datamodule.Ham10000DataModule
+root_dir: '/data2/share/skin_cancer_data'
+batch_size: 64
+num_workers: 8
+add_random_transforms: false
